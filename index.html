@@ -1,1 +1,1814 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chroniques — Planificateur JDR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0b0f;
+        --surface: #16121c;
+        --surface2: #1f1928;
+        --border: #2e2640;
+        --accent: #c9a84c;
+        --accent2: #8b5cf6;
+        --danger: #e05252;
+        --success: #52c478;
+        --maybe: #e09c52;
+        --text: #e8e0f0;
+        --muted: #8878a8;
+        --radius: 10px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
+      body {
+        font-family: "Crimson Pro", Georgia, serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        font-size: 17px;
+      }
+
+      /* ── Scrollbar ── */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+      /* ── Ornament / background ── */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            ellipse 60% 40% at 80% 10%,
+            rgba(201, 168, 76, 0.08) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 40% 50% at 10% 90%,
+            rgba(139, 92, 246, 0.07) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+      }
+
+      /* ── Layout ── */
+      #app {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── Auth screen ── */
+      #auth-screen {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        gap: 2rem;
+      }
+      .logo-title {
+        text-align: center;
+      }
+      .logo-title h1 {
+        font-family: "Cinzel", serif;
+        font-size: clamp(2.2rem, 5vw, 3.5rem);
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        text-shadow: 0 0 40px rgba(201, 168, 76, 0.4);
+      }
+      .logo-title p {
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        margin-top: 0.4rem;
+      }
+      .ornament {
+        color: var(--accent);
+        opacity: 0.5;
+        font-size: 1.4rem;
+      }
+
+      .auth-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2.5rem 2rem;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      }
+      .auth-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+      }
+      .auth-tab {
+        flex: 1;
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-family: "Cinzel", serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        padding: 0.6rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .auth-tab.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--bg);
+        font-weight: 600;
+      }
+
+      /* ── Form elements ── */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.2rem;
+      }
+      .field label {
+        font-size: 0.8rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: "Crimson Pro", serif;
+        font-size: 1rem;
+        padding: 0.65rem 0.9rem;
+        border-radius: 6px;
+        transition: border-color 0.2s;
+        outline: none;
+      }
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: var(--accent);
+      }
+      .field select option {
+        background: var(--surface2);
+      }
+
+      .role-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+      }
+      .role-btn {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 6px;
+        padding: 1rem 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .role-btn .role-icon {
+        font-size: 1.6rem;
+      }
+      .role-btn .role-label {
+        font-family: "Cinzel", serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+      }
+      .role-btn .role-desc {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .role-btn.selected {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .role-btn.selected .role-desc {
+        color: var(--muted);
+      }
+
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 6px;
+        font-family: "Cinzel", serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .btn-primary:hover {
+        filter: brightness(1.1);
+      }
+      .btn-outline {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .btn-outline:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn-danger {
+        background: none;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: rgba(224, 82, 82, 0.12);
+      }
+      .btn-ghost {
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-family: "Crimson Pro", serif;
+        font-size: 0.9rem;
+        letter-spacing: normal;
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+      }
+      .btn-block {
+        width: 100%;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: none;
+      }
+
+      .error-msg {
+        background: rgba(224, 82, 82, 0.12);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 0.6rem 0.9rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+
+      /* ── Main app ── */
+      #main-screen {
+        display: none;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+      #main-screen.visible {
+        display: flex;
+      }
+
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0.8rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      header .logo {
+        font-family: "Cinzel", serif;
+        font-size: 1.1rem;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+        flex: 1;
+      }
+      .user-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        padding: 0.35rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+      }
+      .user-chip .role-badge {
+        font-family: "Cinzel", serif;
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        background: var(--accent2);
+        color: #fff;
+        letter-spacing: 0.06em;
+      }
+      .user-chip .role-badge.mj {
+        background: var(--accent);
+        color: var(--bg);
+      }
+
+      main {
+        flex: 1;
+        padding: 1.5rem;
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      /* ── Tabs navigation ── */
+      .nav-tabs {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 1.8rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0;
+      }
+      .nav-tab {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.6rem 1rem 0.8rem;
+        color: var(--muted);
+        font-family: "Cinzel", serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: -1px;
+      }
+      .nav-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+
+      /* ── Panels ── */
+      .panel {
+        display: none;
+      }
+      .panel.active {
+        display: block;
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        gap: 1rem;
+      }
+      .card-title {
+        font-family: "Cinzel", serif;
+        font-size: 1rem;
+        color: var(--accent);
+        letter-spacing: 0.06em;
+      }
+      .card-meta {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+      .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+      }
+
+      /* ── Event code badge ── */
+      .code-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px dashed var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.8rem;
+        font-size: 0.85rem;
+      }
+      .code-badge strong {
+        font-family: "Cinzel", serif;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+      }
+      .copy-btn {
+        cursor: pointer;
+        color: var(--muted);
+        transition: color 0.2s;
+        font-size: 0.8rem;
+      }
+      .copy-btn:hover {
+        color: var(--accent);
+      }
+
+      /* ── Calendar ── */
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+        margin-top: 1rem;
+      }
+      .cal-header-cell {
+        text-align: center;
+        padding: 0.4rem 0;
+        font-family: "Cinzel", serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .cal-cell {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem 0.3rem;
+        text-align: center;
+        min-height: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.85rem;
+        position: relative;
+        transition: border-color 0.2s;
+      }
+      .cal-cell.empty {
+        background: transparent;
+        border-color: transparent;
+      }
+      .cal-cell.has-event {
+        border-color: var(--accent2);
+        cursor: pointer;
+      }
+      .cal-cell.has-event:hover {
+        border-color: var(--accent);
+      }
+      .cal-cell .day-num {
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+      .cal-cell .event-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent2);
+      }
+      .cal-cell .response-indicator {
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+
+      .cal-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .cal-month {
+        font-family: "Cinzel", serif;
+        font-size: 1rem;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+      }
+
+      /* ── Date slots ── */
+      .date-slots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+      }
+      .date-slot {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.88rem;
+      }
+      .date-slot .remove-slot {
+        cursor: pointer;
+        color: var(--muted);
+        transition: color 0.2s;
+        font-size: 0.8rem;
+      }
+      .date-slot .remove-slot:hover {
+        color: var(--danger);
+      }
+
+      /* ── Presence summary ── */
+      .presence-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.8rem;
+      }
+      .presence-table th,
+      .presence-table td {
+        padding: 0.6rem 0.8rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.88rem;
+      }
+      .presence-table th {
+        font-family: "Cinzel", serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .presence-table td:first-child {
+        text-align: left;
+      }
+      .presence-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .status-yes {
+        color: var(--success);
+      }
+      .status-no {
+        color: var(--danger);
+      }
+      .status-maybe {
+        color: var(--maybe);
+      }
+      .status-none {
+        color: var(--muted);
+      }
+
+      /* ── Add date picker ── */
+      .datetime-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .datetime-row .field {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 130px;
+      }
+
+      /* ── Player list ── */
+      .player-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+      }
+      .player-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.85rem;
+      }
+      .player-chip .remove-player {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 0.75rem;
+        transition: color 0.2s;
+      }
+      .player-chip .remove-player:hover {
+        color: var(--danger);
+      }
+
+      /* ── Section title ── */
+      .section-title {
+        font-family: "Cinzel", serif;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      /* ── Modal ── */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        width: 100%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 16px 60px rgba(0, 0, 0, 0.5);
+        animation: modal-in 0.2s ease;
+      }
+      @keyframes modal-in {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .modal-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.1rem;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        margin-bottom: 1.5rem;
+      }
+      .modal-footer {
+        display: flex;
+        gap: 0.8rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+      }
+
+      /* ── Toast ── */
+      #toast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 300;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.3s;
+        pointer-events: none;
+      }
+      #toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      #toast.success {
+        border-color: var(--success);
+        color: var(--success);
+      }
+      #toast.error {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      /* ── Event detail modal ── */
+      .response-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.7rem 0;
+        border-bottom: 1px solid var(--border);
+        gap: 1rem;
+      }
+      .response-row:last-child {
+        border-bottom: none;
+      }
+      .response-btns {
+        display: flex;
+        gap: 0.4rem;
+      }
+      .resp-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .resp-btn:hover {
+        transform: scale(1.1);
+      }
+      .resp-btn.active-yes {
+        background: rgba(82, 196, 120, 0.2);
+        border-color: var(--success);
+      }
+      .resp-btn.active-no {
+        background: rgba(224, 82, 82, 0.2);
+        border-color: var(--danger);
+      }
+      .resp-btn.active-maybe {
+        background: rgba(224, 156, 82, 0.2);
+        border-color: var(--maybe);
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 600px) {
+        header {
+          padding: 0.6rem 1rem;
+        }
+        main {
+          padding: 1rem;
+        }
+        .calendar-grid {
+          gap: 2px;
+        }
+        .cal-cell {
+          min-height: 48px;
+          padding: 0.3rem 0.2rem;
+          font-size: 0.75rem;
+        }
+      }
+
+      /* ── Utilities ── */
+      .flex {
+        display: flex;
+      }
+      .gap-sm {
+        gap: 0.5rem;
+      }
+      .mt-sm {
+        margin-top: 0.5rem;
+      }
+      .mt-md {
+        margin-top: 1rem;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .text-muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .text-accent {
+        color: var(--accent);
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 1.2rem 0;
+      }
+      .loading {
+        text-align: center;
+        color: var(--muted);
+        padding: 2rem;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+      <div id="auth-screen">
+        <div class="logo-title">
+          <div class="ornament">⚔ ✦ ⚔</div>
+          <h1>Chroniques</h1>
+          <p>Planificateur de Jeux de Rôle</p>
+        </div>
+
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">
+              Connexion
+            </button>
+            <button class="auth-tab" onclick="switchAuthTab('register')">
+              Créer un compte
+            </button>
+          </div>
+
+          <div id="auth-error" class="error-msg hidden"></div>
+
+          <!-- Login -->
+          <div id="login-form">
+            <div class="field">
+              <label>Adresse e-mail</label>
+              <input
+                type="email"
+                id="login-email"
+                placeholder="votre@email.com"
+              />
+            </div>
+            <div class="field">
+              <label>Mot de passe</label>
+              <input
+                type="password"
+                id="login-password"
+                placeholder="••••••••"
+              />
+            </div>
+            <button class="btn btn-primary btn-block" onclick="doLogin()">
+              Se connecter
+            </button>
+          </div>
+
+          <!-- Register -->
+          <div id="register-form" class="hidden">
+            <div class="field">
+              <label>Nom d'utilisateur</label>
+              <input
+                type="text"
+                id="reg-username"
+                placeholder="Votre pseudonyme"
+                maxlength="24"
+              />
+            </div>
+            <div class="field">
+              <label>Adresse e-mail</label>
+              <input
+                type="email"
+                id="reg-email"
+                placeholder="votre@email.com"
+              />
+            </div>
+            <div class="field">
+              <label>Mot de passe</label>
+              <input
+                type="password"
+                id="reg-password"
+                placeholder="••••••••"
+                minlength="6"
+              />
+            </div>
+            <div class="field">
+              <label>Vous êtes…</label>
+            </div>
+            <div class="role-selector">
+              <div class="role-btn" id="role-mj" onclick="selectRole('MJ')">
+                <div class="role-icon">🎭</div>
+                <div class="role-label">MJ</div>
+                <div class="role-desc">Meneur de jeu</div>
+              </div>
+              <div class="role-btn" id="role-jr" onclick="selectRole('JR')">
+                <div class="role-icon">🧙</div>
+                <div class="role-label">Joueur</div>
+                <div class="role-desc">Participant</div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="doRegister()">
+              Créer mon compte
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ MAIN APP ═══════════════ -->
+      <div id="main-screen">
+        <header>
+          <div class="logo">⚔ Chroniques</div>
+          <div class="user-chip">
+            <span id="header-username">—</span>
+            <span class="role-badge" id="header-role-badge">?</span>
+          </div>
+          <button class="btn btn-ghost" onclick="doLogout()">
+            Déconnexion
+          </button>
+        </header>
+
+        <main>
+          <div class="nav-tabs" id="nav-tabs">
+            <!-- Tabs injected by JS -->
+          </div>
+
+          <!-- ── PANEL: Calendrier (Joueur) ── -->
+          <div class="panel active" id="panel-calendar">
+            <div class="section-title">Mes événements à venir</div>
+            <div class="cal-nav">
+              <button class="btn btn-ghost" onclick="calMove(-1)">
+                ◀ Précédent
+              </button>
+              <div class="cal-month" id="cal-month-label">—</div>
+              <button class="btn btn-ghost" onclick="calMove(1)">
+                Suivant ▶
+              </button>
+            </div>
+            <div class="calendar-grid" id="cal-grid"></div>
+            <div class="mt-md" id="cal-event-list"></div>
+          </div>
+
+          <!-- ── PANEL: Mes événements (MJ) ── -->
+          <div class="panel hidden" id="panel-events">
+            <div class="section-title">
+              Mes événements
+              <button
+                class="btn btn-primary btn-sm"
+                onclick="openCreateEvent()"
+              >
+                + Créer
+              </button>
+            </div>
+            <div id="events-list"><div class="loading">Chargement…</div></div>
+          </div>
+
+          <!-- ── PANEL: Rejoindre (Joueur) ── -->
+          <div class="panel hidden" id="panel-join">
+            <div class="section-title">Rejoindre un événement</div>
+            <div class="card">
+              <div class="field">
+                <label>Code d'invitation</label>
+                <input
+                  type="text"
+                  id="join-code-input"
+                  placeholder="CODE123"
+                  maxlength="10"
+                  style="
+                    text-transform: uppercase;
+                    letter-spacing: 0.12em;
+                    font-family: &quot;Cinzel&quot;, serif;
+                  "
+                />
+              </div>
+              <button class="btn btn-primary" onclick="joinByCode()">
+                Rejoindre
+              </button>
+            </div>
+            <div class="section-title mt-md">Événements rejoints</div>
+            <div id="joined-events-list">
+              <div class="loading">Chargement…</div>
+            </div>
+          </div>
+
+          <!-- ── PANEL: Profil ── -->
+          <div class="panel hidden" id="panel-profile">
+            <div class="section-title">Mon profil</div>
+            <div class="card">
+              <div class="field">
+                <label>Nom d'utilisateur</label>
+                <input type="text" id="profile-username" maxlength="24" />
+              </div>
+              <div class="field">
+                <label>Rôle</label>
+                <select id="profile-role">
+                  <option value="MJ">🎭 MJ — Meneur de jeu</option>
+                  <option value="JR">🧙 Joueur</option>
+                </select>
+              </div>
+              <div class="flex gap-sm mt-sm">
+                <button class="btn btn-primary" onclick="saveProfile()">
+                  Enregistrer
+                </button>
+              </div>
+              <hr class="divider" />
+              <button class="btn btn-danger" onclick="confirmDeleteAccount()">
+                Supprimer mon compte
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- ═══════════════ MODALS ═══════════════ -->
+
+      <!-- Create/Edit Event Modal -->
+      <div class="modal-overlay hidden" id="modal-event">
+        <div class="modal">
+          <div class="modal-title" id="modal-event-title">
+            Créer un événement
+          </div>
+
+          <div class="field">
+            <label>Nom de l'événement</label>
+            <input type="text" id="ev-name" placeholder="La Nuit du Dragon…" />
+          </div>
+          <div class="field">
+            <label>Description (optionnel)</label>
+            <textarea
+              id="ev-desc"
+              rows="2"
+              placeholder="Quelques mots sur la session…"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label>Ajouter des dates proposées</label>
+            <div class="datetime-row">
+              <div class="field">
+                <label>Date</label><input type="date" id="slot-date" />
+              </div>
+              <div class="field">
+                <label>Heure début</label
+                ><input type="time" id="slot-start" value="20:00" />
+              </div>
+              <div class="field">
+                <label>Heure fin</label
+                ><input type="time" id="slot-end" value="23:00" />
+              </div>
+              <button
+                class="btn btn-outline"
+                style="margin-bottom: 0"
+                onclick="addDateSlot()"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div class="date-slots" id="ev-date-slots"></div>
+
+          <hr class="divider" />
+          <div class="field">
+            <label>Inviter des joueurs par pseudonyme</label>
+            <div class="flex gap-sm">
+              <input
+                type="text"
+                id="ev-player-input"
+                placeholder="pseudonyme…"
+                style="flex: 1"
+              />
+              <button class="btn btn-outline" onclick="addPlayerToEvent()">
+                Inviter
+              </button>
+            </div>
+          </div>
+          <div class="player-chips" id="ev-player-chips"></div>
+          <p class="text-muted mt-sm">
+            Ou partagez le code automatique une fois l'événement créé.
+          </p>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modal-event')">
+              Annuler
+            </button>
+            <button
+              class="btn btn-primary"
+              id="ev-save-btn"
+              onclick="saveEvent()"
+            >
+              Créer l'événement
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Detail / Responses Modal -->
+      <div class="modal-overlay hidden" id="modal-detail">
+        <div class="modal">
+          <div class="modal-title" id="detail-title">Détail de l'événement</div>
+          <div id="detail-body"></div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-outline"
+              onclick="closeModal('modal-detail')"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm delete -->
+      <div class="modal-overlay hidden" id="modal-confirm">
+        <div class="modal">
+          <div class="modal-title" id="confirm-title">
+            Confirmer la suppression
+          </div>
+          <p id="confirm-msg" class="text-muted"></p>
+          <div class="modal-footer">
+            <button
+              class="btn btn-outline"
+              onclick="closeModal('modal-confirm')"
+            >
+              Annuler
+            </button>
+            <button class="btn btn-danger" id="confirm-ok-btn">
+              Confirmer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+     FIREBASE  ─ remplacez par votre config
+════════════════════════════════════════════ -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+        signOut, onAuthStateChanged, deleteUser
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import {
+        getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
+        collection, query, where, getDocs, onSnapshot, addDoc,
+        serverTimestamp, arrayUnion, arrayRemove, orderBy
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      // ─── ⚠️ REMPLACEZ CE BLOC PAR VOTRE CONFIG FIREBASE ───────────────────────
+      const firebaseConfig = {
+        apiKey: "AIzaSyCE_9PcqLxUQraHms4Beh9N9ZNJfTKk1nE",
+        authDomain: "chroniques-jdr-42941.firebaseapp.com",
+        databaseURL: "https://chroniques-jdr-42941-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "chroniques-jdr-42941",
+        storageBucket: "chroniques-jdr-42941.firebasestorage.app",
+        messagingSenderId: "961354615451",
+        appId: "1:961354615451:web:641a4b4757a8cd196b543e"
+      };
+
+      // ───────────────────────────────────────────────────────────────────────────
+
+      const app  = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db   = getFirestore(app);
+
+      // ──────────────── STATE ────────────────
+      let currentUser = null;
+      let userProfile = null;
+      let selectedRole = null;
+      let calYear, calMonth;
+      let editingEventId = null;
+      let evDateSlots  = [];   // [{date, start, end}]
+      let evPlayers    = [];   // [{uid, username}]
+      let unsubs = [];         // Firestore listeners
+
+      // ──────────────── HELPERS ────────────────
+      function toast(msg, type='success') {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = `show ${type}`;
+        clearTimeout(el._t);
+        el._t = setTimeout(() => { el.className=''; }, 3000);
+      }
+
+      function showError(msg) {
+        const el = document.getElementById('auth-error');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+      }
+      function clearError() { document.getElementById('auth-error').classList.add('hidden'); }
+
+      function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+      function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+      function genCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i=0; i<6; i++) code += chars[Math.floor(Math.random()*chars.length)];
+        return code;
+      }
+
+      function fmtDate(d) {
+        return new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+      }
+
+      // ──────────────── AUTH ────────────────
+      window.switchAuthTab = (tab) => {
+        clearError();
+        document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0)====(tab==='login')));
+        document.getElementById('login-form').classList.toggle('hidden', tab!=='login');
+        document.getElementById('register-form').classList.toggle('hidden', tab!=='register');
+      };
+
+      window.selectRole = (r) => {
+        selectedRole = r;
+        document.getElementById('role-mj').classList.toggle('selected', r==='MJ');
+        document.getElementById('role-jr').classList.toggle('selected', r==='JR');
+      };
+
+      window.doRegister = async () => {
+        clearError();
+        const username = document.getElementById('reg-username').value.trim();
+        const email    = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        if (!username) return showError('Choisissez un nom d\'utilisateur.');
+        if (!selectedRole) return showError('Choisissez votre rôle (MJ ou Joueur).');
+        if (password.length < 6) return showError('Mot de passe trop court (min. 6 caractères).');
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db,'users',cred.user.uid), {
+            username, email, role: selectedRole, createdAt: serverTimestamp()
+          });
+        } catch(e) { showError(firebaseErrMsg(e.code)); }
+      };
+
+      window.doLogin = async () => {
+        clearError();
+        const email    = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch(e) { showError(firebaseErrMsg(e.code)); }
+      };
+
+      window.doLogout = () => signOut(auth);
+
+      function firebaseErrMsg(code) {
+        const map = {
+          'auth/email-already-in-use': 'Cet e-mail est déjà utilisé.',
+          'auth/invalid-email': 'Adresse e-mail invalide.',
+          'auth/wrong-password': 'Mot de passe incorrect.',
+          'auth/user-not-found': 'Aucun compte avec cet e-mail.',
+          'auth/weak-password': 'Mot de passe trop faible.',
+          'auth/invalid-credential': 'Identifiants incorrects.',
+        };
+        return map[code] || 'Erreur : ' + code;
+      }
+
+      // ──────────────── AUTH STATE ────────────────
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          currentUser = user;
+          const snap = await getDoc(doc(db,'users',user.uid));
+          if (!snap.exists()) { signOut(auth); return; }
+          userProfile = snap.data();
+          initMainApp();
+        } else {
+          currentUser = null; userProfile = null;
+          unsubs.forEach(u => u()); unsubs = [];
+          document.getElementById('auth-screen').style.display = 'flex';
+          document.getElementById('main-screen').classList.remove('visible');
+        }
+      });
+
+      // ──────────────── MAIN APP INIT ────────────────
+      function initMainApp() {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-screen').classList.add('visible');
+
+        // Header
+        document.getElementById('header-username').textContent = userProfile.username;
+        const badge = document.getElementById('header-role-badge');
+        badge.textContent = userProfile.role;
+        badge.className = 'role-badge' + (userProfile.role==='MJ' ? ' mj' : '');
+
+        // Profile fields
+        document.getElementById('profile-username').value = userProfile.username;
+        document.getElementById('profile-role').value = userProfile.role;
+
+        // Build tabs
+        const tabsEl = document.getElementById('nav-tabs');
+        tabsEl.innerHTML = '';
+        const isMJ = userProfile.role === 'MJ';
+
+        const tabs = isMJ
+          ? [{id:'calendar',label:'📅 Calendrier'},{id:'events',label:'🎭 Mes événements'},{id:'profile',label:'👤 Profil'}]
+          : [{id:'calendar',label:'📅 Calendrier'},{id:'join',label:'🔗 Rejoindre'},{id:'profile',label:'👤 Profil'}];
+
+        tabs.forEach((t,i) => {
+          const btn = document.createElement('button');
+          btn.className = 'nav-tab' + (i===0?' active':'');
+          btn.textContent = t.label;
+          btn.onclick = () => switchTab(t.id);
+          tabsEl.appendChild(btn);
+        });
+
+        // Init calendar
+        const now = new Date();
+        calYear = now.getFullYear(); calMonth = now.getMonth();
+        renderCalendar();
+
+        // Load data
+        if (isMJ) loadMJEvents();
+        else { loadJoinedEvents(); loadCalendarEvents(); }
+      }
+
+      function switchTab(id) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); });
+        const panel = document.getElementById('panel-'+id);
+        if (panel) { panel.classList.add('active'); panel.classList.remove('hidden'); }
+        const tabs = document.querySelectorAll('.nav-tab');
+        const labels = { calendar:'Calendrier', events:'Mes événements', join:'Rejoindre', profile:'Profil' };
+        tabs.forEach(t => { if (t.textContent.includes(labels[id])) t.classList.add('active'); });
+      }
+
+      // ──────────────── CALENDAR ────────────────
+      const DAYS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+      const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+      const RESP_STATES = ['none','yes','no','maybe'];
+      const RESP_ICONS = { none:'', yes:'✅', no:'❌', maybe:'🤔' };
+
+      async function renderCalendar() {
+        document.getElementById('cal-month-label').textContent = `${MONTHS_FR[calMonth]} ${calYear}`;
+        const grid = document.getElementById('cal-grid');
+        grid.innerHTML = '';
+
+        DAYS_FR.forEach(d => {
+          const h = document.createElement('div');
+          h.className = 'cal-header-cell'; h.textContent = d;
+          grid.appendChild(h);
+        });
+
+        const firstDay = new Date(calYear, calMonth, 1);
+        const totalDays = new Date(calYear, calMonth+1, 0).getDate();
+        let startOffset = firstDay.getDay() - 1; // Monday=0
+        if (startOffset < 0) startOffset = 6;
+
+        // Fetch events for this month
+        const monthStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+        let events = [];
+        try {
+          const isMJ = userProfile.role === 'MJ';
+          let q;
+          if (isMJ) {
+            q = query(collection(db,'events'), where('createdBy','==',currentUser.uid));
+          } else {
+            q = query(collection(db,'events'), where('invitedUids','array-contains',currentUser.uid));
+          }
+          const snap = await getDocs(q);
+          snap.forEach(d => events.push({id:d.id,...d.data()}));
+        } catch(e) {}
+
+        // Map date → events
+        const dateMap = {};
+        events.forEach(ev => {
+          (ev.dates||[]).forEach(slot => {
+            if (slot.date && slot.date.startsWith(monthStr)) {
+              if (!dateMap[slot.date]) dateMap[slot.date] = [];
+              dateMap[slot.date].push({ev, slot});
+            }
+          });
+        });
+
+        for (let i=0; i<startOffset; i++) {
+          const empty = document.createElement('div'); empty.className='cal-cell empty'; grid.appendChild(empty);
+        }
+
+        for (let d=1; d<=totalDays; d++) {
+          const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          const cell = document.createElement('div');
+          cell.className = 'cal-cell';
+          const dn = document.createElement('div'); dn.className='day-num'; dn.textContent=d;
+          cell.appendChild(dn);
+
+          const entries = dateMap[dateStr]||[];
+          if (entries.length) {
+            cell.classList.add('has-event');
+            entries.forEach(({ev,slot}) => {
+              const dot = document.createElement('div'); dot.className='event-dot'; cell.appendChild(dot);
+              // User response
+              const resp = (ev.responses||{})[currentUser.uid]?.[slot.date+'_'+slot.start] || 'none';
+              if (resp !== 'none') {
+                const ri = document.createElement('div'); ri.className='response-indicator';
+                ri.textContent = RESP_ICONS[resp]; cell.appendChild(ri);
+              }
+            });
+            cell.onclick = () => openDayDetail(entries);
+          }
+          grid.appendChild(cell);
+        }
+
+        // Event list below
+        renderCalEventList(events);
+      }
+
+      function renderCalEventList(events) {
+        const el = document.getElementById('cal-event-list');
+        if (!events.length) { el.innerHTML = '<p class="text-muted">Aucun événement ce mois-ci.</p>'; return; }
+        el.innerHTML = '';
+        events.forEach(ev => {
+          const card = document.createElement('div'); card.className='card';
+          const isMJ = userProfile.role === 'MJ';
+          card.innerHTML = `
+            <div class="card-header">
+              <div>
+                <div class="card-title">${ev.name}</div>
+                <div class="card-meta">${ev.description||''}</div>
+              </div>
+              ${isMJ ? '' : `<div class="card-actions"><button class="btn btn-outline" onclick="openEventDetail('${ev.id}')">Répondre</button></div>`}
+              ${isMJ ? `<div class="card-actions"><button class="btn btn-outline" onclick="openMJSummary('${ev.id}')">Résumé</button></div>` : ''}
+            </div>
+            <div class="date-slots">
+              ${(ev.dates||[]).map(s=>`<div class="date-slot">${fmtDate(s.date)} ${s.start}–${s.end}</div>`).join('')}
+            </div>`;
+          el.appendChild(card);
+        });
+      }
+
+      function openDayDetail(entries) {
+        // If player, open response modal for first event
+        if (userProfile.role === 'JR') {
+          openEventDetail(entries[0].ev.id);
+        } else {
+          openMJSummary(entries[0].ev.id);
+        }
+      }
+
+      window.calMove = (dir) => {
+        calMonth += dir;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        if (calMonth < 0)  { calMonth = 11; calYear--; }
+        renderCalendar();
+      };
+
+      // ──────────────── MJ EVENTS ────────────────
+      function loadMJEvents() {
+        const q = query(collection(db,'events'), where('createdBy','==',currentUser.uid), orderBy('createdAt','desc'));
+        const unsub = onSnapshot(q, snap => {
+          const events = [];
+          snap.forEach(d => events.push({id:d.id,...d.data()}));
+          renderMJEvents(events);
+        });
+        unsubs.push(unsub);
+      }
+
+      function renderMJEvents(events) {
+        const el = document.getElementById('events-list');
+        if (!events.length) { el.innerHTML = '<p class="text-muted">Aucun événement. Créez-en un !</p>'; return; }
+        el.innerHTML = '';
+        events.forEach(ev => {
+          const card = document.createElement('div'); card.className='card';
+          const code = ev.code||'—';
+          card.innerHTML = `
+            <div class="card-header">
+              <div>
+                <div class="card-title">${ev.name}</div>
+                <div class="card-meta">${ev.description||''}${ev.description?'<br>':''}<span class="code-badge">Code : <strong>${code}</strong> <span class="copy-btn" onclick="copyCode('${code}')">📋</span></span></div>
+              </div>
+              <div class="card-actions">
+                <button class="btn btn-outline" onclick="openMJSummary('${ev.id}')">Résumé</button>
+                <button class="btn btn-outline" onclick="openEditEvent('${ev.id}')">✏️</button>
+                <button class="btn btn-danger" onclick="confirmDeleteEvent('${ev.id}','${ev.name}')">🗑</button>
+              </div>
+            </div>
+            <div class="date-slots">
+              ${(ev.dates||[]).map(s=>`<div class="date-slot">${fmtDate(s.date)} ${s.start}–${s.end}</div>`).join('')}
+            </div>
+            <div class="player-chips mt-sm">
+              ${(ev.invitedUsernames||[]).map(u=>`<div class="player-chip">${u}</div>`).join('')}
+            </div>`;
+          el.appendChild(card);
+        });
+      }
+
+      // ──────────────── CREATE / EDIT EVENT ────────────────
+      window.openCreateEvent = () => {
+        editingEventId = null;
+        evDateSlots = []; evPlayers = [];
+        document.getElementById('ev-name').value = '';
+        document.getElementById('ev-desc').value = '';
+        document.getElementById('ev-date-slots').innerHTML = '';
+        document.getElementById('ev-player-chips').innerHTML = '';
+        document.getElementById('modal-event-title').textContent = 'Créer un événement';
+        document.getElementById('ev-save-btn').textContent = 'Créer l\'événement';
+        openModal('modal-event');
+      };
+
+      window.openEditEvent = async (id) => {
+        const snap = await getDoc(doc(db,'events',id));
+        if (!snap.exists()) return;
+        const ev = snap.data();
+        editingEventId = id;
+        evDateSlots = [...(ev.dates||[])];
+        evPlayers   = (ev.invitedUids||[]).map((uid,i) => ({uid, username:(ev.invitedUsernames||[])[i]||uid}));
+        document.getElementById('ev-name').value = ev.name||'';
+        document.getElementById('ev-desc').value = ev.description||'';
+        document.getElementById('modal-event-title').textContent = 'Modifier l\'événement';
+        document.getElementById('ev-save-btn').textContent = 'Enregistrer';
+        renderDateSlots(); renderPlayerChips();
+        openModal('modal-event');
+      };
+
+      window.addDateSlot = () => {
+        const d = document.getElementById('slot-date').value;
+        const s = document.getElementById('slot-start').value;
+        const e = document.getElementById('slot-end').value;
+        if (!d) return toast('Choisissez une date.','error');
+        if (evDateSlots.find(x=>x.date===d&&x.start===s)) return toast('Date déjà ajoutée.','error');
+        evDateSlots.push({date:d, start:s, end:e});
+        evDateSlots.sort((a,b)=>a.date.localeCompare(b.date));
+        renderDateSlots();
+      };
+
+      function renderDateSlots() {
+        const el = document.getElementById('ev-date-slots');
+        el.innerHTML = evDateSlots.map((s,i)=>`
+          <div class="date-slot">
+            ${fmtDate(s.date)} ${s.start}–${s.end}
+            <span class="remove-slot" onclick="removeDateSlot(${i})">✕</span>
+          </div>`).join('');
+      }
+      window.removeDateSlot = (i) => { evDateSlots.splice(i,1); renderDateSlots(); };
+
+      window.addPlayerToEvent = async () => {
+        const name = document.getElementById('ev-player-input').value.trim();
+        if (!name) return;
+        if (evPlayers.find(p=>p.username.toLowerCase()===name.toLowerCase())) return toast('Déjà invité.','error');
+        // Search user by username
+        const q = query(collection(db,'users'), where('username','==',name));
+        const snap = await getDocs(q);
+        if (snap.empty) return toast(`Joueur "${name}" introuvable.`,'error');
+        const ud = snap.docs[0];
+        evPlayers.push({uid:ud.id, username:ud.data().username});
+        document.getElementById('ev-player-input').value = '';
+        renderPlayerChips();
+      };
+
+      function renderPlayerChips() {
+        const el = document.getElementById('ev-player-chips');
+        el.innerHTML = evPlayers.map((p,i)=>`
+          <div class="player-chip">${p.username}
+            <span class="remove-player" onclick="removePlayer(${i})">✕</span>
+          </div>`).join('');
+      }
+      window.removePlayer = (i) => { evPlayers.splice(i,1); renderPlayerChips(); };
+
+      window.saveEvent = async () => {
+        const name = document.getElementById('ev-name').value.trim();
+        if (!name) return toast('Donnez un nom à l\'événement.','error');
+        if (!evDateSlots.length) return toast('Ajoutez au moins une date.','error');
+
+        const data = {
+          name,
+          description: document.getElementById('ev-desc').value.trim(),
+          dates: evDateSlots,
+          invitedUids: evPlayers.map(p=>p.uid),
+          invitedUsernames: evPlayers.map(p=>p.username),
+          createdBy: currentUser.uid,
+          creatorUsername: userProfile.username,
+        };
+
+        try {
+          if (editingEventId) {
+            await updateDoc(doc(db,'events',editingEventId), data);
+            toast('Événement mis à jour ✓');
+          } else {
+            data.code = genCode();
+            data.createdAt = serverTimestamp();
+            data.responses = {};
+            await addDoc(collection(db,'events'), data);
+            toast('Événement créé ✓');
+          }
+          closeModal('modal-event');
+          renderCalendar();
+        } catch(e) { toast('Erreur : '+e.message,'error'); }
+      };
+
+      // ──────────────── MJ SUMMARY ────────────────
+      window.openMJSummary = async (id) => {
+        const snap = await getDoc(doc(db,'events',id));
+        if (!snap.exists()) return;
+        const ev = snap.data();
+        document.getElementById('detail-title').textContent = ev.name;
+
+        const responses = ev.responses || {};
+        const players = ev.invitedUids || [];
+        const playerNames = {};
+        (ev.invitedUids||[]).forEach((uid,i) => { playerNames[uid] = (ev.invitedUsernames||[])[i]||uid; });
+
+        // Build table
+        const dates = ev.dates || [];
+        let html = `<div class="code-badge" style="margin-bottom:1rem">Code : <strong>${ev.code||'—'}</strong> <span class="copy-btn" onclick="copyCode('${ev.code}')">📋</span></div>`;
+
+        if (!dates.length) { html += '<p class="text-muted">Aucune date définie.</p>'; }
+        else {
+          html += `<table class="presence-table"><thead><tr><th>Joueur</th>`;
+          dates.forEach(s => { html += `<th>${fmtDate(s.date)}<br><small>${s.start}</small></th>`; });
+          html += '</tr></thead><tbody>';
+
+          if (!players.length) {
+            html += '<tr><td colspan="'+(dates.length+1)+'" class="text-muted">Aucun joueur invité.</td></tr>';
+          } else {
+            players.forEach(uid => {
+              html += `<tr><td>${playerNames[uid]||uid}</td>`;
+              dates.forEach(s => {
+                const key = s.date+'_'+s.start;
+                const r = (responses[uid]||{})[key] || 'none';
+                const classes = {yes:'status-yes',no:'status-no',maybe:'status-maybe',none:'status-none'};
+                const labels = {yes:'✅ Oui',no:'❌ Non',maybe:'🤔 Peut-être',none:'—'};
+                html += `<td class="${classes[r]}">${labels[r]}</td>`;
+              });
+              html += '</tr>';
+            });
+          }
+          html += '</tbody></table>';
+
+          // Count per date
+          html += '<div style="margin-top:1rem">';
+          dates.forEach(s => {
+            const key = s.date+'_'+s.start;
+            let yes=0, no=0, maybe=0;
+            players.forEach(uid => {
+              const r = (responses[uid]||{})[key]||'none';
+              if (r==='yes') yes++; else if (r==='no') no++; else if (r==='maybe') maybe++;
+            });
+            html += `<div style="margin-bottom:.5rem;font-size:.9rem">
+              <strong>${fmtDate(s.date)} ${s.start}</strong> —
+              <span class="status-yes">✅ ${yes}</span> &nbsp;
+              <span class="status-no">❌ ${no}</span> &nbsp;
+              <span class="status-maybe">🤔 ${maybe}</span>
+            </div>`;
+          });
+          html += '</div>';
+        }
+
+        document.getElementById('detail-body').innerHTML = html;
+        openModal('modal-detail');
+      };
+
+      // ──────────────── PLAYER EVENT DETAIL ────────────────
+      window.openEventDetail = async (id) => {
+        const snap = await getDoc(doc(db,'events',id));
+        if (!snap.exists()) return;
+        const ev = snap.data();
+        document.getElementById('detail-title').textContent = ev.name;
+
+        const myResponses = (ev.responses||{})[currentUser.uid] || {};
+        const dates = ev.dates || [];
+
+        let html = `<p class="text-muted" style="margin-bottom:1rem">MJ : ${ev.creatorUsername||'—'}</p>
+          <p class="text-muted" style="margin-bottom:1.2rem">Cliquez pour indiquer votre disponibilité :</p>`;
+
+        html += dates.map(s => {
+          const key = s.date+'_'+s.start;
+          const cur = myResponses[key] || 'none';
+          const stateCls = { none:'', yes:'active-yes', no:'active-no', maybe:'active-maybe' };
+          return `<div class="response-row">
+            <div><strong>${fmtDate(s.date)}</strong><br><small>${s.start} – ${s.end}</small></div>
+            <div class="response-btns">
+              <button class="resp-btn ${cur==='yes'?'active-yes':''}" title="Oui"   onclick="setResponse('${id}','${key}','yes')">✅</button>
+              <button class="resp-btn ${cur==='no' ?'active-no' :''}" title="Non"   onclick="setResponse('${id}','${key}','no')">❌</button>
+              <button class="resp-btn ${cur==='maybe'?'active-maybe':''}" title="Peut-être" onclick="setResponse('${id}','${key}','maybe')">🤔</button>
+              <button class="resp-btn ${cur==='none'?'active-none':''}"  title="Effacer" onclick="setResponse('${id}','${key}','none')">✕</button>
+            </div>
+          </div>`;
+        }).join('');
+
+        document.getElementById('detail-body').innerHTML = html;
+        openModal('modal-detail');
+      };
+
+      window.setResponse = async (evId, key, state) => {
+        try {
+          const field = `responses.${currentUser.uid}.${key}`;
+          await updateDoc(doc(db,'events',evId), { [field]: state });
+          toast('Réponse enregistrée ✓');
+          openEventDetail(evId); // refresh
+          renderCalendar();
+        } catch(e) { toast('Erreur.','error'); }
+      };
+
+      // ──────────────── JOIN EVENT ────────────────
+      window.joinByCode = async () => {
+        const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+        if (!code) return toast('Entrez un code.','error');
+        const q = query(collection(db,'events'), where('code','==',code));
+        const snap = await getDocs(q);
+        if (snap.empty) return toast('Code introuvable.','error');
+        const evDoc = snap.docs[0];
+        const ev = evDoc.data();
+        if ((ev.invitedUids||[]).includes(currentUser.uid)) return toast('Vous êtes déjà dans cet événement.');
+        await updateDoc(doc(db,'events',evDoc.id), {
+          invitedUids: arrayUnion(currentUser.uid),
+          invitedUsernames: arrayUnion(userProfile.username)
+        });
+        toast(`Rejoint : ${ev.name} ✓`);
+        document.getElementById('join-code-input').value = '';
+        loadJoinedEvents();
+        renderCalendar();
+      };
+
+      function loadJoinedEvents() {
+        const q = query(collection(db,'events'), where('invitedUids','array-contains',currentUser.uid));
+        const unsub = onSnapshot(q, snap => {
+          const events = [];
+          snap.forEach(d => events.push({id:d.id,...d.data()}));
+          renderJoinedEvents(events);
+        });
+        unsubs.push(unsub);
+      }
+
+      function renderJoinedEvents(events) {
+        const el = document.getElementById('joined-events-list');
+        if (!events.length) { el.innerHTML = '<p class="text-muted">Aucun événement rejoint.</p>'; return; }
+        el.innerHTML = '';
+        events.forEach(ev => {
+          const card = document.createElement('div'); card.className='card';
+          card.innerHTML = `
+            <div class="card-header">
+              <div>
+                <div class="card-title">${ev.name}</div>
+                <div class="card-meta">MJ : ${ev.creatorUsername||'—'}</div>
+              </div>
+              <div class="card-actions">
+                <button class="btn btn-outline" onclick="openEventDetail('${ev.id}')">Répondre</button>
+                <button class="btn btn-danger" onclick="confirmLeaveEvent('${ev.id}','${ev.name}')">Quitter</button>
+              </div>
+            </div>
+            <div class="date-slots">
+              ${(ev.dates||[]).map(s=>`<div class="date-slot">${fmtDate(s.date)} ${s.start}–${s.end}</div>`).join('')}
+            </div>`;
+          el.appendChild(card);
+        });
+      }
+
+      async function loadCalendarEvents() {
+        // Triggered on calendar render — handled inside renderCalendar via query
+      }
+
+      // ──────────────── PROFILE ────────────────
+      window.saveProfile = async () => {
+        const username = document.getElementById('profile-username').value.trim();
+        const role     = document.getElementById('profile-role').value;
+        if (!username) return toast('Nom requis.','error');
+        await updateDoc(doc(db,'users',currentUser.uid), { username, role });
+        userProfile.username = username; userProfile.role = role;
+        document.getElementById('header-username').textContent = username;
+        const badge = document.getElementById('header-role-badge');
+        badge.textContent = role;
+        badge.className = 'role-badge' + (role==='MJ' ? ' mj' : '');
+        toast('Profil mis à jour ✓');
+        initMainApp(); // rebuild tabs if role changed
+      };
+
+      // ──────────────── CONFIRM / DELETE ────────────────
+      window.confirmDeleteEvent = (id, name) => {
+        document.getElementById('confirm-title').textContent = 'Supprimer l\'événement';
+        document.getElementById('confirm-msg').textContent = `Voulez-vous vraiment supprimer « ${name} » ? Cette action est irréversible.`;
+        document.getElementById('confirm-ok-btn').onclick = () => deleteEvent(id);
+        openModal('modal-confirm');
+      };
+      async function deleteEvent(id) {
+        await deleteDoc(doc(db,'events',id));
+        toast('Événement supprimé.'); closeModal('modal-confirm'); renderCalendar();
+      }
+
+      window.confirmLeaveEvent = (id, name) => {
+        document.getElementById('confirm-title').textContent = 'Quitter l\'événement';
+        document.getElementById('confirm-msg').textContent = `Voulez-vous quitter « ${name} » ?`;
+        document.getElementById('confirm-ok-btn').onclick = () => leaveEvent(id);
+        openModal('modal-confirm');
+      };
+      async function leaveEvent(id) {
+        await updateDoc(doc(db,'events',id), {
+          invitedUids: arrayRemove(currentUser.uid),
+          invitedUsernames: arrayRemove(userProfile.username)
+        });
+        toast('Événement quitté.'); closeModal('modal-confirm'); renderCalendar();
+      }
+
+      window.confirmDeleteAccount = () => {
+        document.getElementById('confirm-title').textContent = 'Supprimer mon compte';
+        document.getElementById('confirm-msg').textContent = 'Cette action supprimera définitivement votre compte et toutes vos données. Irréversible.';
+        document.getElementById('confirm-ok-btn').onclick = deleteAccount;
+        openModal('modal-confirm');
+      };
+      async function deleteAccount() {
+        await deleteDoc(doc(db,'users',currentUser.uid));
+        await deleteUser(currentUser);
+        toast('Compte supprimé.'); closeModal('modal-confirm');
+      }
+
+      // ──────────────── UTILS ────────────────
+      window.copyCode = (code) => {
+        navigator.clipboard.writeText(code).then(()=>toast('Code copié ✓')).catch(()=>toast('Copie impossible','error'));
+      };
+    </script>
+  </body>
+</html>
