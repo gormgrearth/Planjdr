@@ -1433,7 +1433,7 @@
               ${isMJ ? `<div class="card-actions"><button class="btn btn-outline" onclick="openMJSummary('${ev.id}')">Resume</button></div>` : ''}
             </div>
             <div class="date-slots">
-              ${(ev.dates||[]).map(s=>`<div class="date-slot">${fmtDate(s.date)} ${s.start}${s.end}</div>`).join('')}
+              '+(ev.dates||[]).map(function(s){return '<div class="date-slot">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'</div>';}).join('')+'
             </div>`;
           el.appendChild(card);
         });
@@ -1486,10 +1486,10 @@
               </div>
             </div>
             <div class="date-slots">
-              ${(ev.dates||[]).map(s=>`<div class="date-slot">${fmtDate(s.date)} ${s.start}${s.end}</div>`).join('')}
+              '+(ev.dates||[]).map(function(s){return '<div class="date-slot">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'</div>';}).join('')+'
             </div>
             <div class="player-chips mt-sm">
-              ${(ev.invitedUsernames||[]).map(u=>`<div class="player-chip">${u}</div>`).join('')}
+              '+(ev.invitedUsernames||[]).map(function(u){return '<div class="player-chip">'+u+'</div>';}).join('')+'
             </div>`;
           el.appendChild(card);
         });
@@ -1536,11 +1536,9 @@
 
       function renderDateSlots() {
         const el = document.getElementById('ev-date-slots');
-        el.innerHTML = evDateSlots.map((s,i)=>`
-          <div class="date-slot">
-            ${fmtDate(s.date)} ${s.start}${s.end}
-            <span class="remove-slot" onclick="removeDateSlot(${i})"></span>
-          </div>`).join('');
+        el.innerHTML = evDateSlots.map(function(s,i){
+          return '<div class="date-slot">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'<span class="remove-slot" onclick="removeDateSlot('+i+')">x</span></div>';
+        }).join('');
       }
       window.removeDateSlot = (i) => { evDateSlots.splice(i,1); renderDateSlots(); };
 
@@ -1560,10 +1558,9 @@
 
       function renderPlayerChips() {
         const el = document.getElementById('ev-player-chips');
-        el.innerHTML = evPlayers.map((p,i)=>`
-          <div class="player-chip">${p.username}
-            <span class="remove-player" onclick="removePlayer(${i})"></span>
-          </div>`).join('');
+        el.innerHTML = evPlayers.map(function(p,i){
+          return '<div class="player-chip">'+p.username+'<span class="remove-player" onclick="removePlayer('+i+')">x</span></div>';
+        }).join('');
       }
       window.removePlayer = (i) => { evPlayers.splice(i,1); renderPlayerChips(); };
 
@@ -1750,7 +1747,7 @@
               </div>
             </div>
             <div class="date-slots">
-              ${(ev.dates||[]).map(s=>`<div class="date-slot">${fmtDate(s.date)} ${s.start}${s.end}</div>`).join('')}
+              '+(ev.dates||[]).map(function(s){return '<div class="date-slot">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'</div>';}).join('')+'
             </div>`;
           el.appendChild(card);
         });
