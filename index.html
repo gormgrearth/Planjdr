@@ -243,6 +243,14 @@
       .btn-danger:hover {
         background: rgba(224, 82, 82, 0.12);
       }
+      .btn-success {
+        background: none;
+        border: 1px solid var(--success);
+        color: var(--success);
+      }
+      .btn-success:hover {
+        background: rgba(82, 196, 120, 0.12);
+      }
       .btn-ghost {
         background: none;
         border: none;
@@ -261,6 +269,10 @@
         opacity: 0.5;
         cursor: not-allowed;
         filter: none;
+      }
+      .btn-sm {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.72rem;
       }
       .error-msg {
         background: rgba(224, 82, 82, 0.12);
@@ -323,7 +335,7 @@
       main {
         flex: 1;
         padding: 1.5rem;
-        max-width: 900px;
+        max-width: 960px;
         margin: 0 auto;
         width: 100%;
       }
@@ -385,6 +397,7 @@
         display: flex;
         gap: 0.5rem;
         flex-shrink: 0;
+        flex-wrap: wrap;
       }
       .code-badge {
         display: inline-flex;
@@ -410,6 +423,7 @@
       .copy-btn:hover {
         color: var(--accent);
       }
+      /* CALENDAR */
       .calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -427,22 +441,26 @@
       }
       .cal-cell {
         background: var(--surface2);
-        border: 1px solid var(--border);
+        border: 2px solid transparent;
         border-radius: 6px;
-        padding: 0.5rem 0.3rem;
+        padding: 0.4rem 0.2rem;
         text-align: center;
-        min-height: 60px;
+        min-height: 58px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 3px;
-        font-size: 0.85rem;
+        gap: 2px;
+        font-size: 0.82rem;
         position: relative;
-        transition: border-color 0.2s;
+        transition: all 0.15s;
+        cursor: default;
       }
-      .cal-cell.empty {
-        background: transparent;
-        border-color: transparent;
+      .cal-cell.past {
+        background: rgba(13, 11, 15, 0.6);
+        opacity: 0.5;
+      }
+      .cal-cell.past .day-num {
+        color: var(--muted);
       }
       .cal-cell.has-event {
         border-color: var(--accent2);
@@ -450,6 +468,24 @@
       }
       .cal-cell.has-event:hover {
         border-color: var(--accent);
+        background: rgba(139, 92, 246, 0.08);
+      }
+      .cal-cell.selectable {
+        cursor: pointer;
+        border-color: var(--border);
+      }
+      .cal-cell.selectable:hover {
+        border-color: var(--accent);
+        background: rgba(201, 168, 76, 0.06);
+      }
+      .cal-cell.selected-day {
+        border-color: var(--accent) !important;
+        background: rgba(201, 168, 76, 0.15) !important;
+      }
+      .cal-cell.empty {
+        background: transparent;
+        border-color: transparent !important;
+        cursor: default;
       }
       .cal-cell .day-num {
         font-weight: 600;
@@ -461,9 +497,12 @@
         border-radius: 50%;
         background: var(--accent2);
       }
-      .cal-cell .response-indicator {
-        font-size: 1.1rem;
+      .cal-cell .resp-icon {
+        font-size: 1rem;
         line-height: 1;
+      }
+      .cal-cell.closed-event {
+        border-color: #555;
       }
       .cal-nav {
         display: flex;
@@ -477,6 +516,7 @@
         color: var(--accent);
         letter-spacing: 0.08em;
       }
+      /* SLOTS */
       .date-slots {
         display: flex;
         flex-wrap: wrap;
@@ -492,16 +532,27 @@
         border-radius: 6px;
         padding: 0.35rem 0.7rem;
         font-size: 0.88rem;
+        color: var(--text);
       }
-      .date-slot .remove-slot {
+      .date-slot.past-slot {
+        opacity: 0.5;
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+      .date-slot.final-slot {
+        border-color: var(--success);
+        color: var(--success);
+      }
+      .remove-slot {
         cursor: pointer;
         color: var(--muted);
         transition: color 0.2s;
         font-size: 0.8rem;
       }
-      .date-slot .remove-slot:hover {
+      .remove-slot:hover {
         color: var(--danger);
       }
+      /* PRESENCE TABLE */
       .presence-table {
         width: 100%;
         border-collapse: collapse;
@@ -509,36 +560,101 @@
       }
       .presence-table th,
       .presence-table td {
-        padding: 0.6rem 0.8rem;
+        padding: 0.55rem 0.6rem;
         text-align: center;
         border-bottom: 1px solid var(--border);
         font-size: 0.88rem;
       }
       .presence-table th {
         font-family: "Cinzel", serif;
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         letter-spacing: 0.08em;
-        color: var(--muted);
+        color: var(--text);
         text-transform: uppercase;
+        background: var(--surface2);
+      }
+      .presence-table td {
+        color: var(--text);
       }
       .presence-table td:first-child {
         text-align: left;
+        color: var(--text);
       }
       .presence-table tr:last-child td {
         border-bottom: none;
       }
+      .presence-table tr:hover td {
+        background: rgba(255, 255, 255, 0.03);
+      }
       .status-yes {
-        color: var(--success);
+        color: #4ade80;
+        font-size: 1.1rem;
       }
       .status-no {
-        color: var(--danger);
+        color: #f87171;
+        font-size: 1.1rem;
       }
       .status-maybe {
-        color: var(--maybe);
+        color: #fbbf24;
+        font-size: 1.1rem;
       }
       .status-none {
         color: var(--muted);
       }
+      /* RESPONSE BUTTONS */
+      .response-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid var(--border);
+        gap: 1rem;
+      }
+      .response-row:last-child {
+        border-bottom: none;
+      }
+      .response-btns {
+        display: flex;
+        gap: 0.4rem;
+      }
+      .resp-btn {
+        min-width: 44px;
+        height: 40px;
+        border-radius: 8px;
+        border: 2px solid var(--border);
+        background: var(--surface2);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.6rem;
+      }
+      .resp-btn:hover {
+        transform: scale(1.1);
+        border-color: var(--accent);
+      }
+      .resp-btn.active-yes {
+        background: rgba(74, 222, 128, 0.18);
+        border-color: #4ade80;
+        box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+      }
+      .resp-btn.active-no {
+        background: rgba(248, 113, 113, 0.18);
+        border-color: #f87171;
+        box-shadow: 0 0 8px rgba(248, 113, 113, 0.3);
+      }
+      .resp-btn.active-maybe {
+        background: rgba(251, 191, 36, 0.18);
+        border-color: #fbbf24;
+        box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+      }
+      .resp-btn.active-none {
+        background: var(--surface2);
+        border-color: var(--border);
+      }
+      /* DATETIME PICKER */
       .datetime-row {
         display: flex;
         gap: 0.5rem;
@@ -548,8 +664,9 @@
       .datetime-row .field {
         margin-bottom: 0;
         flex: 1;
-        min-width: 130px;
+        min-width: 120px;
       }
+      /* PLAYER CHIPS */
       .player-chips {
         display: flex;
         flex-wrap: wrap;
@@ -565,16 +682,18 @@
         border-radius: 20px;
         padding: 0.2rem 0.7rem;
         font-size: 0.85rem;
+        color: var(--text);
       }
-      .player-chip .remove-player {
+      .remove-player {
         cursor: pointer;
         color: var(--muted);
         font-size: 0.75rem;
         transition: color 0.2s;
       }
-      .player-chip .remove-player:hover {
+      .remove-player:hover {
         color: var(--danger);
       }
+      /* SECTION TITLE */
       .section-title {
         font-family: "Cinzel", serif;
         font-size: 0.85rem;
@@ -588,11 +707,12 @@
         align-items: center;
         justify-content: space-between;
       }
+      /* MODAL */
       .modal-overlay {
         position: fixed;
         inset: 0;
         z-index: 200;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.65);
         backdrop-filter: blur(4px);
         display: flex;
         align-items: center;
@@ -605,7 +725,7 @@
         border-radius: var(--radius);
         padding: 2rem;
         width: 100%;
-        max-width: 520px;
+        max-width: 560px;
         max-height: 90vh;
         overflow-y: auto;
         box-shadow: 0 16px 60px rgba(0, 0, 0, 0.5);
@@ -633,7 +753,9 @@
         gap: 0.8rem;
         justify-content: flex-end;
         margin-top: 1.5rem;
+        flex-wrap: wrap;
       }
+      /* TOAST */
       #toast {
         position: fixed;
         bottom: 1.5rem;
@@ -649,6 +771,7 @@
         opacity: 0;
         transition: all 0.3s;
         pointer-events: none;
+        color: var(--text);
       }
       #toast.show {
         transform: translateY(0);
@@ -662,65 +785,82 @@
         border-color: var(--danger);
         color: var(--danger);
       }
-      .response-row {
+      /* CLOSED EVENT BADGE */
+      .closed-badge {
+        display: inline-block;
+        background: rgba(82, 196, 120, 0.15);
+        border: 1px solid var(--success);
+        color: var(--success);
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-family: "Cinzel", serif;
+        margin-left: 0.5rem;
+      }
+      /* SEARCH */
+      .search-results {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-top: 0.3rem;
+        overflow: hidden;
+      }
+      .search-result-item {
+        padding: 0.6rem 0.9rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--text);
+        transition: background 0.15s;
+      }
+      .search-result-item:hover {
+        background: rgba(201, 168, 76, 0.08);
+      }
+      .search-result-item .sr-meta {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      /* FRIENDS */
+      .friend-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+        color: var(--text);
+      }
+      .friend-chip .fc-role {
+        font-family: "Cinzel", serif;
+        font-size: 0.62rem;
+        background: var(--accent2);
+        color: #fff;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+      }
+      .friend-chip .fc-role.mj {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      /* FINALIZED DATE */
+      .final-date-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0.7rem 0;
-        border-bottom: 1px solid var(--border);
-        gap: 1rem;
-      }
-      .response-row:last-child {
-        border-bottom: none;
-      }
-      .response-btns {
-        display: flex;
-        gap: 0.4rem;
-      }
-      .resp-btn {
-        width: 36px;
-        height: 36px;
+        padding: 0.6rem 0.8rem;
+        background: rgba(82, 196, 120, 0.07);
+        border: 1px solid var(--success);
         border-radius: 6px;
-        border: 1px solid var(--border);
-        background: var(--surface2);
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        margin-bottom: 0.4rem;
+        color: var(--text);
       }
-      .resp-btn:hover {
-        transform: scale(1.1);
-      }
-      .resp-btn.active-yes {
-        background: rgba(82, 196, 120, 0.2);
-        border-color: var(--success);
-      }
-      .resp-btn.active-no {
-        background: rgba(224, 82, 82, 0.2);
-        border-color: var(--danger);
-      }
-      .resp-btn.active-maybe {
-        background: rgba(224, 156, 82, 0.2);
-        border-color: var(--maybe);
-      }
-      @media (max-width: 600px) {
-        header {
-          padding: 0.6rem 1rem;
-        }
-        main {
-          padding: 1rem;
-        }
-        .calendar-grid {
-          gap: 2px;
-        }
-        .cal-cell {
-          min-height: 48px;
-          padding: 0.3rem 0.2rem;
-          font-size: 0.75rem;
-        }
-      }
+      /* UTILS */
       .flex {
         display: flex;
       }
@@ -754,13 +894,33 @@
         padding: 2rem;
         font-style: italic;
       }
+      @media (max-width: 600px) {
+        header {
+          padding: 0.6rem 1rem;
+        }
+        main {
+          padding: 1rem;
+        }
+        .calendar-grid {
+          gap: 2px;
+        }
+        .cal-cell {
+          min-height: 46px;
+          padding: 0.3rem 0.15rem;
+          font-size: 0.72rem;
+        }
+        .btn {
+          padding: 0.55rem 0.9rem;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="app">
+      <!-- AUTH -->
       <div id="auth-screen">
         <div class="logo-title">
-          <div class="ornament">+ * +</div>
+          <div class="ornament">&#9876; &#10022; &#9876;</div>
           <h1>Chroniques</h1>
           <p>Planificateur de Jeux de Role</p>
         </div>
@@ -788,7 +948,7 @@
               ><input
                 type="password"
                 id="login-password"
-                placeholder="........"
+                placeholder="......"
               />
             </div>
             <button class="btn btn-primary btn-block" onclick="doLogin()">
@@ -842,6 +1002,7 @@
         </div>
       </div>
 
+      <!-- MAIN APP -->
       <div id="main-screen">
         <header>
           <div class="logo">&#9876; Chroniques</div>
@@ -855,8 +1016,10 @@
         </header>
         <main>
           <div class="nav-tabs" id="nav-tabs"></div>
+
+          <!-- PANEL CALENDRIER -->
           <div class="panel active" id="panel-calendar">
-            <div class="section-title">Mes evenements a venir</div>
+            <div class="section-title">Calendrier</div>
             <div class="cal-nav">
               <button class="btn btn-ghost" onclick="calMove(-1)">
                 &#9664; Precedent
@@ -869,19 +1032,22 @@
             <div class="calendar-grid" id="cal-grid"></div>
             <div class="mt-md" id="cal-event-list"></div>
           </div>
+
+          <!-- PANEL EVENEMENTS MJ -->
           <div class="panel hidden" id="panel-events">
             <div class="section-title">
               Mes evenements
               <button
-                class="btn btn-primary"
+                class="btn btn-primary btn-sm"
                 onclick="openCreateEvent()"
-                style="font-size: 0.7rem; padding: 0.4rem 0.8rem"
               >
                 + Creer
               </button>
             </div>
             <div id="events-list"><div class="loading">Chargement...</div></div>
           </div>
+
+          <!-- PANEL REJOINDRE JOUEUR -->
           <div class="panel hidden" id="panel-join">
             <div class="section-title">Rejoindre un evenement</div>
             <div class="card">
@@ -890,7 +1056,7 @@
                 ><input
                   type="text"
                   id="join-code-input"
-                  placeholder="CODE123"
+                  placeholder="EX: AB3X7K"
                   maxlength="10"
                   style="
                     text-transform: uppercase;
@@ -908,6 +1074,64 @@
               <div class="loading">Chargement...</div>
             </div>
           </div>
+
+          <!-- PANEL AMIS -->
+          <div class="panel hidden" id="panel-friends">
+            <div class="section-title">Mes amis</div>
+            <div class="card">
+              <p class="text-muted" style="margin-bottom: 1rem">
+                Partagez votre code ami pour que quelqu'un vous ajoute, ou
+                entrez le code d'un ami.
+              </p>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.8rem;
+                  flex-wrap: wrap;
+                  margin-bottom: 1.2rem;
+                "
+              >
+                <div class="code-badge">
+                  Mon code : <strong id="my-friend-code">...</strong>
+                  <span class="copy-btn" onclick="copyMyFriendCode()"
+                    >&#128203; copier</span
+                  >
+                </div>
+                <button
+                  class="btn btn-outline btn-sm"
+                  onclick="refreshFriendCode()"
+                >
+                  &#8635; Nouveau code
+                </button>
+              </div>
+              <div class="field">
+                <label>Code d'un ami</label>
+                <div class="flex gap-sm">
+                  <input
+                    type="text"
+                    id="friend-code-input"
+                    placeholder="Code de votre ami"
+                    maxlength="12"
+                    style="
+                      flex: 1;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                    "
+                  />
+                  <button class="btn btn-primary" onclick="addFriendByCode()">
+                    Ajouter
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="section-title mt-md">Liste d'amis</div>
+            <div id="friends-list">
+              <div class="loading">Chargement...</div>
+            </div>
+          </div>
+
+          <!-- PANEL PROFIL -->
           <div class="panel hidden" id="panel-profile">
             <div class="section-title">Mon profil</div>
             <div class="card">
@@ -936,6 +1160,7 @@
         </main>
       </div>
 
+      <!-- MODAL CREATION EVENEMENT -->
       <div class="modal-overlay hidden" id="modal-event">
         <div class="modal">
           <div class="modal-title" id="modal-event-title">
@@ -958,11 +1183,31 @@
             ></textarea>
           </div>
           <div class="field">
-            <label>Ajouter des dates</label>
-            <div class="datetime-row">
-              <div class="field">
-                <label>Date</label><input type="date" id="slot-date" />
+            <label>Selectionner des dates sur le calendrier</label>
+            <div class="cal-nav" style="margin-top: 0.5rem">
+              <button class="btn btn-ghost btn-sm" onclick="evCalMove(-1)">
+                &#9664;
+              </button>
+              <div
+                class="cal-month"
+                id="ev-cal-month"
+                style="font-size: 0.85rem"
+              >
+                -
               </div>
+              <button class="btn btn-ghost btn-sm" onclick="evCalMove(1)">
+                &#9654;
+              </button>
+            </div>
+            <div
+              class="calendar-grid"
+              id="ev-cal-grid"
+              style="margin-top: 0.4rem"
+            ></div>
+          </div>
+          <div class="field" id="ev-time-section" style="display: none">
+            <label>Plage horaire pour les dates selectionnees</label>
+            <div class="datetime-row">
               <div class="field">
                 <label>Debut</label
                 ><input type="time" id="slot-start" value="20:00" />
@@ -972,33 +1217,35 @@
                 ><input type="time" id="slot-end" value="23:00" />
               </div>
               <button
-                class="btn btn-outline"
+                class="btn btn-primary btn-sm"
                 style="margin-bottom: 0"
-                onclick="addDateSlot()"
+                onclick="applyTimeToSelected()"
               >
-                +
+                Appliquer
               </button>
             </div>
           </div>
           <div class="date-slots" id="ev-date-slots"></div>
           <hr class="divider" />
           <div class="field">
-            <label>Inviter des joueurs par pseudonyme</label>
+            <label>Inviter des joueurs (pseudonyme ou e-mail)</label>
             <div class="flex gap-sm">
               <input
                 type="text"
                 id="ev-player-input"
-                placeholder="pseudonyme..."
+                placeholder="Rechercher..."
                 style="flex: 1"
+                oninput="searchPlayersForEvent()"
               />
-              <button class="btn btn-outline" onclick="addPlayerToEvent()">
-                Inviter
-              </button>
             </div>
+            <div
+              id="ev-player-search-results"
+              class="search-results hidden"
+            ></div>
           </div>
           <div class="player-chips" id="ev-player-chips"></div>
-          <p class="text-muted mt-sm">
-            Ou partagez le code automatique une fois l'evenement cree.
+          <p class="text-muted mt-sm" style="font-size: 0.82rem">
+            Un code sera genere automatiquement pour inviter d'autres joueurs.
           </p>
           <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('modal-event')">
@@ -1009,12 +1256,13 @@
               id="ev-save-btn"
               onclick="saveEvent()"
             >
-              Creer l'evenement
+              Creer
             </button>
           </div>
         </div>
       </div>
 
+      <!-- MODAL DETAIL / REPONSE JOUEUR -->
       <div class="modal-overlay hidden" id="modal-detail">
         <div class="modal">
           <div class="modal-title" id="detail-title">Detail</div>
@@ -1030,6 +1278,23 @@
         </div>
       </div>
 
+      <!-- MODAL RESUME MJ + CLOTURE -->
+      <div class="modal-overlay hidden" id="modal-summary">
+        <div class="modal" style="max-width: 700px">
+          <div class="modal-title" id="summary-title">Resume</div>
+          <div id="summary-body"></div>
+          <div class="modal-footer" id="summary-footer">
+            <button
+              class="btn btn-outline"
+              onclick="closeModal('modal-summary')"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL CONFIRM -->
       <div class="modal-overlay hidden" id="modal-confirm">
         <div class="modal">
           <div class="modal-title" id="confirm-title">Confirmer</div>
@@ -1078,6 +1343,7 @@
         arrayUnion,
         arrayRemove,
         orderBy,
+        limit,
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
       // !! REMPLACEZ PAR VOTRE CONFIG FIREBASE !!
@@ -1098,18 +1364,37 @@
         appId: "1:961354615451:web:641a4b4757a8cd196b543e",
       };
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
+      var app = initializeApp(firebaseConfig);
+      var auth = getAuth(app);
+      var db = getFirestore(app);
 
-      let currentUser = null;
-      let userProfile = null;
-      let selectedRole = null;
-      let calYear, calMonth;
-      let editingEventId = null;
-      let evDateSlots = [];
-      let evPlayers = [];
-      let unsubs = [];
+      var currentUser = null;
+      var userProfile = null;
+      var selectedRole = null;
+      var calYear, calMonth;
+      var editingEventId = null;
+      var evDateSlots = [];
+      var evPlayers = [];
+      var evCalYear, evCalMonth;
+      var evSelectedDates = [];
+      var unsubs = [];
+      var MONTHS_FR = [
+        "Janvier",
+        "Fevrier",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Aout",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Decembre",
+      ];
+      var DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+      var TODAY = new Date();
+      TODAY.setHours(0, 0, 0, 0);
 
       function toast(msg, type) {
         if (!type) type = "success";
@@ -1119,7 +1404,7 @@
         clearTimeout(el._t);
         el._t = setTimeout(function () {
           el.className = "";
-        }, 3000);
+        }, 3500);
       }
       function showError(msg) {
         var el = document.getElementById("auth-error");
@@ -1135,12 +1420,12 @@
       function closeModal(id) {
         document.getElementById(id).classList.add("hidden");
       }
-      function genCode() {
-        var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        var code = "";
-        for (var i = 0; i < 6; i++)
-          code += chars[Math.floor(Math.random() * chars.length)];
-        return code;
+      function genCode(len) {
+        var c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+          s = "";
+        for (var i = 0; i < (len || 6); i++)
+          s += c[Math.floor(Math.random() * c.length)];
+        return s;
       }
       function fmtDate(d) {
         return new Date(d + "T12:00").toLocaleDateString("fr-FR", {
@@ -1149,33 +1434,39 @@
           month: "short",
         });
       }
-      function slotsHtml(dates) {
+      function isPast(dateStr) {
+        var d = new Date(dateStr + "T12:00");
+        d.setHours(0, 0, 0, 0);
+        return d < TODAY;
+      }
+      function slotsHtml(dates, finalDates) {
+        if (!dates || !dates.length) return "";
+        var fd = finalDates || [];
         var h = "";
         for (var i = 0; i < dates.length; i++) {
+          var s = dates[i];
+          var cls = "date-slot";
+          if (isPast(s.date)) cls += " past-slot";
+          if (fd.indexOf(s.date + "_" + s.start) !== -1) cls += " final-slot";
           h +=
-            '<div class="date-slot">' +
-            fmtDate(dates[i].date) +
+            '<div class="' +
+            cls +
+            '">' +
+            fmtDate(s.date) +
             " " +
-            dates[i].start +
-            " - " +
-            dates[i].end +
+            s.start +
+            "-" +
+            s.end +
             "</div>";
-        }
-        return h;
-      }
-      function playerChipsHtml(usernames) {
-        var h = "";
-        for (var i = 0; i < usernames.length; i++) {
-          h += '<div class="player-chip">' + usernames[i] + "</div>";
         }
         return h;
       }
 
       window.switchAuthTab = function (tab) {
         clearError();
-        var tabs = document.querySelectorAll(".auth-tab");
-        tabs[0].classList.toggle("active", tab === "login");
-        tabs[1].classList.toggle("active", tab === "register");
+        document.querySelectorAll(".auth-tab").forEach(function (t, i) {
+          t.classList.toggle("active", (i === 0) === (tab === "login"));
+        });
         document
           .getElementById("login-form")
           .classList.toggle("hidden", tab !== "login");
@@ -1183,7 +1474,6 @@
           .getElementById("register-form")
           .classList.toggle("hidden", tab !== "register");
       };
-
       window.selectRole = function (r) {
         selectedRole = r;
         document
@@ -1193,59 +1483,57 @@
           .getElementById("role-jr")
           .classList.toggle("selected", r === "JR");
       };
-
       window.doRegister = async function () {
         clearError();
         var username = document.getElementById("reg-username").value.trim();
         var email = document.getElementById("reg-email").value.trim();
         var password = document.getElementById("reg-password").value;
-        if (!username) return showError("Choisissez un nom d utilisateur.");
-        if (!selectedRole)
-          return showError("Choisissez votre role (MJ ou Joueur).");
+        if (!username) return showError("Choisissez un nom d'utilisateur.");
+        if (!selectedRole) return showError("Choisissez votre role.");
         if (password.length < 6)
-          return showError("Mot de passe trop court (6 caracteres min).");
+          return showError("Mot de passe trop court (6 min).");
         try {
           var cred = await createUserWithEmailAndPassword(
             auth,
             email,
             password,
           );
+          var friendCode = genCode(8);
           await setDoc(doc(db, "users", cred.user.uid), {
             username: username,
             email: email,
             role: selectedRole,
+            friendCode: friendCode,
+            friends: [],
             createdAt: serverTimestamp(),
           });
         } catch (e) {
-          showError(firebaseErrMsg(e.code));
+          showError(fbErr(e.code));
         }
       };
-
       window.doLogin = async function () {
         clearError();
         var email = document.getElementById("login-email").value.trim();
-        var password = document.getElementById("login-password").value;
+        var pass = document.getElementById("login-password").value;
         try {
-          await signInWithEmailAndPassword(auth, email, password);
+          await signInWithEmailAndPassword(auth, email, pass);
         } catch (e) {
-          showError(firebaseErrMsg(e.code));
+          showError(fbErr(e.code));
         }
       };
-
       window.doLogout = function () {
         signOut(auth);
       };
-
-      function firebaseErrMsg(code) {
-        var map = {
-          "auth/email-already-in-use": "Cet e-mail est deja utilise.",
-          "auth/invalid-email": "Adresse e-mail invalide.",
+      function fbErr(code) {
+        var m = {
+          "auth/email-already-in-use": "E-mail deja utilise.",
+          "auth/invalid-email": "E-mail invalide.",
           "auth/wrong-password": "Mot de passe incorrect.",
           "auth/user-not-found": "Aucun compte avec cet e-mail.",
           "auth/weak-password": "Mot de passe trop faible.",
           "auth/invalid-credential": "Identifiants incorrects.",
         };
-        return map[code] || "Erreur : " + code;
+        return m[code] || "Erreur : " + code;
       }
 
       onAuthStateChanged(auth, async function (user) {
@@ -1257,6 +1545,11 @@
             return;
           }
           userProfile = snap.data();
+          if (!userProfile.friendCode) {
+            var fc = genCode(8);
+            await updateDoc(doc(db, "users", user.uid), { friendCode: fc });
+            userProfile.friendCode = fc;
+          }
           initMainApp();
         } else {
           currentUser = null;
@@ -1290,11 +1583,13 @@
           ? [
               { id: "calendar", label: "Calendrier" },
               { id: "events", label: "Mes evenements" },
+              { id: "friends", label: "Amis" },
               { id: "profile", label: "Profil" },
             ]
           : [
               { id: "calendar", label: "Calendrier" },
               { id: "join", label: "Rejoindre" },
+              { id: "friends", label: "Amis" },
               { id: "profile", label: "Profil" },
             ];
         tabs.forEach(function (t, i) {
@@ -1312,9 +1607,8 @@
         calMonth = now.getMonth();
         renderCalendar();
         if (isMJ) loadMJEvents();
-        else {
-          loadJoinedEvents();
-        }
+        else loadJoinedEvents();
+        loadFriends();
       }
 
       function switchTab(id) {
@@ -1335,29 +1629,15 @@
             calendar: "Calendrier",
             events: "evenements",
             join: "Rejoindre",
+            friends: "Amis",
             profile: "Profil",
           };
           if (t.textContent.includes(map[id])) t.classList.add("active");
         });
+        if (id === "friends") renderFriendCode();
       }
 
-      var DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-      var MONTHS_FR = [
-        "Janvier",
-        "Fevrier",
-        "Mars",
-        "Avril",
-        "Mai",
-        "Juin",
-        "Juillet",
-        "Aout",
-        "Septembre",
-        "Octobre",
-        "Novembre",
-        "Decembre",
-      ];
-      var RESP_ICONS = { none: "", yes: "[O]", no: "[X]", maybe: "[?]" };
-
+      // === CALENDAR ===
       async function renderCalendar() {
         document.getElementById("cal-month-label").textContent =
           MONTHS_FR[calMonth] + " " + calYear;
@@ -1414,6 +1694,7 @@
             String(d).padStart(2, "0");
           var cell = document.createElement("div");
           cell.className = "cal-cell";
+          if (isPast(dateStr)) cell.classList.add("past");
           var dn = document.createElement("div");
           dn.className = "day-num";
           dn.textContent = d;
@@ -1431,8 +1712,8 @@
                 ] || "none";
               if (resp !== "none") {
                 var ri = document.createElement("div");
-                ri.className = "response-indicator";
-                ri.textContent = RESP_ICONS[resp];
+                ri.className = "resp-icon";
+                ri.textContent = respEmoji(resp);
                 cell.appendChild(ri);
               }
             });
@@ -1445,6 +1726,15 @@
           grid.appendChild(cell);
         }
         renderCalEventList(events);
+      }
+      function respEmoji(r) {
+        return r === "yes"
+          ? "&#9989;"
+          : r === "no"
+            ? "&#10060;"
+            : r === "maybe"
+              ? "&#10067;"
+              : "";
       }
 
       function renderCalEventList(events) {
@@ -1459,32 +1749,34 @@
         events.forEach(function (ev) {
           var card = document.createElement("div");
           card.className = "card";
+          var closed = ev.closed
+            ? '<span class="closed-badge">CLOTURE</span>'
+            : "";
           var actBtn = isMJ
-            ? '<button class="btn btn-outline" onclick="openMJSummary(\'' +
+            ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\'' +
               ev.id +
               "')\">Resume</button>"
-            : '<button class="btn btn-outline" onclick="openEventDetail(\'' +
+            : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\'' +
               ev.id +
               "')\">Repondre</button>";
           card.innerHTML =
             '<div class="card-header"><div><div class="card-title">' +
             ev.name +
+            closed +
             '</div><div class="card-meta">' +
             (ev.description || "") +
             '</div></div><div class="card-actions">' +
             actBtn +
             '</div></div><div class="date-slots">' +
-            slotsHtml(ev.dates || []) +
+            slotsHtml(ev.dates || [], ev.finalDates || []) +
             "</div>";
           el.appendChild(card);
         });
       }
-
       function openDayDetail(entries) {
         if (userProfile.role === "JR") openEventDetail(entries[0].ev.id);
         else openMJSummary(entries[0].ev.id);
       }
-
       window.calMove = function (dir) {
         calMonth += dir;
         if (calMonth > 11) {
@@ -1498,22 +1790,28 @@
         renderCalendar();
       };
 
+      // === MJ EVENTS ===
       function loadMJEvents() {
         var q = query(
           collection(db, "events"),
           where("createdBy", "==", currentUser.uid),
           orderBy("createdAt", "desc"),
         );
-        var unsub = onSnapshot(q, function (snap) {
-          var events = [];
-          snap.forEach(function (d) {
-            events.push(Object.assign({ id: d.id }, d.data()));
-          });
-          renderMJEvents(events);
-        });
+        var unsub = onSnapshot(
+          q,
+          function (snap) {
+            var events = [];
+            snap.forEach(function (d) {
+              events.push(Object.assign({ id: d.id }, d.data()));
+            });
+            renderMJEvents(events);
+          },
+          function (err) {
+            console.error("loadMJEvents", err);
+          },
+        );
         unsubs.push(unsub);
       }
-
       function renderMJEvents(events) {
         var el = document.getElementById("events-list");
         if (!events.length) {
@@ -1526,45 +1824,54 @@
           var card = document.createElement("div");
           card.className = "card";
           var code = ev.code || "";
+          var closed = ev.closed
+            ? '<span class="closed-badge">CLOTURE</span>'
+            : "";
           card.innerHTML =
             '<div class="card-header"><div><div class="card-title">' +
             ev.name +
+            closed +
             "</div>" +
-            '<div class="card-meta">' +
-            (ev.description || "") +
-            (ev.description ? "<br>" : "") +
-            '<span class="code-badge">Code : <strong>' +
+            '<div class="card-meta"><span class="code-badge">Code : <strong>' +
             code +
             '</strong> <span class="copy-btn" onclick="copyCode(\'' +
             code +
             "')\">copier</span></span></div></div>" +
             '<div class="card-actions">' +
-            '<button class="btn btn-outline" onclick="openMJSummary(\'' +
+            '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\'' +
             ev.id +
-            "')\">Resume</button> " +
-            '<button class="btn btn-outline" onclick="openEditEvent(\'' +
-            ev.id +
-            "')\">Modifier</button> " +
-            '<button class="btn btn-danger" onclick="confirmDeleteEvent(\'' +
+            "')\">Resume</button>" +
+            (ev.closed
+              ? ""
+              : ' <button class="btn btn-outline btn-sm" onclick="openEditEvent(\'' +
+                ev.id +
+                "')\">Modifier</button>") +
+            ' <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent(\'' +
             ev.id +
             "','" +
             ev.name.replace(/'/g, "") +
             "')\">Supprimer</button>" +
             "</div></div>" +
             '<div class="date-slots">' +
-            slotsHtml(ev.dates || []) +
+            slotsHtml(ev.dates || [], ev.finalDates || []) +
             "</div>" +
             '<div class="player-chips mt-sm">' +
-            playerChipsHtml(ev.invitedUsernames || []) +
+            (ev.invitedUsernames || [])
+              .map(function (u) {
+                return '<div class="player-chip">' + u + "</div>";
+              })
+              .join("") +
             "</div>";
           el.appendChild(card);
         });
       }
 
+      // === CREATE / EDIT EVENT ===
       window.openCreateEvent = function () {
         editingEventId = null;
         evDateSlots = [];
         evPlayers = [];
+        evSelectedDates = [];
         document.getElementById("ev-name").value = "";
         document.getElementById("ev-desc").value = "";
         document.getElementById("ev-date-slots").innerHTML = "";
@@ -1572,14 +1879,19 @@
         document.getElementById("modal-event-title").textContent =
           "Creer un evenement";
         document.getElementById("ev-save-btn").textContent = "Creer";
+        document.getElementById("ev-time-section").style.display = "none";
+        var now = new Date();
+        evCalYear = now.getFullYear();
+        evCalMonth = now.getMonth();
+        renderEvCal();
         openModal("modal-event");
       };
-
       window.openEditEvent = async function (id) {
         var snap = await getDoc(doc(db, "events", id));
         if (!snap.exists()) return;
         var ev = snap.data();
         editingEventId = id;
+        evSelectedDates = [];
         evDateSlots = (ev.dates || []).slice();
         evPlayers = (ev.invitedUids || []).map(function (uid, i) {
           return { uid: uid, username: (ev.invitedUsernames || [])[i] || uid };
@@ -1588,29 +1900,114 @@
         document.getElementById("ev-desc").value = ev.description || "";
         document.getElementById("modal-event-title").textContent = "Modifier";
         document.getElementById("ev-save-btn").textContent = "Enregistrer";
+        var now = new Date();
+        evCalYear = now.getFullYear();
+        evCalMonth = now.getMonth();
+        renderEvCal();
         renderDateSlots();
         renderPlayerChips();
+        document.getElementById("ev-time-section").style.display =
+          evSelectedDates.length ? "" : "none";
         openModal("modal-event");
       };
 
-      window.addDateSlot = function () {
-        var d = document.getElementById("slot-date").value;
+      // Event creation calendar
+      function renderEvCal() {
+        document.getElementById("ev-cal-month").textContent =
+          MONTHS_FR[evCalMonth] + " " + evCalYear;
+        var grid = document.getElementById("ev-cal-grid");
+        grid.innerHTML = "";
+        DAYS_FR.forEach(function (d) {
+          var h = document.createElement("div");
+          h.className = "cal-header-cell";
+          h.textContent = d;
+          grid.appendChild(h);
+        });
+        var firstDay = new Date(evCalYear, evCalMonth, 1);
+        var totalDays = new Date(evCalYear, evCalMonth + 1, 0).getDate();
+        var startOffset = firstDay.getDay() - 1;
+        if (startOffset < 0) startOffset = 6;
+        for (var i = 0; i < startOffset; i++) {
+          var empty = document.createElement("div");
+          empty.className = "cal-cell empty";
+          grid.appendChild(empty);
+        }
+        for (var d = 1; d <= totalDays; d++) {
+          var dateStr =
+            evCalYear +
+            "-" +
+            String(evCalMonth + 1).padStart(2, "0") +
+            "-" +
+            String(d).padStart(2, "0");
+          var cell = document.createElement("div");
+          cell.className = "cal-cell";
+          var past = isPast(dateStr);
+          if (past) {
+            cell.classList.add("past");
+          } else {
+            cell.classList.add("selectable");
+            var alreadySlot =
+              evDateSlots.filter(function (s) {
+                return s.date === dateStr;
+              }).length > 0;
+            var alreadySel = evSelectedDates.indexOf(dateStr) !== -1;
+            if (alreadySlot) cell.style.background = "rgba(201,168,76,.15)";
+            if (alreadySel) cell.classList.add("selected-day");
+            (function (ds, cl) {
+              cl.onclick = function () {
+                toggleEvDate(ds, cl);
+              };
+            })(dateStr, cell);
+          }
+          var dn = document.createElement("div");
+          dn.className = "day-num";
+          dn.textContent = d;
+          cell.appendChild(dn);
+          grid.appendChild(cell);
+        }
+      }
+      window.evCalMove = function (dir) {
+        evCalMonth += dir;
+        if (evCalMonth > 11) {
+          evCalMonth = 0;
+          evCalYear++;
+        }
+        if (evCalMonth < 0) {
+          evCalMonth = 11;
+          evCalYear--;
+        }
+        renderEvCal();
+      };
+      function toggleEvDate(dateStr, cell) {
+        var idx = evSelectedDates.indexOf(dateStr);
+        if (idx === -1) {
+          evSelectedDates.push(dateStr);
+          cell.classList.add("selected-day");
+        } else {
+          evSelectedDates.splice(idx, 1);
+          cell.classList.remove("selected-day");
+        }
+        document.getElementById("ev-time-section").style.display =
+          evSelectedDates.length > 0 ? "" : "none";
+      }
+      window.applyTimeToSelected = function () {
         var s = document.getElementById("slot-start").value;
         var e = document.getElementById("slot-end").value;
-        if (!d) return toast("Choisissez une date.", "error");
-        if (
-          evDateSlots.filter(function (x) {
-            return x.date === d && x.start === s;
-          }).length
-        )
-          return toast("Date deja ajoutee.", "error");
-        evDateSlots.push({ date: d, start: s, end: e });
+        evSelectedDates.forEach(function (dateStr) {
+          var exists =
+            evDateSlots.filter(function (x) {
+              return x.date === dateStr && x.start === s;
+            }).length > 0;
+          if (!exists) evDateSlots.push({ date: dateStr, start: s, end: e });
+        });
         evDateSlots.sort(function (a, b) {
           return a.date.localeCompare(b.date);
         });
+        evSelectedDates = [];
+        renderEvCal();
         renderDateSlots();
+        document.getElementById("ev-time-section").style.display = "none";
       };
-
       function renderDateSlots() {
         var el = document.getElementById("ev-date-slots");
         var h = "";
@@ -1622,36 +2019,100 @@
             s.start +
             "-" +
             s.end +
-            '<span class="remove-slot" onclick="removeDateSlot(' +
+            ' <span class="remove-slot" onclick="removeDateSlot(' +
             i +
-            ')"> x</span></div>';
+            ')">&#10005;</span></div>';
         });
         el.innerHTML = h;
       }
       window.removeDateSlot = function (i) {
         evDateSlots.splice(i, 1);
         renderDateSlots();
+        renderEvCal();
       };
 
-      window.addPlayerToEvent = async function () {
-        var name = document.getElementById("ev-player-input").value.trim();
-        if (!name) return;
+      // Search players for event invite
+      var _searchTimeout = null;
+      window.searchPlayersForEvent = async function () {
+        clearTimeout(_searchTimeout);
+        var val = document.getElementById("ev-player-input").value.trim();
+        var resEl = document.getElementById("ev-player-search-results");
+        if (val.length < 2) {
+          resEl.classList.add("hidden");
+          return;
+        }
+        _searchTimeout = setTimeout(async function () {
+          try {
+            var results = [];
+            // Search by username prefix
+            var q1 = query(
+              collection(db, "users"),
+              where("username", ">=", val),
+              where("username", "<=", val + "\uf8ff"),
+              limit(5),
+            );
+            var s1 = await getDocs(q1);
+            s1.forEach(function (d) {
+              if (d.id !== currentUser.uid)
+                results.push(Object.assign({ id: d.id }, d.data()));
+            });
+            // Search by email exact
+            if (val.indexOf("@") !== -1) {
+              var q2 = query(
+                collection(db, "users"),
+                where("email", "==", val),
+              );
+              var s2 = await getDocs(q2);
+              s2.forEach(function (d) {
+                if (
+                  d.id !== currentUser.uid &&
+                  !results.filter(function (r) {
+                    return r.id === d.id;
+                  }).length
+                )
+                  results.push(Object.assign({ id: d.id }, d.data()));
+              });
+            }
+            if (!results.length) {
+              resEl.innerHTML =
+                '<div class="search-result-item" style="cursor:default;color:var(--muted)">Aucun utilisateur trouve</div>';
+              resEl.classList.remove("hidden");
+              return;
+            }
+            var h = "";
+            results.forEach(function (u) {
+              h +=
+                '<div class="search-result-item" onclick="addPlayerFromSearch(\'' +
+                u.id +
+                "','" +
+                u.username +
+                "')\"><span>" +
+                u.username +
+                '</span><span class="sr-meta">' +
+                u.role +
+                "</span></div>";
+            });
+            resEl.innerHTML = h;
+            resEl.classList.remove("hidden");
+          } catch (e) {
+            console.error(e);
+          }
+        }, 300);
+      };
+      window.addPlayerFromSearch = function (uid, username) {
         if (
           evPlayers.filter(function (p) {
-            return p.username.toLowerCase() === name.toLowerCase();
+            return p.uid === uid;
           }).length
         )
-          return toast("Deja invite.", "error");
-        var q = query(collection(db, "users"), where("username", "==", name));
-        var snap = await getDocs(q);
-        if (snap.empty)
-          return toast('Joueur "' + name + '" introuvable.', "error");
-        var ud = snap.docs[0];
-        evPlayers.push({ uid: ud.id, username: ud.data().username });
+          return;
+        evPlayers.push({ uid: uid, username: username });
         document.getElementById("ev-player-input").value = "";
+        document
+          .getElementById("ev-player-search-results")
+          .classList.add("hidden");
         renderPlayerChips();
       };
-
       function renderPlayerChips() {
         var el = document.getElementById("ev-player-chips");
         var h = "";
@@ -1659,9 +2120,9 @@
           h +=
             '<div class="player-chip">' +
             p.username +
-            '<span class="remove-player" onclick="removePlayer(' +
+            ' <span class="remove-player" onclick="removePlayer(' +
             i +
-            ')"> x</span></div>';
+            ')">&#10005;</span></div>';
         });
         el.innerHTML = h;
       }
@@ -1674,7 +2135,7 @@
         var name = document.getElementById("ev-name").value.trim();
         if (!name) return toast("Donnez un nom.", "error");
         if (!evDateSlots.length)
-          return toast("Ajoutez au moins une date.", "error");
+          return toast("Selectionnez au moins une date.", "error");
         var data = {
           name: name,
           description: document.getElementById("ev-desc").value.trim(),
@@ -1693,9 +2154,11 @@
             await updateDoc(doc(db, "events", editingEventId), data);
             toast("Evenement mis a jour.");
           } else {
-            data.code = genCode();
+            data.code = genCode(6);
             data.createdAt = serverTimestamp();
             data.responses = {};
+            data.closed = false;
+            data.finalDates = [];
             await addDoc(collection(db, "events"), data);
             toast("Evenement cree.");
           }
@@ -1706,11 +2169,13 @@
         }
       };
 
+      // === MJ SUMMARY + CLOTURE ===
       window.openMJSummary = async function (id) {
         var snap = await getDoc(doc(db, "events", id));
         if (!snap.exists()) return;
         var ev = snap.data();
-        document.getElementById("detail-title").textContent = ev.name;
+        document.getElementById("summary-title").textContent =
+          ev.name + (ev.closed ? " [CLOTURE]" : "");
         var responses = ev.responses || {};
         var players = ev.invitedUids || [];
         var playerNames = {};
@@ -1718,23 +2183,47 @@
           playerNames[uid] = (ev.invitedUsernames || [])[i] || uid;
         });
         var dates = ev.dates || [];
+        var fd = ev.finalDates || [];
         var html =
           '<div class="code-badge" style="margin-bottom:1rem">Code : <strong>' +
           (ev.code || "") +
           '</strong> <span class="copy-btn" onclick="copyCode(\'' +
           (ev.code || "") +
-          "')\">copier</span></div>";
+          "')\">&#128203; copier</span></div>";
+        if (ev.closed && fd.length) {
+          html +=
+            '<div style="margin-bottom:1rem"><strong style="color:var(--success)">&#10003; Dates definitives :</strong>';
+          fd.forEach(function (key) {
+            var parts = key.split("_");
+            html +=
+              '<div class="final-date-row">&#127881; ' +
+              fmtDate(parts[0]) +
+              " a " +
+              parts[1] +
+              "</div>";
+          });
+          html += "</div>";
+        }
         if (!dates.length) {
-          html += '<p class="text-muted">Aucune date definie.</p>';
+          html += '<p class="text-muted">Aucune date.</p>';
         } else {
-          html += '<table class="presence-table"><thead><tr><th>Joueur</th>';
+          html +=
+            '<div style="overflow-x:auto"><table class="presence-table"><thead><tr><th>Joueur</th>';
           dates.forEach(function (s) {
+            var past = isPast(s.date)
+              ? '<br><small style="color:var(--muted)">(passee)</small>'
+              : "";
+            var final =
+              fd.indexOf(s.date + "_" + s.start) !== -1 ? " &#10003;" : "";
             html +=
               "<th>" +
               fmtDate(s.date) +
               "<br><small>" +
               s.start +
-              "</small></th>";
+              "</small>" +
+              final +
+              past +
+              "</th>";
           });
           html += "</tr></thead><tbody>";
           if (!players.length) {
@@ -1748,24 +2237,21 @@
               dates.forEach(function (s) {
                 var key = s.date + "_" + s.start;
                 var r = (responses[uid] || {})[key] || "none";
-                var cls = {
-                  yes: "status-yes",
-                  no: "status-no",
-                  maybe: "status-maybe",
-                  none: "status-none",
+                var em = {
+                  yes: '<span class="status-yes">&#9989;</span>',
+                  no: '<span class="status-no">&#10060;</span>',
+                  maybe: '<span class="status-maybe">&#10067;</span>',
+                  none: '<span class="status-none">-</span>',
                 };
-                var lbl = {
-                  yes: "[O] Oui",
-                  no: "[X] Non",
-                  maybe: "[?] Peut-etre",
-                  none: "-",
-                };
-                html += '<td class="' + cls[r] + '">' + lbl[r] + "</td>";
+                html += "<td>" + em[r] + "</td>";
               });
               html += "</tr>";
             });
           }
-          html += '</tbody></table><div style="margin-top:1rem">';
+          html += "</tbody></table></div>";
+          // Compteurs
+          html +=
+            '<div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem">';
           dates.forEach(function (s) {
             var key = s.date + "_" + s.start;
             var yes = 0,
@@ -1777,44 +2263,176 @@
               else if (r === "no") no++;
               else if (r === "maybe") maybe++;
             });
+            var pastCls = isPast(s.date) ? "opacity:.5;" : "";
             html +=
-              '<div style="margin-bottom:.5rem;font-size:.9rem"><strong>' +
+              '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.4rem .7rem;font-size:.85rem;' +
+              pastCls +
+              '"><strong>' +
               fmtDate(s.date) +
               " " +
               s.start +
-              '</strong> &nbsp; <span class="status-yes">[O] ' +
+              '</strong><br><span class="status-yes">&#9989; ' +
               yes +
-              '</span> &nbsp; <span class="status-no">[X] ' +
+              '</span> <span class="status-no">&#10060; ' +
               no +
-              '</span> &nbsp; <span class="status-maybe">[?] ' +
+              '</span> <span class="status-maybe">&#10067; ' +
               maybe +
               "</span></div>";
           });
           html += "</div>";
         }
-        document.getElementById("detail-body").innerHTML = html;
-        openModal("modal-detail");
+        document.getElementById("summary-body").innerHTML = html;
+        // Footer
+        var footer = document.getElementById("summary-footer");
+        footer.innerHTML =
+          '<button class="btn btn-outline" onclick="closeModal(\'modal-summary\')">Fermer</button>';
+        if (!ev.closed) {
+          footer.innerHTML +=
+            ' <button class="btn btn-success" onclick="openCloseEventModal(\'' +
+            id +
+            "')\">Cloturer et valider</button>";
+        } else {
+          footer.innerHTML +=
+            ' <button class="btn btn-outline" onclick="reopenEvent(\'' +
+            id +
+            "')\">Reouvrir</button>";
+        }
+        openModal("modal-summary");
       };
 
+      window.openCloseEventModal = async function (id) {
+        var snap = await getDoc(doc(db, "events", id));
+        if (!snap.exists()) return;
+        var ev = snap.data();
+        closeModal("modal-summary");
+        // Build date selection UI
+        var dates = ev.dates || [];
+        var responses = ev.responses || {};
+        var players = ev.invitedUids || [];
+        var html =
+          '<p class="text-muted" style="margin-bottom:1rem">Selectionnez les dates definitives (cochez celles que vous souhaitez confirmer) :</p>';
+        dates.forEach(function (s) {
+          var key = s.date + "_" + s.start;
+          var yes = 0,
+            no = 0,
+            maybe = 0;
+          players.forEach(function (uid) {
+            var r = (responses[uid] || {})[key] || "none";
+            if (r === "yes") yes++;
+            else if (r === "no") no++;
+            else if (r === "maybe") maybe++;
+          });
+          var past = isPast(s.date)
+            ? '<small style="color:var(--muted)">(passee) </small>'
+            : "";
+          html +=
+            '<label style="display:flex;align-items:center;gap:.7rem;padding:.6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;cursor:pointer;color:var(--text)">' +
+            '<input type="checkbox" value="' +
+            key +
+            '" style="width:16px;height:16px;accent-color:var(--accent)"> ' +
+            past +
+            "<strong>" +
+            fmtDate(s.date) +
+            " " +
+            s.start +
+            '</strong>&nbsp;<span class="status-yes">&#9989; ' +
+            yes +
+            '</span> <span class="status-no">&#10060; ' +
+            no +
+            '</span> <span class="status-maybe">&#10067; ' +
+            maybe +
+            "</span></label>";
+        });
+        document.getElementById("confirm-title").textContent =
+          'Cloturer "' + ev.name + '"';
+        document.getElementById("confirm-msg").innerHTML = html;
+        document.getElementById("confirm-ok-btn").textContent =
+          "Confirmer la cloture";
+        document.getElementById("confirm-ok-btn").className = "btn btn-success";
+        document.getElementById("confirm-ok-btn").onclick = async function () {
+          var checks = document.querySelectorAll(
+            "#confirm-msg input[type=checkbox]:checked",
+          );
+          var finalDates = [];
+          checks.forEach(function (c) {
+            finalDates.push(c.value);
+          });
+          try {
+            await updateDoc(doc(db, "events", id), {
+              closed: true,
+              finalDates: finalDates,
+            });
+            toast("Evenement cloture !");
+            closeModal("modal-confirm");
+            renderCalendar();
+          } catch (e) {
+            toast("Erreur : " + e.message, "error");
+          }
+        };
+        openModal("modal-confirm");
+      };
+      window.reopenEvent = async function (id) {
+        await updateDoc(doc(db, "events", id), {
+          closed: false,
+          finalDates: [],
+        });
+        toast("Evenement rouvert.");
+        closeModal("modal-summary");
+        renderCalendar();
+      };
+
+      // === PLAYER RESPONSE ===
       window.openEventDetail = async function (id) {
         var snap = await getDoc(doc(db, "events", id));
         if (!snap.exists()) return;
         var ev = snap.data();
-        document.getElementById("detail-title").textContent = ev.name;
-        var myResponses = (ev.responses || {})[currentUser.uid] || {};
+        document.getElementById("detail-title").textContent =
+          ev.name + (ev.closed ? " [CLOTURE]" : "");
+        var myR = (ev.responses || {})[currentUser.uid] || {};
         var dates = ev.dates || [];
+        var fd = ev.finalDates || [];
         var html =
-          '<p class="text-muted" style="margin-bottom:1rem">MJ : ' +
+          '<p class="text-muted" style="margin-bottom:.5rem">MJ : ' +
           (ev.creatorUsername || "") +
-          '</p><p class="text-muted" style="margin-bottom:1.2rem">Indiquez votre disponibilite :</p>';
+          "</p>";
+        if (ev.closed) {
+          html +=
+            '<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture.</div>';
+          if (fd.length) {
+            html +=
+              '<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong>';
+            fd.forEach(function (key) {
+              var p = key.split("_");
+              html +=
+                '<div class="final-date-row">&#127881; ' +
+                fmtDate(p[0]) +
+                " a " +
+                p[1] +
+                "</div>";
+            });
+            html += "</div>";
+          }
+        }
+        html +=
+          '<p class="text-muted" style="margin-bottom:1rem">Votre disponibilite :</p>';
         dates.forEach(function (s) {
           var key = s.date + "_" + s.start;
-          var cur = myResponses[key] || "none";
+          var cur = myR[key] || "none";
+          var past = isPast(s.date);
+          var final = fd.indexOf(key) !== -1;
+          var pastStyle = past ? "opacity:.6;" : "";
+          var finalMark = final
+            ? '<span style="color:var(--success);margin-left:.4rem">&#10003; Confirme</span>'
+            : "";
           html +=
-            '<div class="response-row">' +
+            '<div class="response-row" style="' +
+            pastStyle +
+            '">' +
             "<div><strong>" +
             fmtDate(s.date) +
-            "</strong><br><small>" +
+            "</strong>" +
+            finalMark +
+            "<br><small>" +
             s.start +
             " - " +
             s.end +
@@ -1822,41 +2440,41 @@
             '<div class="response-btns">' +
             '<button class="resp-btn' +
             (cur === "yes" ? " active-yes" : "") +
-            '" onclick="setResponse(\'' +
+            '" title="Disponible" onclick="setResponse(\'' +
             id +
             "','" +
             key +
-            "','yes')\">Oui</button>" +
+            "','yes')\">&#9989;</button>" +
             '<button class="resp-btn' +
             (cur === "no" ? " active-no" : "") +
-            '" onclick="setResponse(\'' +
+            '" title="Indisponible" onclick="setResponse(\'' +
             id +
             "','" +
             key +
-            "','no')\">Non</button>" +
+            "','no')\">&#10060;</button>" +
             '<button class="resp-btn' +
             (cur === "maybe" ? " active-maybe" : "") +
-            '" onclick="setResponse(\'' +
+            '" title="Peut-etre" onclick="setResponse(\'' +
             id +
             "','" +
             key +
-            "','maybe')\">Peut-etre</button>" +
-            '<button class="resp-btn" onclick="setResponse(\'' +
+            "','maybe')\">&#10067;</button>" +
+            '<button class="resp-btn' +
+            (cur === "none" ? " active-none" : "") +
+            '" title="Effacer" onclick="setResponse(\'' +
             id +
             "','" +
             key +
-            "','none')\">-</button>" +
+            "','none')\">&#8709;</button>" +
             "</div></div>";
         });
         document.getElementById("detail-body").innerHTML = html;
         openModal("modal-detail");
       };
-
       window.setResponse = async function (evId, key, state) {
         try {
-          var field = "responses." + currentUser.uid + "." + key;
           var upd = {};
-          upd[field] = state;
+          upd["responses." + currentUser.uid + "." + key] = state;
           await updateDoc(doc(db, "events", evId), upd);
           toast("Reponse enregistree.");
           openEventDetail(evId);
@@ -1866,44 +2484,54 @@
         }
       };
 
+      // === JOIN BY CODE ===
       window.joinByCode = async function () {
         var code = document
           .getElementById("join-code-input")
           .value.trim()
           .toUpperCase();
         if (!code) return toast("Entrez un code.", "error");
-        var q = query(collection(db, "events"), where("code", "==", code));
-        var snap = await getDocs(q);
-        if (snap.empty) return toast("Code introuvable.", "error");
-        var evDoc = snap.docs[0];
-        var ev = evDoc.data();
-        if ((ev.invitedUids || []).indexOf(currentUser.uid) !== -1)
-          return toast("Vous etes deja dans cet evenement.");
-        await updateDoc(doc(db, "events", evDoc.id), {
-          invitedUids: arrayUnion(currentUser.uid),
-          invitedUsernames: arrayUnion(userProfile.username),
-        });
-        toast("Rejoint : " + ev.name);
-        document.getElementById("join-code-input").value = "";
-        loadJoinedEvents();
-        renderCalendar();
+        try {
+          var q = query(collection(db, "events"), where("code", "==", code));
+          var snap = await getDocs(q);
+          if (snap.empty) return toast("Code introuvable.", "error");
+          var evDoc = snap.docs[0];
+          var ev = evDoc.data();
+          if ((ev.invitedUids || []).indexOf(currentUser.uid) !== -1)
+            return toast("Vous etes deja dans cet evenement.");
+          await updateDoc(doc(db, "events", evDoc.id), {
+            invitedUids: arrayUnion(currentUser.uid),
+            invitedUsernames: arrayUnion(userProfile.username),
+          });
+          toast("Rejoint : " + ev.name + " !");
+          document.getElementById("join-code-input").value = "";
+          loadJoinedEvents();
+          renderCalendar();
+        } catch (e) {
+          toast("Erreur : " + e.message, "error");
+          console.error(e);
+        }
       };
-
       function loadJoinedEvents() {
         var q = query(
           collection(db, "events"),
           where("invitedUids", "array-contains", currentUser.uid),
         );
-        var unsub = onSnapshot(q, function (snap) {
-          var events = [];
-          snap.forEach(function (d) {
-            events.push(Object.assign({ id: d.id }, d.data()));
-          });
-          renderJoinedEvents(events);
-        });
+        var unsub = onSnapshot(
+          q,
+          function (snap) {
+            var events = [];
+            snap.forEach(function (d) {
+              events.push(Object.assign({ id: d.id }, d.data()));
+            });
+            renderJoinedEvents(events);
+          },
+          function (err) {
+            console.error("loadJoinedEvents", err);
+          },
+        );
         unsubs.push(unsub);
       }
-
       function renderJoinedEvents(events) {
         var el = document.getElementById("joined-events-list");
         if (!events.length) {
@@ -1914,29 +2542,155 @@
         events.forEach(function (ev) {
           var card = document.createElement("div");
           card.className = "card";
+          var closed = ev.closed
+            ? '<span class="closed-badge">CLOTURE</span>'
+            : "";
           card.innerHTML =
             '<div class="card-header"><div><div class="card-title">' +
             ev.name +
+            closed +
             '</div><div class="card-meta">MJ : ' +
             (ev.creatorUsername || "") +
             "</div></div>" +
             '<div class="card-actions">' +
-            '<button class="btn btn-outline" onclick="openEventDetail(\'' +
+            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\'' +
             ev.id +
             "')\">Repondre</button> " +
-            '<button class="btn btn-danger" onclick="confirmLeaveEvent(\'' +
+            '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\'' +
             ev.id +
             "','" +
             ev.name.replace(/'/g, "") +
             "')\">Quitter</button>" +
             "</div></div>" +
             '<div class="date-slots">' +
-            slotsHtml(ev.dates || []) +
+            slotsHtml(ev.dates || [], ev.finalDates || []) +
             "</div>";
           el.appendChild(card);
         });
       }
 
+      // === AMIS ===
+      function renderFriendCode() {
+        var fc = userProfile.friendCode || "";
+        document.getElementById("my-friend-code").textContent = fc;
+      }
+      window.copyMyFriendCode = function () {
+        var fc = userProfile.friendCode || "";
+        navigator.clipboard
+          .writeText(fc)
+          .then(function () {
+            toast("Code ami copie !");
+          })
+          .catch(function () {
+            toast("Copie impossible.", "error");
+          });
+      };
+      window.refreshFriendCode = async function () {
+        var fc = genCode(8);
+        await updateDoc(doc(db, "users", currentUser.uid), { friendCode: fc });
+        userProfile.friendCode = fc;
+        renderFriendCode();
+        toast("Nouveau code genere !");
+      };
+      window.addFriendByCode = async function () {
+        var code = document
+          .getElementById("friend-code-input")
+          .value.trim()
+          .toUpperCase();
+        if (!code) return toast("Entrez un code.", "error");
+        try {
+          var q = query(
+            collection(db, "users"),
+            where("friendCode", "==", code),
+          );
+          var snap = await getDocs(q);
+          if (snap.empty) return toast("Code ami introuvable.", "error");
+          var otherDoc = snap.docs[0];
+          if (otherDoc.id === currentUser.uid)
+            return toast("C'est votre propre code !", "error");
+          var otherId = otherDoc.id;
+          var already = (userProfile.friends || []).indexOf(otherId) !== -1;
+          if (already) return toast("Deja dans votre liste d'amis.");
+          // Add each other
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            friends: arrayUnion(otherId),
+          });
+          await updateDoc(doc(db, "users", otherId), {
+            friends: arrayUnion(currentUser.uid),
+          });
+          userProfile.friends = (userProfile.friends || []).concat(otherId);
+          // Regenerate own code (usage unique)
+          var newFc = genCode(8);
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            friendCode: newFc,
+          });
+          userProfile.friendCode = newFc;
+          renderFriendCode();
+          document.getElementById("friend-code-input").value = "";
+          toast("Ami ajoute : " + otherDoc.data().username + " !");
+          loadFriends();
+        } catch (e) {
+          toast("Erreur : " + e.message, "error");
+          console.error(e);
+        }
+      };
+      async function loadFriends() {
+        var el = document.getElementById("friends-list");
+        if (!el) return;
+        var friends = userProfile.friends || [];
+        if (!friends.length) {
+          el.innerHTML = '<p class="text-muted">Aucun ami pour l\'instant.</p>';
+          return;
+        }
+        el.innerHTML = '<div class="loading">Chargement...</div>';
+        try {
+          var results = [];
+          for (var i = 0; i < friends.length; i++) {
+            var snap = await getDoc(doc(db, "users", friends[i]));
+            if (snap.exists())
+              results.push(Object.assign({ id: snap.id }, snap.data()));
+          }
+          if (!results.length) {
+            el.innerHTML = '<p class="text-muted">Aucun ami trouve.</p>';
+            return;
+          }
+          var h = "";
+          results.forEach(function (u) {
+            h +=
+              '<div class="friend-chip"><span class="fc-role' +
+              (u.role === "MJ" ? " mj" : "") +
+              '">' +
+              u.role +
+              '</span><span style="flex:1">' +
+              u.username +
+              '</span><button class="btn btn-danger btn-sm" onclick="removeFriend(\'' +
+              u.id +
+              "','" +
+              u.username +
+              "')\">Retirer</button></div>";
+          });
+          el.innerHTML = h;
+        } catch (e) {
+          el.innerHTML = '<p class="text-muted">Erreur de chargement.</p>';
+          console.error(e);
+        }
+      }
+      window.removeFriend = async function (uid, username) {
+        if (!confirm("Retirer " + username + " de vos amis ?")) return;
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          friends: arrayRemove(uid),
+        });
+        await updateDoc(doc(db, "users", uid), {
+          friends: arrayRemove(currentUser.uid),
+        });
+        userProfile.friends = (userProfile.friends || []).filter(function (id) {
+          return id !== uid;
+        });
+        toast(username + " retire.");
+        loadFriends();
+      };
+
+      // === PROFIL ===
       window.saveProfile = async function () {
         var username = document.getElementById("profile-username").value.trim();
         var role = document.getElementById("profile-role").value;
@@ -1955,67 +2709,64 @@
         initMainApp();
       };
 
+      // === CONFIRM / DELETE ===
       window.confirmDeleteEvent = function (id, name) {
         document.getElementById("confirm-title").textContent = "Supprimer";
         document.getElementById("confirm-msg").textContent =
           'Supprimer "' + name + '" ? Action irreversible.';
-        document.getElementById("confirm-ok-btn").onclick = function () {
-          deleteEvent(id);
+        document.getElementById("confirm-ok-btn").textContent = "Supprimer";
+        document.getElementById("confirm-ok-btn").className = "btn btn-danger";
+        document.getElementById("confirm-ok-btn").onclick = async function () {
+          await deleteDoc(doc(db, "events", id));
+          toast("Supprime.");
+          closeModal("modal-confirm");
+          renderCalendar();
         };
         openModal("modal-confirm");
       };
-      async function deleteEvent(id) {
-        await deleteDoc(doc(db, "events", id));
-        toast("Evenement supprime.");
-        closeModal("modal-confirm");
-        renderCalendar();
-      }
-
       window.confirmLeaveEvent = function (id, name) {
         document.getElementById("confirm-title").textContent = "Quitter";
         document.getElementById("confirm-msg").textContent =
           'Quitter "' + name + '" ?';
-        document.getElementById("confirm-ok-btn").onclick = function () {
-          leaveEvent(id);
+        document.getElementById("confirm-ok-btn").textContent = "Quitter";
+        document.getElementById("confirm-ok-btn").className = "btn btn-danger";
+        document.getElementById("confirm-ok-btn").onclick = async function () {
+          await updateDoc(doc(db, "events", id), {
+            invitedUids: arrayRemove(currentUser.uid),
+            invitedUsernames: arrayRemove(userProfile.username),
+          });
+          toast("Quitte.");
+          closeModal("modal-confirm");
+          loadJoinedEvents();
+          renderCalendar();
         };
         openModal("modal-confirm");
       };
-      async function leaveEvent(id) {
-        await updateDoc(doc(db, "events", id), {
-          invitedUids: arrayRemove(currentUser.uid),
-          invitedUsernames: arrayRemove(userProfile.username),
-        });
-        toast("Evenement quitte.");
-        closeModal("modal-confirm");
-        renderCalendar();
-      }
-
       window.confirmDeleteAccount = function () {
         document.getElementById("confirm-title").textContent =
           "Supprimer mon compte";
         document.getElementById("confirm-msg").textContent =
-          "Action irreversible. Toutes vos donnees seront supprimees.";
-        document.getElementById("confirm-ok-btn").onclick = deleteAccount;
+          "Action irreversible.";
+        document.getElementById("confirm-ok-btn").textContent = "Supprimer";
+        document.getElementById("confirm-ok-btn").className = "btn btn-danger";
+        document.getElementById("confirm-ok-btn").onclick = async function () {
+          await deleteDoc(doc(db, "users", currentUser.uid));
+          await deleteUser(currentUser);
+          closeModal("modal-confirm");
+        };
         openModal("modal-confirm");
       };
-      async function deleteAccount() {
-        await deleteDoc(doc(db, "users", currentUser.uid));
-        await deleteUser(currentUser);
-        toast("Compte supprime.");
-        closeModal("modal-confirm");
-      }
 
       window.copyCode = function (code) {
         navigator.clipboard
           .writeText(code)
           .then(function () {
-            toast("Code copie.");
+            toast("Code copie !");
           })
           .catch(function () {
             toast("Copie impossible.", "error");
           });
       };
-
       window.closeModal = closeModal;
     </script>
   </body>
