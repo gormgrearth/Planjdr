@@ -1342,7 +1342,6 @@
         serverTimestamp,
         arrayUnion,
         arrayRemove,
-        orderBy,
         limit,
       } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -1795,7 +1794,6 @@
         var q = query(
           collection(db, "events"),
           where("createdBy", "==", currentUser.uid),
-          orderBy("createdAt", "desc"),
         );
         var unsub = onSnapshot(
           q,
@@ -1803,6 +1801,13 @@
             var events = [];
             snap.forEach(function (d) {
               events.push(Object.assign({ id: d.id }, d.data()));
+            });
+            events.sort(function (a, b) {
+              var ta =
+                a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+              var tb =
+                b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+              return tb - ta;
             });
             renderMJEvents(events);
           },
