@@ -13,13 +13,13 @@
     ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
     body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 60% 40% at 80% 10%,rgba(201,168,76,.08) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 10% 90%,rgba(139,92,246,.07) 0%,transparent 60%);pointer-events:none}
     #app{position:relative;z-index:1}
-    #auth-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:2rem}
+    #auth-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:2rem;position:relative}
     .logo-title{text-align:center}
     .logo-title h1{font-family:'Cinzel',serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:900;letter-spacing:.12em;color:var(--accent);text-shadow:0 0 40px rgba(201,168,76,.4)}
     .logo-title p{color:var(--muted);letter-spacing:.2em;font-size:.85rem;text-transform:uppercase;margin-top:.4rem}
     .ornament{color:var(--accent);opacity:.5;font-size:1.4rem}
-    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem 2rem;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
-    .auth-tabs{display:flex;gap:.5rem;margin-bottom:2rem}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem 1.5rem 2.5rem;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+    .auth-tabs{display:flex;gap:.5rem;margin-bottom:0}
     .auth-tab{flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;padding:.6rem;border-radius:6px;cursor:pointer;transition:all .2s}
     .auth-tab.active{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
     .field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.2rem}
@@ -146,7 +146,7 @@
     .hidden{display:none!important}.text-muted{color:var(--muted);font-size:.9rem}
     .divider{border:none;border-top:1px solid var(--border);margin:1.2rem 0}.loading{text-align:center;color:var(--muted);padding:2rem;font-style:italic}
     /* EVENT IMAGE CARD */
-    .overflow:hidden;border-radius:var(--radius)}
+    .ev-card-bg{position:relative;overflow:hidden;border-radius:var(--radius)}
     .ev-card-bg .ev-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;pointer-events:none;border-radius:var(--radius)}
     .ev-card-bg .ev-card-content{position:relative;z-index:1}
     .opacity-slider{width:100%;accent-color:var(--accent);cursor:pointer;height:4px}
@@ -163,22 +163,22 @@
 
 <!-- AUTH -->
 <div id="auth-screen">
-  <div style="position:absolute;top:1rem;right:1rem;z-index:10">
-    <div class="theme-switcher" title="Changer de theme">
-      <div class="theme-btn active" data-t="default" onclick="setTheme('default')" title="Fantastique"></div>
-      <div class="theme-btn" data-t="cyberpunk" onclick="setTheme('cyberpunk')" title="Cyberpunk"></div>
-      <div class="theme-btn" data-t="medieval" onclick="setTheme('medieval')" title="Medieval"></div>
-    </div>
-  </div>
   <div class="logo-title">
     <div class="ornament">* * *</div>
     <h1>Chroniques</h1>
     <p>Planificateur de Jeux de Role</p>
   </div>
   <div class="auth-card">
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login')">Connexion</button>
-      <button class="auth-tab" onclick="switchAuthTab('register')">Creer un compte</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:.8rem">
+      <div class="auth-tabs" style="margin-bottom:0;flex:1">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Connexion</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Creer un compte</button>
+      </div>
+      <div class="theme-switcher" title="Theme" style="flex-shrink:0">
+        <div class="theme-btn active" data-t="default" onclick="setTheme('default')" title="Fantastique"></div>
+        <div class="theme-btn" data-t="cyberpunk" onclick="setTheme('cyberpunk')" title="Cyberpunk"></div>
+        <div class="theme-btn" data-t="medieval" onclick="setTheme('medieval')" title="Medieval"></div>
+      </div>
     </div>
     <div id="auth-error" class="error-msg hidden"></div>
     <div id="login-form">
@@ -214,7 +214,7 @@
   </header>
   <main>
     <div class="nav-tabs" id="nav-tabs"></div>
-    <!-- PANEL CALENDRIER -->
+     <!-- PANEL CALENDRIER -->
     <div class="panel active" id="panel-calendar">
       <div class="section-title">Calendrier</div>
       <div class="cal-nav">
@@ -595,7 +595,6 @@ function initMainApp() {
     btn.onclick = function() { switchTab(t.id); };
     tabsEl.appendChild(btn);
   });
-
   var now = new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
   renderCalendar();
   if (isMJ) loadMJEvents();
@@ -661,6 +660,7 @@ async function renderCalendar() {
     var palette = ['#f472b6','#60a5fa','#34d399','#fbbf24','#a78bfa','#f87171','#38bdf8','#4ade80','#fb923c','#e879f9'];
     return palette[n % palette.length];
   }
+
   for (var i=0;i<startOffset;i++){var empty=document.createElement('div');empty.className='cal-cell empty';grid.appendChild(empty);}
 
   for (var d=1;d<=totalDays;d++) {
@@ -768,6 +768,7 @@ function renderCalLegend(events) {
     wrap.appendChild(txt); el.appendChild(wrap);
   });
 }
+
 function renderCalEventList(events) {
   var el = document.getElementById('cal-event-list');
   if (!events.length) { el.innerHTML='<p class="text-muted">Aucun evenement ce mois-ci.</p>'; return; }
@@ -1231,6 +1232,7 @@ async function loadFriends(){
       await deleteDoc(reqSnap.docs[ri].ref);
     }
   } catch(e){}
+
   var friends=userProfile.friends||[];
   if(!friends.length){el.innerHTML='<p class="text-muted">Aucun ami pour l\'instant.</p>';return;}
   el.innerHTML='<div class="loading">Chargement...</div>';
