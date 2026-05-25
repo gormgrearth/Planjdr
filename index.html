@@ -1966,9 +1966,9 @@
             '<div style="font-size:.82rem;color:var(--muted);margin-top:.2rem">MJ : '+ev.creatorUsername+'  |  '+entry.slot.start+' - '+entry.slot.end+'</div></div>'+
             '<div style="display:flex;gap:.4rem">'+
             (isMJ
-              ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(''+ev.id+'');closeModal('modal-day-picker')">Resume</button>'+
-                (ev.closed ? '' : '<button class="btn btn-success btn-sm" onclick="openCloseEventModal(''+ev.id+'');closeModal('modal-day-picker')">Cloturer</button>')
-              : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(''+ev.id+'');closeModal('modal-day-picker')">Repondre</button>'
+              ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\');closeModal(\'modal-day-picker\')">Resume</button>'+
+                (ev.closed ? '' : '<button class="btn btn-success btn-sm" onclick="openCloseEventModal(\''+ev.id+'\');closeModal(\'modal-day-picker\')">Cloturer</button>')
+              : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\');closeModal(\'modal-day-picker\')">Repondre</button>'
             )+
             '</div></div>';
           list.appendChild(item);
