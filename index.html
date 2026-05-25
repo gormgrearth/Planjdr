@@ -1,1308 +1,2460 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chroniques - Planificateur JDR</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Share+Tech+Mono&family=Rajdhani:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
-  <style>
-    :root{--bg:#0d0b0f;--surface:#16121c;--surface2:#1f1928;--border:#2e2640;--accent:#c9a84c;--accent2:#8b5cf6;--danger:#e05252;--success:#52c478;--maybe:#9ca3af;--text:#e8e0f0;--muted:#8878a8;--radius:10px}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Crimson Pro',Georgia,serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:17px}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-    body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 60% 40% at 80% 10%,rgba(201,168,76,.08) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 10% 90%,rgba(139,92,246,.07) 0%,transparent 60%);pointer-events:none}
-    #app{position:relative;z-index:1}
-    #auth-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:2rem;position:relative}
-    .logo-title{text-align:center}
-    .logo-title h1{font-family:'Cinzel',serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:900;letter-spacing:.12em;color:var(--accent);text-shadow:0 0 40px rgba(201,168,76,.4)}
-    .logo-title p{color:var(--muted);letter-spacing:.2em;font-size:.85rem;text-transform:uppercase;margin-top:.4rem}
-    .ornament{color:var(--accent);opacity:.5;font-size:1.4rem}
-    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem 1.5rem 2.5rem;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
-    .auth-tabs{display:flex;gap:.5rem;margin-bottom:0}
-    .auth-tab{flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.12em;padding:.6rem;border-radius:6px;cursor:pointer;transition:all .2s}
-    .auth-tab.active{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
-    .field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.2rem}
-    .field label{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-    .field input,.field select,.field textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Crimson Pro',serif;font-size:1rem;padding:.65rem .9rem;border-radius:6px;transition:border-color .2s;outline:none}
-    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
-    .field select option{background:var(--surface2)}
-    .role-selector{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem}
-    .role-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:1rem .5rem;cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.4rem}
-    .role-btn .role-icon{font-size:1.6rem}.role-btn .role-label{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.1em}.role-btn .role-desc{font-size:.8rem;color:var(--muted)}
-    .role-btn.selected{border-color:var(--accent);color:var(--accent)}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.4rem;border-radius:6px;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.1em;cursor:pointer;border:none;transition:all .2s;font-weight:600}
-    .btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{filter:brightness(1.1)}
-    .btn-outline{background:none;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-    .btn-danger{background:none;border:1px solid var(--danger);color:var(--danger)}.btn-danger:hover{background:rgba(224,82,82,.12)}
-    .btn-success{background:none;border:1px solid var(--success);color:var(--success)}.btn-success:hover{background:rgba(82,196,120,.12)}
-    .btn-ghost{background:none;border:none;color:var(--muted);font-family:'Crimson Pro',serif;font-size:.9rem;letter-spacing:normal}.btn-ghost:hover{color:var(--text)}
-    .btn-block{width:100%}.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}.btn-sm{padding:.35rem .7rem;font-size:.72rem}
-    .error-msg{background:rgba(224,82,82,.12);border:1px solid var(--danger);color:var(--danger);padding:.6rem .9rem;border-radius:6px;font-size:.9rem;margin-bottom:1rem}
-    #main-screen{display:none;min-height:100vh;flex-direction:column}#main-screen.visible{display:flex}
-    header{background:var(--surface);border-bottom:1px solid var(--border);padding:.8rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100}
-    header .logo{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--accent);letter-spacing:.1em;flex:1}
-    .user-chip{display:flex;align-items:center;gap:.5rem;background:var(--surface2);border:1px solid var(--border);padding:.35rem .8rem;border-radius:20px;font-size:.85rem}
-    .role-badge{font-family:'Cinzel',serif;font-size:.65rem;padding:.15rem .4rem;border-radius:4px;background:var(--accent2);color:#fff;letter-spacing:.06em}
-    .role-badge.mj{background:var(--accent);color:var(--bg)}
-    main{flex:1;padding:1.5rem;max-width:960px;margin:0 auto;width:100%}
-    .nav-tabs{display:flex;gap:.4rem;margin-bottom:1.8rem;border-bottom:1px solid var(--border)}
-    .nav-tab{background:none;border:none;border-bottom:2px solid transparent;padding:.6rem 1rem .8rem;color:var(--muted);font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;margin-bottom:-1px}
-    .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-    .panel{display:none}.panel.active{display:block}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem}
-    .card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;gap:1rem}
-    .card-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--accent);letter-spacing:.06em}
-    .card-meta{font-size:.85rem;color:var(--muted);margin-top:.2rem}
-    .card-actions{display:flex;gap:.5rem;flex-shrink:0;flex-wrap:wrap}
-    .code-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface2);border:1px dashed var(--border);border-radius:6px;padding:.35rem .8rem;font-size:.85rem}
-    .code-badge strong{font-family:'Cinzel',serif;color:var(--accent);letter-spacing:.1em}
-    .copy-btn{cursor:pointer;color:var(--muted);transition:color .2s;font-size:.8rem}.copy-btn:hover{color:var(--accent)}
-    /* CALENDAR */
-    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:.8rem}
-    .cal-header-cell{text-align:center;padding:.35rem 0;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
-    .cal-cell{background:var(--surface2);border:2px solid transparent;border-radius:7px;padding:.35rem .2rem .4rem;text-align:center;min-height:72px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.8rem;position:relative;transition:all .15s;cursor:default}
-    .cal-cell.past{background:rgba(13,11,15,.5);opacity:.45}
-    .cal-cell.has-event{border-color:var(--border);cursor:pointer}
-    .cal-cell.has-event:hover{border-color:var(--accent);background:rgba(201,168,76,.05)}
-    .cal-cell.selectable{cursor:pointer}
-    .cal-cell.selectable:hover{border-color:var(--accent);background:rgba(201,168,76,.06)}
-    .cal-cell.selected-day{border-color:var(--accent)!important;background:rgba(201,168,76,.15)!important}
-    .cal-cell.already-slotted{background:rgba(201,168,76,.1)}
-    .cal-cell.empty{background:transparent;border-color:transparent!important;cursor:default;min-height:72px}
-    .cal-cell .day-num{font-weight:600;font-size:.78rem;color:var(--text);line-height:1.2}
-    /* dot row */
-    .dot-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:2px;margin-top:2px;min-height:14px}
-    .v-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;position:relative}
-    .v-dot.vote-yes{border:none}
-    .v-dot.vote-no{background:transparent!important;border-width:2px;border-style:solid}
-    .v-dot.vote-maybe{border-width:2px;border-style:dashed}
-    .v-dot.vote-none{background:transparent;border-width:2px;border-style:solid;opacity:.3}
-    /* score */
-    .cal-score{font-size:.65rem;color:var(--text);margin-top:2px;letter-spacing:.04em;font-weight:600;line-height:1}
-    .cal-score .s-yes{color:#4ade80}.cal-score .s-no{color:#f87171}.cal-score .s-maybe{color:#9ca3af}
-    /* event color strip */
-    .ev-strip{width:100%;height:3px;border-radius:2px;margin-top:2px}
-    .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
-    .cal-month{font-family:'Cinzel',serif;font-size:1rem;color:var(--accent);letter-spacing:.08em}
-    /* DATE SLOTS */
-    .date-slots{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.8rem}
-    .date-slot{display:flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.3rem .65rem;font-size:.86rem;color:var(--text)}
-    .date-slot.past-slot{opacity:.45;color:var(--muted);text-decoration:line-through}
-    .date-slot.final-slot{border-color:var(--success);color:var(--success)}
-    .remove-slot{cursor:pointer;color:var(--muted);font-size:.8rem;margin-left:2px}.remove-slot:hover{color:var(--danger)}
-    /* PRESENCE TABLE */
-    .presence-table{width:100%;border-collapse:collapse;margin-top:.8rem}
-    .presence-table th,.presence-table td{padding:.5rem .55rem;text-align:center;border-bottom:1px solid var(--border);font-size:.86rem;color:var(--text)}
-    .presence-table th{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.08em;color:var(--text);text-transform:uppercase;background:var(--surface2)}
-    .presence-table td:first-child{text-align:left}
-    .presence-table tr:hover td{background:rgba(255,255,255,.03)}
-    .s-yes{color:#4ade80}.s-no{color:#f87171}.s-maybe{color:var(--maybe)}.s-none{color:var(--muted)}
-    /* RESPONSE BUTTONS */
-    .response-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border);gap:1rem}
-    .response-row:last-child{border-bottom:none}
-    .response-btns{display:flex;gap:.4rem;margin-left:auto}
-    .resp-btn{min-width:42px;height:40px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);font-size:1.2rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;padding:0 .5rem}
-    .resp-btn:hover{transform:scale(1.08)}
-    .resp-btn.active-yes{background:rgba(74,222,128,.18);border-color:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.25)}
-    .resp-btn.active-no{background:rgba(248,113,113,.18);border-color:#f87171;box-shadow:0 0 8px rgba(248,113,113,.25)}
-    .resp-btn.active-maybe{background:rgba(156,163,175,.18);border-color:#9ca3af;box-shadow:0 0 6px rgba(156,163,175,.2)}
-    /* DATETIME ROW */
-    .datetime-row{display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap}
-    .datetime-row .field{margin-bottom:0;flex:1;min-width:110px}
-    /* PLAYER CHIPS */
-    .player-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
-    .player-chip{display:flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:.2rem .7rem;font-size:.85rem;color:var(--text)}
-    .remove-player{cursor:pointer;color:var(--muted);font-size:.75rem}.remove-player:hover{color:var(--danger)}
-    /* COLOR PICKER */
-    .color-picker-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
-    .color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
-    .color-swatch:hover,.color-swatch.selected{transform:scale(1.2);border-color:#fff}
-    /* SECTION TITLE */
-    .section-title{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-    /* MODAL */
-    .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:1rem}
-    .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 60px rgba(0,0,0,.5);animation:modal-in .2s ease}
-    @keyframes modal-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    .modal-title{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--accent);letter-spacing:.08em;margin-bottom:1.5rem}
-    .modal-footer{display:flex;gap:.8rem;justify-content:flex-end;margin-top:1.5rem;flex-wrap:wrap}
-    /* TOAST */
-    #toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem 1.2rem;font-size:.9rem;box-shadow:0 4px 20px rgba(0,0,0,.3);transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;color:var(--text)}
-    #toast.show{transform:translateY(0);opacity:1}#toast.success{border-color:var(--success);color:var(--success)}#toast.error{border-color:var(--danger);color:var(--danger)}
-    /* CLOSED BADGE */
-    .closed-badge{display:inline-block;background:rgba(82,196,120,.12);border:1px solid var(--success);color:var(--success);font-size:.7rem;letter-spacing:.08em;padding:.12rem .45rem;border-radius:4px;font-family:'Cinzel',serif;margin-left:.5rem;vertical-align:middle}
-    /* SEARCH */
-    .search-results{background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-top:.3rem;overflow:hidden}
-    .search-result-item{padding:.6rem .9rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.9rem;color:var(--text);transition:background .15s}
-    .search-result-item:hover{background:rgba(201,168,76,.08)}
-    .sr-meta{font-size:.78rem;color:var(--muted)}
-    /* FRIENDS */
-    .friend-chip{display:flex;align-items:center;gap:.5rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.5rem .9rem;margin-bottom:.4rem;color:var(--text)}
-    .fc-role{font-family:'Cinzel',serif;font-size:.62rem;background:var(--accent2);color:#fff;padding:.1rem .35rem;border-radius:3px}.fc-role.mj{background:var(--accent);color:var(--bg)}
-    /* FINAL DATE */
-    .final-date-row{display:flex;align-items:center;padding:.5rem .8rem;background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;margin-bottom:.35rem;color:var(--text)}
-    /* UTILS */
-    .flex{display:flex}.gap-sm{gap:.5rem}.mt-sm{margin-top:.5rem}.mt-md{margin-top:1rem}
-    .hidden{display:none!important}.text-muted{color:var(--muted);font-size:.9rem}
-    .divider{border:none;border-top:1px solid var(--border);margin:1.2rem 0}.loading{text-align:center;color:var(--muted);padding:2rem;font-style:italic}
-    /* EVENT IMAGE CARD */
-    .ev-card-bg{position:relative;overflow:hidden;border-radius:var(--radius)}
-    .ev-card-bg .ev-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;pointer-events:none;border-radius:var(--radius)}
-    .ev-card-bg .ev-card-content{position:relative;z-index:1}
-    .opacity-slider{width:100%;accent-color:var(--accent);cursor:pointer;height:4px}
-    .img-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-top:.5rem;border:1px solid var(--border);display:none}
-    /* LEGEND */
-    .cal-legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem;font-size:.78rem;color:var(--muted)}
-    .legend-item{display:flex;align-items:center;gap:.3rem}
-    .legend-dot{width:10px;height:10px;border-radius:50%}
-    @media(max-width:600px){header{padding:.6rem 1rem}main{padding:1rem}.calendar-grid{gap:2px}.cal-cell{min-height:58px;font-size:.7rem}.btn{padding:.55rem .9rem}}
-  </style>
-</head>
-<body>
-<div id="app">
-
-<!-- AUTH -->
-<div id="auth-screen">
-  <div class="logo-title">
-    <div class="ornament">* * *</div>
-    <h1>Chroniques</h1>
-    <p>Planificateur de Jeux de Role</p>
-  </div>
-  <div class="auth-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:.8rem">
-      <div class="auth-tabs" style="margin-bottom:0;flex:1">
-        <button class="auth-tab active" onclick="switchAuthTab('login')">Connexion</button>
-        <button class="auth-tab" onclick="switchAuthTab('register')">Creer un compte</button>
-      </div>
-      <div class="theme-switcher" title="Theme" style="flex-shrink:0">
-        <div class="theme-btn active" data-t="default" onclick="setTheme('default')" title="Fantastique"></div>
-        <div class="theme-btn" data-t="cyberpunk" onclick="setTheme('cyberpunk')" title="Cyberpunk"></div>
-        <div class="theme-btn" data-t="medieval" onclick="setTheme('medieval')" title="Medieval"></div>
-      </div>
-    </div>
-    <div id="auth-error" class="error-msg hidden"></div>
-    <div id="login-form">
-      <div class="field"><label>Adresse e-mail</label><input type="email" id="login-email" placeholder="votre@email.com"/></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="login-password" placeholder="......"/></div>
-      <button class="btn btn-primary btn-block" onclick="doLogin()">Se connecter</button>
-    </div>
-    <div id="register-form" class="hidden">
-      <div class="field"><label>Nom d'utilisateur</label><input type="text" id="reg-username" placeholder="Votre pseudonyme" maxlength="24"/></div>
-      <div class="field"><label>Adresse e-mail</label><input type="email" id="reg-email" placeholder="votre@email.com"/></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="reg-password" placeholder="......" minlength="6"/></div>
-      <div class="field"><label>Vous etes...</label></div>
-      <div class="role-selector">
-        <div class="role-btn" id="role-mj" onclick="selectRole('MJ')"><div class="role-icon">&#127917;</div><div class="role-label">MJ</div><div class="role-desc">Meneur de jeu</div></div>
-        <div class="role-btn" id="role-jr" onclick="selectRole('JR')"><div class="role-icon">&#129497;</div><div class="role-label">Joueur</div><div class="role-desc">Participant</div></div>
-      </div>
-      <button class="btn btn-primary btn-block" onclick="doRegister()">Creer mon compte</button>
-    </div>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div id="main-screen">
-  <header>
-    <div class="logo">&#9876; Chroniques</div>
-    <div class="user-chip"><span id="header-username">-</span><span class="role-badge" id="header-role-badge">?</span></div>
-    <div class="theme-switcher" title="Changer de theme">
-      <div class="theme-btn active" data-t="default" onclick="setTheme('default')" title="Fantastique"></div>
-      <div class="theme-btn" data-t="cyberpunk" onclick="setTheme('cyberpunk')" title="Cyberpunk"></div>
-      <div class="theme-btn" data-t="medieval" onclick="setTheme('medieval')" title="Medieval"></div>
-    </div>
-    <button class="btn btn-ghost" onclick="doLogout()">Deconnexion</button>
-  </header>
-  <main>
-    <div class="nav-tabs" id="nav-tabs"></div>
-     <!-- PANEL CALENDRIER -->
-    <div class="panel active" id="panel-calendar">
-      <div class="section-title">Calendrier</div>
-      <div class="cal-nav">
-        <button class="btn btn-ghost" onclick="calMove(-1)">&#9664; Precedent</button>
-        <div class="cal-month" id="cal-month-label">-</div>
-        <button class="btn btn-ghost" onclick="calMove(1)">Suivant &#9654;</button>
-      </div>
-      <div class="calendar-grid" id="cal-grid"></div>
-      <div id="cal-legend" class="cal-legend"></div>
-      <div class="mt-md" id="cal-event-list"></div>
-    </div>
-    <!-- PANEL EVENEMENTS MJ -->
-    <div class="panel hidden" id="panel-events">
-      <div class="section-title">Mes evenements <button class="btn btn-primary btn-sm" onclick="openCreateEvent()">+ Creer</button></div>
-      <div id="events-list"><div class="loading">Chargement...</div></div>
-    </div>
-    <!-- PANEL REJOINDRE -->
-    <div class="panel hidden" id="panel-join">
-      <div class="section-title">Rejoindre un evenement</div>
-      <div class="card">
-        <div class="field"><label>Code d'invitation</label><input type="text" id="join-code-input" placeholder="EX: AB3X7K" maxlength="10" style="text-transform:uppercase;letter-spacing:.12em;font-family:'Cinzel',serif"/></div>
-        <button class="btn btn-primary" onclick="joinByCode()">Rejoindre</button>
-      </div>
-      <div class="section-title mt-md">Evenements rejoints</div>
-      <div id="joined-events-list"><div class="loading">Chargement...</div></div>
-    </div>
-    <!-- PANEL AMIS -->
-    <div class="panel hidden" id="panel-friends">
-      <div class="section-title">Mes amis</div>
-      <div class="card">
-        <p class="text-muted" style="margin-bottom:1rem">Partagez votre code ami (usage unique) ou entrez le code d'un ami.</p>
-        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1.2rem">
-          <div class="code-badge">Mon code : <strong id="my-friend-code">...</strong> <span class="copy-btn" onclick="copyMyFriendCode()">copier</span></div>
-          <button class="btn btn-outline btn-sm" onclick="refreshFriendCode()">Nouveau code</button>
-        </div>
-        <div class="field"><label>Code d'un ami</label>
-          <div class="flex gap-sm"><input type="text" id="friend-code-input" placeholder="Code de votre ami" maxlength="12" style="flex:1;text-transform:uppercase;letter-spacing:.08em"/><button class="btn btn-primary" onclick="addFriendByCode()">Ajouter</button></div>
-        </div>
-      </div>
-      <div class="section-title mt-md">Liste d'amis</div>
-      <div id="friends-list"><div class="loading">Chargement...</div></div>
-    </div>
-    <!-- PANEL PROFIL -->
-    <div class="panel hidden" id="panel-profile">
-      <div class="section-title">Mon profil</div>
-      <div class="card">
-        <div class="field"><label>Nom d'utilisateur</label><input type="text" id="profile-username" maxlength="24"/></div>
-        <div class="field"><label>Role</label><select id="profile-role"><option value="MJ">MJ - Meneur de jeu</option><option value="JR">Joueur</option></select></div>
-        <div class="flex gap-sm mt-sm"><button class="btn btn-primary" onclick="saveProfile()">Enregistrer</button></div>
-        <hr class="divider"/>
-        <button class="btn btn-danger" onclick="confirmDeleteAccount()">Supprimer mon compte</button>
-      </div>
-    </div>
-  </main>
-</div>
-
-<!-- MODAL CREATION EVENEMENT -->
-<div class="modal-overlay hidden" id="modal-event">
-  <div class="modal">
-    <div class="modal-title" id="modal-event-title">Creer un evenement</div>
-    <div class="field"><label>Nom</label><input type="text" id="ev-name" placeholder="La Nuit du Dragon..."/></div>
-    <div class="field"><label>Description (optionnel)</label><textarea id="ev-desc" rows="2" placeholder="Quelques mots..."></textarea></div>
-    <div class="field">
-      <label>Couleur de l'evenement</label>
-      <div class="color-picker-row" id="color-picker-row"></div>
-    </div>
-    <div class="field">
-      <label>Selectionner des dates</label>
-      <div class="cal-nav" style="margin-top:.4rem">
-        <button class="btn btn-ghost btn-sm" onclick="evCalMove(-1)">&#9664;</button>
-        <div class="cal-month" id="ev-cal-month" style="font-size:.85rem">-</div>
-        <button class="btn btn-ghost btn-sm" onclick="evCalMove(1)">&#9654;</button>
-      </div>
-      <div class="calendar-grid" id="ev-cal-grid" style="margin-top:.3rem"></div>
-    </div>
-    <div class="field" id="ev-time-section" style="display:none">
-      <label>Plage horaire</label>
-      <div class="datetime-row">
-        <div class="field"><label>Debut</label><input type="time" id="slot-start" value="20:00"/></div>
-        <div class="field"><label>Fin</label><input type="time" id="slot-end" value="23:00"/></div>
-        <button class="btn btn-primary btn-sm" style="margin-bottom:0" onclick="applyTimeToSelected()">Appliquer</button>
-      </div>
-    </div>
-    <div class="date-slots" id="ev-date-slots"></div>
-    <hr class="divider"/>
-    <div class="field">
-      <label>Inviter des joueurs</label>
-      <div class="flex gap-sm"><input type="text" id="ev-player-input" placeholder="Pseudonyme ou e-mail..." style="flex:1" oninput="searchPlayersForEvent()"/></div>
-      <div id="ev-player-search-results" class="search-results hidden"></div>
-    </div>
-    <div class="player-chips" id="ev-player-chips"></div>
-    <hr class="divider"/>
-    <div class="field">
-      <label>Image de fond (URL)</label>
-      <input type="text" id="ev-img-url" placeholder="https://..." oninput="previewEvImg()"/>
-      <img id="ev-img-preview" class="img-preview" alt="Apercu"/>
-    </div>
-    <div class="field" id="ev-opacity-field" style="display:none">
-      <label>Transparence du fond (<span id="ev-opacity-val">70</span>%)</label>
-      <input type="range" class="opacity-slider" id="ev-opacity" min="10" max="95" value="70" oninput="updateOpacityLabel()"/>
-    </div>
-    <p class="text-muted mt-sm" style="font-size:.82rem">Un code sera genere automatiquement.</p>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-event')">Annuler</button>
-      <button class="btn btn-primary" id="ev-save-btn" onclick="saveEvent()">Creer</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DETAIL JOUEUR -->
-<div class="modal-overlay hidden" id="modal-detail">
-  <div class="modal">
-    <div class="modal-title" id="detail-title">Detail</div>
-    <div id="detail-body"></div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-detail')">Fermer</button></div>
-  </div>
-</div>
-
-<!-- MODAL RESUME MJ -->
-<div class="modal-overlay hidden" id="modal-summary">
-  <div class="modal" style="max-width:700px">
-    <div class="modal-title" id="summary-title">Resume</div>
-    <div id="summary-body"></div>
-    <div class="modal-footer" id="summary-footer"><button class="btn btn-outline" onclick="closeModal('modal-summary')">Fermer</button></div>
-  </div>
-</div>
-
-<!-- MODAL CONFIRM -->
-<div class="modal-overlay hidden" id="modal-confirm">
-  <div class="modal">
-    <div class="modal-title" id="confirm-title">Confirmer</div>
-    <div id="confirm-msg"></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Annuler</button>
-      <button class="btn btn-danger" id="confirm-ok-btn">Confirmer</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, onSnapshot, addDoc, serverTimestamp, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// !! REMPLACEZ PAR VOTRE CONFIG FIREBASE !!
-const firebaseConfig = {
-  apiKey: "AIzaSyCE_9PcqLxUQraHms4Beh9N9ZNJfTKk1nE",
-  authDomain: "chroniques-jdr-42941.firebaseapp.com",
-  databaseURL: "https://chroniques-jdr-42941-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "chroniques-jdr-42941",
-  storageBucket: "chroniques-jdr-42941.firebasestorage.app",
-  messagingSenderId: "961354615451",
-  appId: "1:961354615451:web:641a4b4757a8cd196b543e"
-};
-var app  = initializeApp(firebaseConfig);
-var auth = getAuth(app);
-var db   = getFirestore(app);
-
-// CONSTANTS
-var MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
-var DAYS_FR   = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-var TODAY = new Date(); TODAY.setHours(0,0,0,0);
-// Palette of event colors
-var EVENT_COLORS = ['#8b5cf6','#3b82f6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#84cc16','#f97316','#a78bfa'];
-// Emoji as unicode escapes (safe in JS)
-var E_YES   = '\u2705'; // green check
-var E_NO    = '\u274c'; // red X
-var E_MAYBE = '\u2753'; // grey ?
-var E_ERASE = '\u2205'; // empty set
-var E_STAR  = '\u2605'; // star
-var E_LOCK  = '\u{1F512}'; // lock
-
-// STATE
-var currentUser = null;
-var userProfile = null;
-var selectedRole = null;
-var calYear, calMonth;
-var editingEventId = null;
-var evDateSlots = [];
-var evPlayers   = [];
-var evCalYear, evCalMonth;
-var evSelectedDates = [];
-var evSelectedColor = EVENT_COLORS[0];
-var unsubs = [];
-var _searchTimeout = null;
-
-// HELPERS
-function toast(msg, type) {
-  if (!type) type = 'success';
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show ' + type;
-  clearTimeout(el._t);
-  el._t = setTimeout(function() { el.className = ''; }, 3500);
-}
-function showError(msg) { var el = document.getElementById('auth-error'); el.textContent = msg; el.classList.remove('hidden'); }
-function clearError() { document.getElementById('auth-error').classList.add('hidden'); }
-function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-function genCode(len) { var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s=''; for(var i=0;i<(len||6);i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
-function fmtDate(d) { return new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
-function isPast(dateStr) { var d=new Date(dateStr+'T12:00'); d.setHours(0,0,0,0); return d < TODAY; }
-function slotsHtml(dates, finalDates) {
-  if (!dates||!dates.length) return '';
-  var fd = finalDates||[];
-  return dates.map(function(s) {
-    var cls = 'date-slot';
-    if (isPast(s.date)) cls += ' past-slot';
-    if (fd.indexOf(s.date+'_'+s.start) !== -1) cls += ' final-slot';
-    return '<div class="'+cls+'">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'</div>';
-  }).join('');
-}
-// Build card wrapper with optional event image background
-function evCardOpen(ev) {
-  var url = ev.imgUrl||'';
-  var opacity = ev.imgOpacity||70;
-  var overlayAlpha = (100 - opacity) / 100;
-  if (!url) return '<div class="card">';
-  // Use inline style background-image with overlay
-  var overlay = 'rgba(13,11,15,'+overlayAlpha.toFixed(2)+')';
-  return '<div class="card ev-card-bg" style="background:none">'+
-    '<img class="ev-bg-img" src="'+url+'" onerror="this.style.display='none'"/>'+
-    '<div class="ev-card-content" style="padding:1.5rem;background:'+overlay+';border-radius:var(--radius)">';
-}
-function evCardClose(ev) {
-  if (!ev.imgUrl) return '</div>';
-  return '</div></div>';
-}
-// Auto pick next color not yet used recently
-function autoPickColor(existingColors) {
-  for (var i=0;i<EVENT_COLORS.length;i++) {
-    if (existingColors.indexOf(EVENT_COLORS[i]) === -1) return EVENT_COLORS[i];
-  }
-  return EVENT_COLORS[Math.floor(Math.random()*EVENT_COLORS.length)];
-}
-
-// COLOR PICKER UI
-function buildColorPicker(selectedColor) {
-  var row = document.getElementById('color-picker-row');
-  row.innerHTML = '';
-  EVENT_COLORS.forEach(function(c) {
-    var sw = document.createElement('div');
-    sw.className = 'color-swatch' + (c === selectedColor ? ' selected' : '');
-    sw.style.background = c;
-    sw.title = c;
-    (function(col) {
-      sw.onclick = function() {
-        evSelectedColor = col;
-        document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('selected'); });
-        sw.classList.add('selected');
-      };
-    })(c);
-    row.appendChild(sw);
-  });
-}
-
-// AUTH
-window.switchAuthTab = function(tab) {
-  clearError();
-  var tabs = document.querySelectorAll('.auth-tab');
-  tabs[0].classList.toggle('active', tab === 'login');
-  tabs[1].classList.toggle('active', tab === 'register');
-  document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
-  document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
-};
-window.selectRole = function(r) {
-  selectedRole = r;
-  document.getElementById('role-mj').classList.toggle('selected', r === 'MJ');
-  document.getElementById('role-jr').classList.toggle('selected', r === 'JR');
-};
-window.doRegister = async function() {
-  clearError();
-  var username = document.getElementById('reg-username').value.trim();
-  var email    = document.getElementById('reg-email').value.trim();
-  var password = document.getElementById('reg-password').value;
-  if (!username) return showError("Choisissez un nom d'utilisateur.");
-  if (!selectedRole) return showError('Choisissez votre role.');
-  if (password.length < 6) return showError('Mot de passe trop court (6 min).');
-  try {
-    var cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db,'users',cred.user.uid), { username:username, email:email, role:selectedRole, friendCode:genCode(8), friends:[], createdAt:serverTimestamp() });
-  } catch(e) { showError(fbErr(e.code)); }
-};
-window.doLogin = async function() {
-  clearError();
-  try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value.trim(), document.getElementById('login-password').value); } catch(e) { showError(fbErr(e.code)); }
-};
-window.doLogout = function() { signOut(auth); };
-function fbErr(code) {
-  var m = {'auth/email-already-in-use':'E-mail deja utilise.','auth/invalid-email':'E-mail invalide.','auth/wrong-password':'Mot de passe incorrect.','auth/user-not-found':'Aucun compte.','auth/weak-password':'Mot de passe trop faible.','auth/invalid-credential':'Identifiants incorrects.'};
-  return m[code]||'Erreur : '+code;
-}
-
-// ============================================================
-// THEME MANAGEMENT (offline / no auth needed)
-// ============================================================
-function setTheme(t) {
-  if (!t || t === 'default') {
-    document.documentElement.removeAttribute('data-theme');
-  } else {
-    document.documentElement.setAttribute('data-theme', t);
-  }
-  localStorage.setItem('rpg_theme', t||'default');
-  document.querySelectorAll('.theme-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.getAttribute('data-t') === (t||'default'));
-  });
-  // Update logo ornament per theme
-  var ornaments = document.querySelectorAll('.ornament');
-  var ornMap = {
-    'default': '* * *',
-    'cyberpunk': '> _ <',
-    'medieval': '+ + +'
-  };
-  ornaments.forEach(function(o){ o.textContent = ornMap[t||'default']||'* * *'; });
-  // Update h1 subtitle
-  var subtitles = document.querySelectorAll('.logo-title p');
-  var subMap = {
-    'default': 'Planificateur de Jeux de Role',
-    'cyberpunk': 'TACTICAL RPG SCHEDULER // v2.0',
-    'medieval': 'Chroniques des Royaumes'
-  };
-  subtitles.forEach(function(s){ s.textContent = subMap[t||'default']||'Planificateur de Jeux de Role'; });
-  // Update header logo text
-  var logos = document.querySelectorAll('header .logo');
-  var logoMap = {
-    'default': '&#9876; Chroniques',
-    'cyberpunk': '&gt; CHRONIQUES_',
-    'medieval': '&#9827; Chroniques'
-  };
-  logos.forEach(function(l){ l.innerHTML = logoMap[t||'default']||'Chroniques'; });
-}
-
-function initTheme() {
-  var saved = localStorage.getItem('rpg_theme')||'default';
-  setTheme(saved);
-}
-initTheme();
-window.setTheme = setTheme;
-
-onAuthStateChanged(auth, async function(user) {
-  if (user) {
-    currentUser = user;
-    var snap = await getDoc(doc(db,'users',user.uid));
-    if (!snap.exists()) { signOut(auth); return; }
-    userProfile = snap.data();
-    if (!userProfile.friendCode) { var fc=genCode(8); await updateDoc(doc(db,'users',user.uid),{friendCode:fc}); userProfile.friendCode=fc; }
-    initMainApp();
-  } else {
-    currentUser=null; userProfile=null;
-    unsubs.forEach(function(u){u();}); unsubs=[];
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('main-screen').classList.remove('visible');
-  }
-});
-
-function initMainApp() {
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('main-screen').classList.add('visible');
-  document.getElementById('header-username').textContent = userProfile.username;
-  var badge = document.getElementById('header-role-badge');
-  badge.textContent = userProfile.role;
-  badge.className = 'role-badge'+(userProfile.role==='MJ'?' mj':'');
-  document.getElementById('profile-username').value = userProfile.username;
-  document.getElementById('profile-role').value = userProfile.role;
-
-  var tabsEl = document.getElementById('nav-tabs'); tabsEl.innerHTML = '';
-  var isMJ = userProfile.role === 'MJ';
-  var tabs = isMJ
-    ? [{id:'calendar',label:'Calendrier'},{id:'events',label:'Mes evenements'},{id:'friends',label:'Amis'},{id:'profile',label:'Profil'}]
-    : [{id:'calendar',label:'Calendrier'},{id:'join',label:'Rejoindre'},{id:'friends',label:'Amis'},{id:'profile',label:'Profil'}];
-  tabs.forEach(function(t,i) {
-    var btn = document.createElement('button');
-    btn.className = 'nav-tab'+(i===0?' active':'');
-    btn.textContent = t.label;
-    btn.onclick = function() { switchTab(t.id); };
-    tabsEl.appendChild(btn);
-  });
-  var now = new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
-  renderCalendar();
-  if (isMJ) loadMJEvents();
-  else loadJoinedEvents();
-  loadFriends();
-  // Re-sync theme buttons now that header is visible
-  var saved = localStorage.getItem('rpg_theme')||'default';
-  document.querySelectorAll('.theme-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.getAttribute('data-t') === saved);
-  });
-}
-
-function switchTab(id) {
-  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');p.classList.add('hidden');});
-  var panel = document.getElementById('panel-'+id);
-  if (panel) { panel.classList.add('active'); panel.classList.remove('hidden'); }
-  document.querySelectorAll('.nav-tab').forEach(function(t){
-    var map = {calendar:'Calendrier',events:'evenements',join:'Rejoindre',friends:'Amis',profile:'Profil'};
-    if (t.textContent.includes(map[id])) t.classList.add('active');
-  });
-  if (id==='friends') renderFriendCode();
-}
-
-// ============================================================
-// CALENDAR
-// ============================================================
-async function renderCalendar() {
-  document.getElementById('cal-month-label').textContent = MONTHS_FR[calMonth]+' '+calYear;
-  var grid = document.getElementById('cal-grid'); grid.innerHTML = '';
-  DAYS_FR.forEach(function(d){var h=document.createElement('div');h.className='cal-header-cell';h.textContent=d;grid.appendChild(h);});
-
-  var firstDay = new Date(calYear,calMonth,1);
-  var totalDays = new Date(calYear,calMonth+1,0).getDate();
-  var startOffset = firstDay.getDay()-1; if(startOffset<0) startOffset=6;
-  var monthStr = calYear+'-'+String(calMonth+1).padStart(2,'0');
-
-  // Fetch events
-  var events = [];
-  try {
-    var isMJ = userProfile.role==='MJ';
-    var q = isMJ ? query(collection(db,'events'),where('createdBy','==',currentUser.uid)) : query(collection(db,'events'),where('invitedUids','array-contains',currentUser.uid));
-    var snap = await getDocs(q);
-    snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
-  } catch(e) { console.error(e); }
-
-  // Build dateMap: date -> list of {ev, slot}
-  var dateMap = {};
-  events.forEach(function(ev) {
-    (ev.dates||[]).forEach(function(slot) {
-      if (slot.date && slot.date.startsWith(monthStr)) {
-        if (!dateMap[slot.date]) dateMap[slot.date] = [];
-        dateMap[slot.date].push({ev:ev,slot:slot});
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chroniques - Planificateur JDR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Share+Tech+Mono&family=Rajdhani:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0b0f;
+        --surface: #16121c;
+        --surface2: #1f1928;
+        --border: #2e2640;
+        --accent: #c9a84c;
+        --accent2: #8b5cf6;
+        --danger: #e05252;
+        --success: #52c478;
+        --maybe: #9ca3af;
+        --text: #e8e0f0;
+        --muted: #8878a8;
+        --radius: 10px;
       }
-    });
-  });
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Crimson Pro", Georgia, serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        font-size: 17px;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            ellipse 60% 40% at 80% 10%,
+            rgba(201, 168, 76, 0.08) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 40% 50% at 10% 90%,
+            rgba(139, 92, 246, 0.07) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+      }
+      #app {
+        position: relative;
+        z-index: 1;
+      }
+      #auth-screen {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        gap: 2rem;
+        position: relative;
+      }
+      .logo-title {
+        text-align: center;
+      }
+      .logo-title h1 {
+        font-family: "Cinzel", serif;
+        font-size: clamp(2.2rem, 5vw, 3.5rem);
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        text-shadow: 0 0 40px rgba(201, 168, 76, 0.4);
+      }
+      .logo-title p {
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        margin-top: 0.4rem;
+      }
+      .ornament {
+        color: var(--accent);
+        opacity: 0.5;
+        font-size: 1.4rem;
+      }
+      .auth-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem 1.5rem 2.5rem;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      }
+      .auth-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0;
+      }
+      .auth-tab {
+        flex: 1;
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-family: "Cinzel", serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        padding: 0.6rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .auth-tab.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--bg);
+        font-weight: 600;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.2rem;
+      }
+      .field label {
+        font-size: 0.8rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: "Crimson Pro", serif;
+        font-size: 1rem;
+        padding: 0.65rem 0.9rem;
+        border-radius: 6px;
+        transition: border-color 0.2s;
+        outline: none;
+      }
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: var(--accent);
+      }
+      .field select option {
+        background: var(--surface2);
+      }
+      .role-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+      }
+      .role-btn {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 6px;
+        padding: 1rem 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .role-btn .role-icon {
+        font-size: 1.6rem;
+      }
+      .role-btn .role-label {
+        font-family: "Cinzel", serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+      }
+      .role-btn .role-desc {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .role-btn.selected {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 6px;
+        font-family: "Cinzel", serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .btn-primary:hover {
+        filter: brightness(1.1);
+      }
+      .btn-outline {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .btn-outline:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn-danger {
+        background: none;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: rgba(224, 82, 82, 0.12);
+      }
+      .btn-success {
+        background: none;
+        border: 1px solid var(--success);
+        color: var(--success);
+      }
+      .btn-success:hover {
+        background: rgba(82, 196, 120, 0.12);
+      }
+      .btn-ghost {
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-family: "Crimson Pro", serif;
+        font-size: 0.9rem;
+        letter-spacing: normal;
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+      }
+      .btn-block {
+        width: 100%;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: none;
+      }
+      .btn-sm {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.72rem;
+      }
+      .error-msg {
+        background: rgba(224, 82, 82, 0.12);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 0.6rem 0.9rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+      #main-screen {
+        display: none;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+      #main-screen.visible {
+        display: flex;
+      }
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0.8rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      header .logo {
+        font-family: "Cinzel", serif;
+        font-size: 1.1rem;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+        flex: 1;
+      }
+      .user-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        padding: 0.35rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+      }
+      .role-badge {
+        font-family: "Cinzel", serif;
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        background: var(--accent2);
+        color: #fff;
+        letter-spacing: 0.06em;
+      }
+      .role-badge.mj {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      main {
+        flex: 1;
+        padding: 1.5rem;
+        max-width: 960px;
+        margin: 0 auto;
+        width: 100%;
+      }
+      .nav-tabs {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 1.8rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-tab {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.6rem 1rem 0.8rem;
+        color: var(--muted);
+        font-family: "Cinzel", serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: -1px;
+      }
+      .nav-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .panel {
+        display: none;
+      }
+      .panel.active {
+        display: block;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        gap: 1rem;
+      }
+      .card-title {
+        font-family: "Cinzel", serif;
+        font-size: 1rem;
+        color: var(--accent);
+        letter-spacing: 0.06em;
+      }
+      .card-meta {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+      .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .code-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px dashed var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.8rem;
+        font-size: 0.85rem;
+      }
+      .code-badge strong {
+        font-family: "Cinzel", serif;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+      }
+      .copy-btn {
+        cursor: pointer;
+        color: var(--muted);
+        transition: color 0.2s;
+        font-size: 0.8rem;
+      }
+      .copy-btn:hover {
+        color: var(--accent);
+      }
+      /* CALENDAR */
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-top: 0.8rem;
+      }
+      .cal-header-cell {
+        text-align: center;
+        padding: 0.35rem 0;
+        font-family: "Cinzel", serif;
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .cal-cell {
+        background: var(--surface2);
+        border: 2px solid transparent;
+        border-radius: 7px;
+        padding: 0.35rem 0.2rem 0.4rem;
+        text-align: center;
+        min-height: 72px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.8rem;
+        position: relative;
+        transition: all 0.15s;
+        cursor: default;
+      }
+      .cal-cell.past {
+        background: rgba(13, 11, 15, 0.5);
+        opacity: 0.45;
+      }
+      .cal-cell.has-event {
+        border-color: var(--border);
+        cursor: pointer;
+      }
+      .cal-cell.has-event:hover {
+        border-color: var(--accent);
+        background: rgba(201, 168, 76, 0.05);
+      }
+      .cal-cell.selectable {
+        cursor: pointer;
+      }
+      .cal-cell.selectable:hover {
+        border-color: var(--accent);
+        background: rgba(201, 168, 76, 0.06);
+      }
+      .cal-cell.selected-day {
+        border-color: var(--accent) !important;
+        background: rgba(201, 168, 76, 0.15) !important;
+      }
+      .cal-cell.already-slotted {
+        background: rgba(201, 168, 76, 0.1);
+      }
+      .cal-cell.empty {
+        background: transparent;
+        border-color: transparent !important;
+        cursor: default;
+        min-height: 72px;
+      }
+      .cal-cell .day-num {
+        font-weight: 600;
+        font-size: 0.78rem;
+        color: var(--text);
+        line-height: 1.2;
+      }
+      /* dot row */
+      .dot-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 2px;
+        margin-top: 2px;
+        min-height: 14px;
+      }
+      .v-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .v-dot.vote-yes {
+        border: none;
+      }
+      .v-dot.vote-no {
+        background: transparent !important;
+        border-width: 2px;
+        border-style: solid;
+      }
+      .v-dot.vote-maybe {
+        border-width: 2px;
+        border-style: dashed;
+      }
+      .v-dot.vote-none {
+        background: transparent;
+        border-width: 2px;
+        border-style: solid;
+        opacity: 0.3;
+      }
+      /* score */
+      .cal-score {
+        font-size: 0.65rem;
+        color: var(--text);
+        margin-top: 2px;
+        letter-spacing: 0.04em;
+        font-weight: 600;
+        line-height: 1;
+      }
+      .cal-score .s-yes {
+        color: #4ade80;
+      }
+      .cal-score .s-no {
+        color: #f87171;
+      }
+      .cal-score .s-maybe {
+        color: #9ca3af;
+      }
+      /* event color strip */
+      .ev-strip {
+        width: 100%;
+        height: 3px;
+        border-radius: 2px;
+        margin-top: 2px;
+      }
+      .cal-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.3rem;
+      }
+      .cal-month {
+        font-family: "Cinzel", serif;
+        font-size: 1rem;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+      }
+      /* DATE SLOTS */
+      .date-slots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.8rem;
+      }
+      .date-slot {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.3rem 0.65rem;
+        font-size: 0.86rem;
+        color: var(--text);
+      }
+      .date-slot.past-slot {
+        opacity: 0.45;
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+      .date-slot.final-slot {
+        border-color: var(--success);
+        color: var(--success);
+      }
+      .remove-slot {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 0.8rem;
+        margin-left: 2px;
+      }
+      .remove-slot:hover {
+        color: var(--danger);
+      }
+      /* PRESENCE TABLE */
+      .presence-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.8rem;
+      }
+      .presence-table th,
+      .presence-table td {
+        padding: 0.5rem 0.55rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.86rem;
+        color: var(--text);
+      }
+      .presence-table th {
+        font-family: "Cinzel", serif;
+        font-size: 0.66rem;
+        letter-spacing: 0.08em;
+        color: var(--text);
+        text-transform: uppercase;
+        background: var(--surface2);
+      }
+      .presence-table td:first-child {
+        text-align: left;
+      }
+      .presence-table tr:hover td {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .s-yes {
+        color: #4ade80;
+      }
+      .s-no {
+        color: #f87171;
+      }
+      .s-maybe {
+        color: var(--maybe);
+      }
+      .s-none {
+        color: var(--muted);
+      }
+      /* RESPONSE BUTTONS */
+      .response-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.7rem 0;
+        border-bottom: 1px solid var(--border);
+        gap: 1rem;
+      }
+      .response-row:last-child {
+        border-bottom: none;
+      }
+      .response-btns {
+        display: flex;
+        gap: 0.4rem;
+        margin-left: auto;
+      }
+      .resp-btn {
+        min-width: 42px;
+        height: 40px;
+        border-radius: 8px;
+        border: 2px solid var(--border);
+        background: var(--surface2);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.5rem;
+      }
+      .resp-btn:hover {
+        transform: scale(1.08);
+      }
+      .resp-btn.active-yes {
+        background: rgba(74, 222, 128, 0.18);
+        border-color: #4ade80;
+        box-shadow: 0 0 8px rgba(74, 222, 128, 0.25);
+      }
+      .resp-btn.active-no {
+        background: rgba(248, 113, 113, 0.18);
+        border-color: #f87171;
+        box-shadow: 0 0 8px rgba(248, 113, 113, 0.25);
+      }
+      .resp-btn.active-maybe {
+        background: rgba(156, 163, 175, 0.18);
+        border-color: #9ca3af;
+        box-shadow: 0 0 6px rgba(156, 163, 175, 0.2);
+      }
+      /* DATETIME ROW */
+      .datetime-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .datetime-row .field {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 110px;
+      }
+      /* PLAYER CHIPS */
+      .player-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+      }
+      .player-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.85rem;
+        color: var(--text);
+      }
+      .remove-player {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+      .remove-player:hover {
+        color: var(--danger);
+      }
+      /* COLOR PICKER */
+      .color-picker-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+      }
+      .color-swatch {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: transform 0.15s;
+      }
+      .color-swatch:hover,
+      .color-swatch.selected {
+        transform: scale(1.2);
+        border-color: #fff;
+      }
+      /* SECTION TITLE */
+      .section-title {
+        font-family: "Cinzel", serif;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      /* MODAL */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        width: 100%;
+        max-width: 560px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 16px 60px rgba(0, 0, 0, 0.5);
+        animation: modal-in 0.2s ease;
+      }
+      @keyframes modal-in {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .modal-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.1rem;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        margin-bottom: 1.5rem;
+      }
+      .modal-footer {
+        display: flex;
+        gap: 0.8rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+      }
+      /* TOAST */
+      #toast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 300;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.3s;
+        pointer-events: none;
+        color: var(--text);
+      }
+      #toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      #toast.success {
+        border-color: var(--success);
+        color: var(--success);
+      }
+      #toast.error {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+      /* CLOSED BADGE */
+      .closed-badge {
+        display: inline-block;
+        background: rgba(82, 196, 120, 0.12);
+        border: 1px solid var(--success);
+        color: var(--success);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        padding: 0.12rem 0.45rem;
+        border-radius: 4px;
+        font-family: "Cinzel", serif;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+      }
+      /* SEARCH */
+      .search-results {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-top: 0.3rem;
+        overflow: hidden;
+      }
+      .search-result-item {
+        padding: 0.6rem 0.9rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--text);
+        transition: background 0.15s;
+      }
+      .search-result-item:hover {
+        background: rgba(201, 168, 76, 0.08);
+      }
+      .sr-meta {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      /* FRIENDS */
+      .friend-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 0.9rem;
+        margin-bottom: 0.4rem;
+        color: var(--text);
+      }
+      .fc-role {
+        font-family: "Cinzel", serif;
+        font-size: 0.62rem;
+        background: var(--accent2);
+        color: #fff;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+      }
+      .fc-role.mj {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      /* FINAL DATE */
+      .final-date-row {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.8rem;
+        background: rgba(82, 196, 120, 0.07);
+        border: 1px solid var(--success);
+        border-radius: 6px;
+        margin-bottom: 0.35rem;
+        color: var(--text);
+      }
+      /* UTILS */
+      .flex {
+        display: flex;
+      }
+      .gap-sm {
+        gap: 0.5rem;
+      }
+      .mt-sm {
+        margin-top: 0.5rem;
+      }
+      .mt-md {
+        margin-top: 1rem;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .text-muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 1.2rem 0;
+      }
+      .loading {
+        text-align: center;
+        color: var(--muted);
+        padding: 2rem;
+        font-style: italic;
+      }
+      /* EVENT IMAGE CARD */
+      .ev-card-bg {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius);
+      }
+      .ev-card-bg .ev-bg-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: var(--radius);
+      }
+      .ev-card-bg .ev-card-content {
+        position: relative;
+        z-index: 1;
+      }
+      .opacity-slider {
+        width: 100%;
+        accent-color: var(--accent);
+        cursor: pointer;
+        height: 4px;
+      }
+      .img-preview {
+        width: 100%;
+        max-height: 120px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-top: 0.5rem;
+        border: 1px solid var(--border);
+        display: none;
+      }
+      /* LEGEND */
+      .cal-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 0.8rem;
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      @media (max-width: 600px) {
+        header {
+          padding: 0.6rem 1rem;
+        }
+        main {
+          padding: 1rem;
+        }
+        .calendar-grid {
+          gap: 2px;
+        }
+        .cal-cell {
+          min-height: 58px;
+          font-size: 0.7rem;
+        }
+        .btn {
+          padding: 0.55rem 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- AUTH -->
+      <div id="auth-screen">
+        <div class="logo-title">
+          <div class="ornament">* * *</div>
+          <h1>Chroniques</h1>
+          <p>Planificateur de Jeux de Role</p>
+        </div>
+        <div class="auth-card">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 1.5rem;
+              gap: 0.8rem;
+            "
+          >
+            <div class="auth-tabs" style="margin-bottom: 0; flex: 1">
+              <button class="auth-tab active" onclick="switchAuthTab('login')">
+                Connexion
+              </button>
+              <button class="auth-tab" onclick="switchAuthTab('register')">
+                Creer un compte
+              </button>
+            </div>
+            <div class="theme-switcher" title="Theme" style="flex-shrink: 0">
+              <div
+                class="theme-btn active"
+                data-t="default"
+                onclick="setTheme('default')"
+                title="Fantastique"
+              ></div>
+              <div
+                class="theme-btn"
+                data-t="cyberpunk"
+                onclick="setTheme('cyberpunk')"
+                title="Cyberpunk"
+              ></div>
+              <div
+                class="theme-btn"
+                data-t="medieval"
+                onclick="setTheme('medieval')"
+                title="Medieval"
+              ></div>
+            </div>
+          </div>
+          <div id="auth-error" class="error-msg hidden"></div>
+          <div id="login-form">
+            <div class="field">
+              <label>Adresse e-mail</label
+              ><input
+                type="email"
+                id="login-email"
+                placeholder="votre@email.com"
+              />
+            </div>
+            <div class="field">
+              <label>Mot de passe</label
+              ><input
+                type="password"
+                id="login-password"
+                placeholder="......"
+              />
+            </div>
+            <button class="btn btn-primary btn-block" onclick="doLogin()">
+              Se connecter
+            </button>
+          </div>
+          <div id="register-form" class="hidden">
+            <div class="field">
+              <label>Nom d'utilisateur</label
+              ><input
+                type="text"
+                id="reg-username"
+                placeholder="Votre pseudonyme"
+                maxlength="24"
+              />
+            </div>
+            <div class="field">
+              <label>Adresse e-mail</label
+              ><input
+                type="email"
+                id="reg-email"
+                placeholder="votre@email.com"
+              />
+            </div>
+            <div class="field">
+              <label>Mot de passe</label
+              ><input
+                type="password"
+                id="reg-password"
+                placeholder="......"
+                minlength="6"
+              />
+            </div>
+            <div class="field"><label>Vous etes...</label></div>
+            <div class="role-selector">
+              <div class="role-btn" id="role-mj" onclick="selectRole('MJ')">
+                <div class="role-icon">&#127917;</div>
+                <div class="role-label">MJ</div>
+                <div class="role-desc">Meneur de jeu</div>
+              </div>
+              <div class="role-btn" id="role-jr" onclick="selectRole('JR')">
+                <div class="role-icon">&#129497;</div>
+                <div class="role-label">Joueur</div>
+                <div class="role-desc">Participant</div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="doRegister()">
+              Creer mon compte
+            </button>
+          </div>
+        </div>
+      </div>
 
-  // Collect all participant uids across all events for color assignment
-  // Each user gets their unique color based on uid hash
-  function uidToColor(uid) {
-    var n = 0; for (var i=0;i<uid.length;i++) n=(n*31+uid.charCodeAt(i))>>>0;
-    // Use a fixed palette for users
-    var palette = ['#f472b6','#60a5fa','#34d399','#fbbf24','#a78bfa','#f87171','#38bdf8','#4ade80','#fb923c','#e879f9'];
-    return palette[n % palette.length];
-  }
+      <!-- MAIN -->
+      <div id="main-screen">
+        <header>
+          <div class="logo">&#9876; Chroniques</div>
+          <div class="user-chip">
+            <span id="header-username">-</span
+            ><span class="role-badge" id="header-role-badge">?</span>
+          </div>
+          <div class="theme-switcher" title="Changer de theme">
+            <div
+              class="theme-btn active"
+              data-t="default"
+              onclick="setTheme('default')"
+              title="Fantastique"
+            ></div>
+            <div
+              class="theme-btn"
+              data-t="cyberpunk"
+              onclick="setTheme('cyberpunk')"
+              title="Cyberpunk"
+            ></div>
+            <div
+              class="theme-btn"
+              data-t="medieval"
+              onclick="setTheme('medieval')"
+              title="Medieval"
+            ></div>
+          </div>
+          <button class="btn btn-ghost" onclick="doLogout()">
+            Deconnexion
+          </button>
+        </header>
+        <main>
+          <div class="nav-tabs" id="nav-tabs"></div>
+          <!-- PANEL CALENDRIER -->
+          <div class="panel active" id="panel-calendar">
+            <div class="section-title">Calendrier</div>
+            <div class="cal-nav">
+              <button class="btn btn-ghost" onclick="calMove(-1)">
+                &#9664; Precedent
+              </button>
+              <div class="cal-month" id="cal-month-label">-</div>
+              <button class="btn btn-ghost" onclick="calMove(1)">
+                Suivant &#9654;
+              </button>
+            </div>
+            <div class="calendar-grid" id="cal-grid"></div>
+            <div id="cal-legend" class="cal-legend"></div>
+            <div class="mt-md" id="cal-event-list"></div>
+          </div>
+          <!-- PANEL EVENEMENTS MJ -->
+          <div class="panel hidden" id="panel-events">
+            <div class="section-title">
+              Mes evenements
+              <button
+                class="btn btn-primary btn-sm"
+                onclick="openCreateEvent()"
+              >
+                + Creer
+              </button>
+            </div>
+            <div id="events-list"><div class="loading">Chargement...</div></div>
+          </div>
+          <!-- PANEL REJOINDRE -->
+          <div class="panel hidden" id="panel-join">
+            <div class="section-title">Rejoindre un evenement</div>
+            <div class="card">
+              <div class="field">
+                <label>Code d'invitation</label
+                ><input
+                  type="text"
+                  id="join-code-input"
+                  placeholder="EX: AB3X7K"
+                  maxlength="10"
+                  style="
+                    text-transform: uppercase;
+                    letter-spacing: 0.12em;
+                    font-family: &quot;Cinzel&quot;, serif;
+                  "
+                />
+              </div>
+              <button class="btn btn-primary" onclick="joinByCode()">
+                Rejoindre
+              </button>
+            </div>
+            <div class="section-title mt-md">Evenements rejoints</div>
+            <div id="joined-events-list">
+              <div class="loading">Chargement...</div>
+            </div>
+          </div>
+          <!-- PANEL AMIS -->
+          <div class="panel hidden" id="panel-friends">
+            <div class="section-title">Mes amis</div>
+            <div class="card">
+              <p class="text-muted" style="margin-bottom: 1rem">
+                Partagez votre code ami (usage unique) ou entrez le code d'un
+                ami.
+              </p>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.8rem;
+                  flex-wrap: wrap;
+                  margin-bottom: 1.2rem;
+                "
+              >
+                <div class="code-badge">
+                  Mon code : <strong id="my-friend-code">...</strong>
+                  <span class="copy-btn" onclick="copyMyFriendCode()"
+                    >copier</span
+                  >
+                </div>
+                <button
+                  class="btn btn-outline btn-sm"
+                  onclick="refreshFriendCode()"
+                >
+                  Nouveau code
+                </button>
+              </div>
+              <div class="field">
+                <label>Code d'un ami</label>
+                <div class="flex gap-sm">
+                  <input
+                    type="text"
+                    id="friend-code-input"
+                    placeholder="Code de votre ami"
+                    maxlength="12"
+                    style="
+                      flex: 1;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                    "
+                  /><button class="btn btn-primary" onclick="addFriendByCode()">
+                    Ajouter
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="section-title mt-md">Liste d'amis</div>
+            <div id="friends-list">
+              <div class="loading">Chargement...</div>
+            </div>
+          </div>
+          <!-- PANEL PROFIL -->
+          <div class="panel hidden" id="panel-profile">
+            <div class="section-title">Mon profil</div>
+            <div class="card">
+              <div class="field">
+                <label>Nom d'utilisateur</label
+                ><input type="text" id="profile-username" maxlength="24" />
+              </div>
+              <div class="field">
+                <label>Role</label
+                ><select id="profile-role">
+                  <option value="MJ">MJ - Meneur de jeu</option>
+                  <option value="JR">Joueur</option>
+                </select>
+              </div>
+              <div class="flex gap-sm mt-sm">
+                <button class="btn btn-primary" onclick="saveProfile()">
+                  Enregistrer
+                </button>
+              </div>
+              <hr class="divider" />
+              <button class="btn btn-danger" onclick="confirmDeleteAccount()">
+                Supprimer mon compte
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
 
-  for (var i=0;i<startOffset;i++){var empty=document.createElement('div');empty.className='cal-cell empty';grid.appendChild(empty);}
+      <!-- MODAL CREATION EVENEMENT -->
+      <div class="modal-overlay hidden" id="modal-event">
+        <div class="modal">
+          <div class="modal-title" id="modal-event-title">
+            Creer un evenement
+          </div>
+          <div class="field">
+            <label>Nom</label
+            ><input
+              type="text"
+              id="ev-name"
+              placeholder="La Nuit du Dragon..."
+            />
+          </div>
+          <div class="field">
+            <label>Description (optionnel)</label
+            ><textarea
+              id="ev-desc"
+              rows="2"
+              placeholder="Quelques mots..."
+            ></textarea>
+          </div>
+          <div class="field">
+            <label>Couleur de l'evenement</label>
+            <div class="color-picker-row" id="color-picker-row"></div>
+          </div>
+          <div class="field">
+            <label>Selectionner des dates</label>
+            <div class="cal-nav" style="margin-top: 0.4rem">
+              <button class="btn btn-ghost btn-sm" onclick="evCalMove(-1)">
+                &#9664;
+              </button>
+              <div
+                class="cal-month"
+                id="ev-cal-month"
+                style="font-size: 0.85rem"
+              >
+                -
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="evCalMove(1)">
+                &#9654;
+              </button>
+            </div>
+            <div
+              class="calendar-grid"
+              id="ev-cal-grid"
+              style="margin-top: 0.3rem"
+            ></div>
+          </div>
+          <div class="field" id="ev-time-section" style="display: none">
+            <label>Plage horaire</label>
+            <div class="datetime-row">
+              <div class="field">
+                <label>Debut</label
+                ><input type="time" id="slot-start" value="20:00" />
+              </div>
+              <div class="field">
+                <label>Fin</label
+                ><input type="time" id="slot-end" value="23:00" />
+              </div>
+              <button
+                class="btn btn-primary btn-sm"
+                style="margin-bottom: 0"
+                onclick="applyTimeToSelected()"
+              >
+                Appliquer
+              </button>
+            </div>
+          </div>
+          <div class="date-slots" id="ev-date-slots"></div>
+          <hr class="divider" />
+          <div class="field">
+            <label>Inviter des joueurs</label>
+            <div class="flex gap-sm">
+              <input
+                type="text"
+                id="ev-player-input"
+                placeholder="Pseudonyme ou e-mail..."
+                style="flex: 1"
+                oninput="searchPlayersForEvent()"
+              />
+            </div>
+            <div
+              id="ev-player-search-results"
+              class="search-results hidden"
+            ></div>
+          </div>
+          <div class="player-chips" id="ev-player-chips"></div>
+          <hr class="divider" />
+          <div class="field">
+            <label>Image de fond (URL)</label>
+            <input
+              type="text"
+              id="ev-img-url"
+              placeholder="https://..."
+              oninput="previewEvImg()"
+            />
+            <img id="ev-img-preview" class="img-preview" alt="Apercu" />
+          </div>
+          <div class="field" id="ev-opacity-field" style="display: none">
+            <label
+              >Transparence du fond (<span id="ev-opacity-val">70</span
+              >%)</label
+            >
+            <input
+              type="range"
+              class="opacity-slider"
+              id="ev-opacity"
+              min="10"
+              max="95"
+              value="70"
+              oninput="updateOpacityLabel()"
+            />
+          </div>
+          <p class="text-muted mt-sm" style="font-size: 0.82rem">
+            Un code sera genere automatiquement.
+          </p>
+          <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modal-event')">
+              Annuler
+            </button>
+            <button
+              class="btn btn-primary"
+              id="ev-save-btn"
+              onclick="saveEvent()"
+            >
+              Creer
+            </button>
+          </div>
+        </div>
+      </div>
 
-  for (var d=1;d<=totalDays;d++) {
-    var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    var cell = document.createElement('div'); cell.className='cal-cell';
-    var past = isPast(dateStr);
-    if (past) cell.classList.add('past');
+      <!-- MODAL DETAIL JOUEUR -->
+      <div class="modal-overlay hidden" id="modal-detail">
+        <div class="modal">
+          <div class="modal-title" id="detail-title">Detail</div>
+          <div id="detail-body"></div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-outline"
+              onclick="closeModal('modal-detail')"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
 
-    var dn = document.createElement('div'); dn.className='day-num'; dn.textContent=d; cell.appendChild(dn);
+      <!-- MODAL RESUME MJ -->
+      <div class="modal-overlay hidden" id="modal-summary">
+        <div class="modal" style="max-width: 700px">
+          <div class="modal-title" id="summary-title">Resume</div>
+          <div id="summary-body"></div>
+          <div class="modal-footer" id="summary-footer">
+            <button
+              class="btn btn-outline"
+              onclick="closeModal('modal-summary')"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
 
-    var entries = dateMap[dateStr]||[];
-    if (entries.length) {
-      cell.classList.add('has-event');
-      if (!past) { (function(ent){ cell.onclick = function(){openDayDetail(ent);}; })(entries); }
+      <!-- MODAL CONFIRM -->
+      <div class="modal-overlay hidden" id="modal-confirm">
+        <div class="modal">
+          <div class="modal-title" id="confirm-title">Confirmer</div>
+          <div id="confirm-msg"></div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-outline"
+              onclick="closeModal('modal-confirm')"
+            >
+              Annuler
+            </button>
+            <button class="btn btn-danger" id="confirm-ok-btn">
+              Confirmer
+            </button>
+          </div>
+        </div>
+      </div>
 
-      // Color strips for events
-      var stripRow = document.createElement('div'); stripRow.style.cssText='display:flex;gap:2px;width:90%;justify-content:center;margin-top:2px';
-      var seenEv = {};
-      entries.forEach(function(entry) {
-        if (!seenEv[entry.ev.id]) {
-          seenEv[entry.ev.id]=true;
-          var strip = document.createElement('div'); strip.className='ev-strip';
-          strip.style.background = entry.ev.color||'var(--accent2)';
-          stripRow.appendChild(strip);
+      <div id="toast"></div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, onSnapshot, addDoc, serverTimestamp, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      // !! REMPLACEZ PAR VOTRE CONFIG FIREBASE !!
+      const firebaseConfig = {
+
+        apiKey: "AIzaSyCE_9PcqLxUQraHms4Beh9N9ZNJfTKk1nE",
+
+        authDomain: "chroniques-jdr-42941.firebaseapp.com",
+
+        databaseURL: "https://chroniques-jdr-42941-default-rtdb.europe-west1.firebasedatabase.app",
+
+        projectId: "chroniques-jdr-42941",
+
+        storageBucket: "chroniques-jdr-42941.firebasestorage.app",
+
+        messagingSenderId: "961354615451",
+
+        appId: "1:961354615451:web:641a4b4757a8cd196b543e"
+
+      };
+
+
+
+      var app  = initializeApp(firebaseConfig);
+      var auth = getAuth(app);
+      var db   = getFirestore(app);
+
+      // CONSTANTS
+      var MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+      var DAYS_FR   = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+      var TODAY = new Date(); TODAY.setHours(0,0,0,0);
+      // Palette of event colors
+      var EVENT_COLORS = ['#8b5cf6','#3b82f6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#84cc16','#f97316','#a78bfa'];
+      // Emoji as unicode escapes (safe in JS)
+      var E_YES   = '\u2705'; // green check
+      var E_NO    = '\u274c'; // red X
+      var E_MAYBE = '\u2753'; // grey ?
+      var E_ERASE = '\u2205'; // empty set
+      var E_STAR  = '\u2605'; // star
+      var E_LOCK  = '\u{1F512}'; // lock
+
+      // STATE
+      var currentUser = null;
+      var userProfile = null;
+      var selectedRole = null;
+      var calYear, calMonth;
+      var editingEventId = null;
+      var evDateSlots = [];
+      var evPlayers   = [];
+      var evCalYear, evCalMonth;
+      var evSelectedDates = [];
+      var evSelectedColor = EVENT_COLORS[0];
+      var unsubs = [];
+      var _searchTimeout = null;
+
+      // HELPERS
+      function toast(msg, type) {
+        if (!type) type = 'success';
+        var el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'show ' + type;
+        clearTimeout(el._t);
+        el._t = setTimeout(function() { el.className = ''; }, 3500);
+      }
+      function showError(msg) { var el = document.getElementById('auth-error'); el.textContent = msg; el.classList.remove('hidden'); }
+      function clearError() { document.getElementById('auth-error').classList.add('hidden'); }
+      function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+      function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+      function genCode(len) { var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s=''; for(var i=0;i<(len||6);i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+      function fmtDate(d) { return new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
+      function isPast(dateStr) { var d=new Date(dateStr+'T12:00'); d.setHours(0,0,0,0); return d < TODAY; }
+      function slotsHtml(dates, finalDates) {
+        if (!dates||!dates.length) return '';
+        var fd = finalDates||[];
+        return dates.map(function(s) {
+          var cls = 'date-slot';
+          if (isPast(s.date)) cls += ' past-slot';
+          if (fd.indexOf(s.date+'_'+s.start) !== -1) cls += ' final-slot';
+          return '<div class="'+cls+'">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'</div>';
+        }).join('');
+      }
+      // Build card wrapper with optional event image background
+      function evCardOpen(ev) {
+        var url = ev.imgUrl||'';
+        var opacity = ev.imgOpacity||70;
+        var overlayAlpha = (100 - opacity) / 100;
+        if (!url) return '<div class="card">';
+        // Use inline style background-image with overlay
+        var overlay = 'rgba(13,11,15,'+overlayAlpha.toFixed(2)+')';
+        return '<div class="card ev-card-bg" style="background:none">'+
+          '<img class="ev-bg-img" src="'+url+'" onerror="this.style.display='none'"/>'+
+          '<div class="ev-card-content" style="padding:1.5rem;background:'+overlay+';border-radius:var(--radius)">';
+      }
+      function evCardClose(ev) {
+        if (!ev.imgUrl) return '</div>';
+        return '</div></div>';
+      }
+      // Auto pick next color not yet used recently
+      function autoPickColor(existingColors) {
+        for (var i=0;i<EVENT_COLORS.length;i++) {
+          if (existingColors.indexOf(EVENT_COLORS[i]) === -1) return EVENT_COLORS[i];
+        }
+        return EVENT_COLORS[Math.floor(Math.random()*EVENT_COLORS.length)];
+      }
+
+      // COLOR PICKER UI
+      function buildColorPicker(selectedColor) {
+        var row = document.getElementById('color-picker-row');
+        row.innerHTML = '';
+        EVENT_COLORS.forEach(function(c) {
+          var sw = document.createElement('div');
+          sw.className = 'color-swatch' + (c === selectedColor ? ' selected' : '');
+          sw.style.background = c;
+          sw.title = c;
+          (function(col) {
+            sw.onclick = function() {
+              evSelectedColor = col;
+              document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('selected'); });
+              sw.classList.add('selected');
+            };
+          })(c);
+          row.appendChild(sw);
+        });
+      }
+
+      // AUTH
+      window.switchAuthTab = function(tab) {
+        clearError();
+        var tabs = document.querySelectorAll('.auth-tab');
+        tabs[0].classList.toggle('active', tab === 'login');
+        tabs[1].classList.toggle('active', tab === 'register');
+        document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+        document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+      };
+      window.selectRole = function(r) {
+        selectedRole = r;
+        document.getElementById('role-mj').classList.toggle('selected', r === 'MJ');
+        document.getElementById('role-jr').classList.toggle('selected', r === 'JR');
+      };
+      window.doRegister = async function() {
+        clearError();
+        var username = document.getElementById('reg-username').value.trim();
+        var email    = document.getElementById('reg-email').value.trim();
+        var password = document.getElementById('reg-password').value;
+        if (!username) return showError("Choisissez un nom d'utilisateur.");
+        if (!selectedRole) return showError('Choisissez votre role.');
+        if (password.length < 6) return showError('Mot de passe trop court (6 min).');
+        try {
+          var cred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db,'users',cred.user.uid), { username:username, email:email, role:selectedRole, friendCode:genCode(8), friends:[], createdAt:serverTimestamp() });
+        } catch(e) { showError(fbErr(e.code)); }
+      };
+      window.doLogin = async function() {
+        clearError();
+        try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value.trim(), document.getElementById('login-password').value); } catch(e) { showError(fbErr(e.code)); }
+      };
+      window.doLogout = function() { signOut(auth); };
+      function fbErr(code) {
+        var m = {'auth/email-already-in-use':'E-mail deja utilise.','auth/invalid-email':'E-mail invalide.','auth/wrong-password':'Mot de passe incorrect.','auth/user-not-found':'Aucun compte.','auth/weak-password':'Mot de passe trop faible.','auth/invalid-credential':'Identifiants incorrects.'};
+        return m[code]||'Erreur : '+code;
+      }
+
+      // ============================================================
+      // THEME MANAGEMENT (offline / no auth needed)
+      // ============================================================
+      function setTheme(t) {
+        if (!t || t === 'default') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+        localStorage.setItem('rpg_theme', t||'default');
+        document.querySelectorAll('.theme-btn').forEach(function(btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-t') === (t||'default'));
+        });
+        // Update logo ornament per theme
+        var ornaments = document.querySelectorAll('.ornament');
+        var ornMap = {
+          'default': '* * *',
+          'cyberpunk': '> _ <',
+          'medieval': '+ + +'
+        };
+        ornaments.forEach(function(o){ o.textContent = ornMap[t||'default']||'* * *'; });
+        // Update h1 subtitle
+        var subtitles = document.querySelectorAll('.logo-title p');
+        var subMap = {
+          'default': 'Planificateur de Jeux de Role',
+          'cyberpunk': 'TACTICAL RPG SCHEDULER // v2.0',
+          'medieval': 'Chroniques des Royaumes'
+        };
+        subtitles.forEach(function(s){ s.textContent = subMap[t||'default']||'Planificateur de Jeux de Role'; });
+        // Update header logo text
+        var logos = document.querySelectorAll('header .logo');
+        var logoMap = {
+          'default': '&#9876; Chroniques',
+          'cyberpunk': '&gt; CHRONIQUES_',
+          'medieval': '&#9827; Chroniques'
+        };
+        logos.forEach(function(l){ l.innerHTML = logoMap[t||'default']||'Chroniques'; });
+      }
+
+      function initTheme() {
+        var saved = localStorage.getItem('rpg_theme')||'default';
+        setTheme(saved);
+      }
+      initTheme();
+      window.setTheme = setTheme;
+
+      onAuthStateChanged(auth, async function(user) {
+        if (user) {
+          currentUser = user;
+          var snap = await getDoc(doc(db,'users',user.uid));
+          if (!snap.exists()) { signOut(auth); return; }
+          userProfile = snap.data();
+          if (!userProfile.friendCode) { var fc=genCode(8); await updateDoc(doc(db,'users',user.uid),{friendCode:fc}); userProfile.friendCode=fc; }
+          initMainApp();
+        } else {
+          currentUser=null; userProfile=null;
+          unsubs.forEach(function(u){u();}); unsubs=[];
+          document.getElementById('auth-screen').style.display='flex';
+          document.getElementById('main-screen').classList.remove('visible');
         }
       });
-      cell.appendChild(stripRow);
 
-      // Collect all voters across events for this date
-      var voterMap = {}; // uid -> {vote, color}
-      entries.forEach(function(entry) {
-        var ev = entry.ev; var slot = entry.slot;
-        var key = slot.date+'_'+slot.start;
-        var allUids = [ev.createdBy].concat(ev.invitedUids||[]);
-        allUids.forEach(function(uid) {
-          if (!uid) return;
-          var vote = ((ev.responses||{})[uid]||{})[key]||'none';
-          if (!voterMap[uid] || vote !== 'none') {
-            voterMap[uid] = {vote:vote, color:uidToColor(uid)};
+      function initMainApp() {
+        document.getElementById('auth-screen').style.display='none';
+        document.getElementById('main-screen').classList.add('visible');
+        document.getElementById('header-username').textContent = userProfile.username;
+        var badge = document.getElementById('header-role-badge');
+        badge.textContent = userProfile.role;
+        badge.className = 'role-badge'+(userProfile.role==='MJ'?' mj':'');
+        document.getElementById('profile-username').value = userProfile.username;
+        document.getElementById('profile-role').value = userProfile.role;
+
+        var tabsEl = document.getElementById('nav-tabs'); tabsEl.innerHTML = '';
+        var isMJ = userProfile.role === 'MJ';
+        var tabs = isMJ
+          ? [{id:'calendar',label:'Calendrier'},{id:'events',label:'Mes evenements'},{id:'friends',label:'Amis'},{id:'profile',label:'Profil'}]
+          : [{id:'calendar',label:'Calendrier'},{id:'join',label:'Rejoindre'},{id:'friends',label:'Amis'},{id:'profile',label:'Profil'}];
+        tabs.forEach(function(t,i) {
+          var btn = document.createElement('button');
+          btn.className = 'nav-tab'+(i===0?' active':'');
+          btn.textContent = t.label;
+          btn.onclick = function() { switchTab(t.id); };
+          tabsEl.appendChild(btn);
+        });
+
+        var now = new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
+        renderCalendar();
+        if (isMJ) loadMJEvents();
+        else loadJoinedEvents();
+        loadFriends();
+        // Re-sync theme buttons now that header is visible
+        var saved = localStorage.getItem('rpg_theme')||'default';
+        document.querySelectorAll('.theme-btn').forEach(function(btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-t') === saved);
+        });
+      }
+
+      function switchTab(id) {
+        document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+        document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');p.classList.add('hidden');});
+        var panel = document.getElementById('panel-'+id);
+        if (panel) { panel.classList.add('active'); panel.classList.remove('hidden'); }
+        document.querySelectorAll('.nav-tab').forEach(function(t){
+          var map = {calendar:'Calendrier',events:'evenements',join:'Rejoindre',friends:'Amis',profile:'Profil'};
+          if (t.textContent.includes(map[id])) t.classList.add('active');
+        });
+        if (id==='friends') renderFriendCode();
+      }
+
+      // ============================================================
+      // CALENDAR
+      // ============================================================
+      async function renderCalendar() {
+        document.getElementById('cal-month-label').textContent = MONTHS_FR[calMonth]+' '+calYear;
+        var grid = document.getElementById('cal-grid'); grid.innerHTML = '';
+        DAYS_FR.forEach(function(d){var h=document.createElement('div');h.className='cal-header-cell';h.textContent=d;grid.appendChild(h);});
+
+        var firstDay = new Date(calYear,calMonth,1);
+        var totalDays = new Date(calYear,calMonth+1,0).getDate();
+        var startOffset = firstDay.getDay()-1; if(startOffset<0) startOffset=6;
+        var monthStr = calYear+'-'+String(calMonth+1).padStart(2,'0');
+
+        // Fetch events
+        var events = [];
+        try {
+          var isMJ = userProfile.role==='MJ';
+          var q = isMJ ? query(collection(db,'events'),where('createdBy','==',currentUser.uid)) : query(collection(db,'events'),where('invitedUids','array-contains',currentUser.uid));
+          var snap = await getDocs(q);
+          snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
+        } catch(e) { console.error(e); }
+
+        // Build dateMap: date -> list of {ev, slot}
+        var dateMap = {};
+        events.forEach(function(ev) {
+          (ev.dates||[]).forEach(function(slot) {
+            if (slot.date && slot.date.startsWith(monthStr)) {
+              if (!dateMap[slot.date]) dateMap[slot.date] = [];
+              dateMap[slot.date].push({ev:ev,slot:slot});
+            }
+          });
+        });
+
+        // Collect all participant uids across all events for color assignment
+        // Each user gets their unique color based on uid hash
+        function uidToColor(uid) {
+          var n = 0; for (var i=0;i<uid.length;i++) n=(n*31+uid.charCodeAt(i))>>>0;
+          // Use a fixed palette for users
+          var palette = ['#f472b6','#60a5fa','#34d399','#fbbf24','#a78bfa','#f87171','#38bdf8','#4ade80','#fb923c','#e879f9'];
+          return palette[n % palette.length];
+        }
+
+        for (var i=0;i<startOffset;i++){var empty=document.createElement('div');empty.className='cal-cell empty';grid.appendChild(empty);}
+
+        for (var d=1;d<=totalDays;d++) {
+          var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+          var cell = document.createElement('div'); cell.className='cal-cell';
+          var past = isPast(dateStr);
+          if (past) cell.classList.add('past');
+
+          var dn = document.createElement('div'); dn.className='day-num'; dn.textContent=d; cell.appendChild(dn);
+
+          var entries = dateMap[dateStr]||[];
+          if (entries.length) {
+            cell.classList.add('has-event');
+            if (!past) { (function(ent){ cell.onclick = function(){openDayDetail(ent);}; })(entries); }
+
+            // Color strips for events
+            var stripRow = document.createElement('div'); stripRow.style.cssText='display:flex;gap:2px;width:90%;justify-content:center;margin-top:2px';
+            var seenEv = {};
+            entries.forEach(function(entry) {
+              if (!seenEv[entry.ev.id]) {
+                seenEv[entry.ev.id]=true;
+                var strip = document.createElement('div'); strip.className='ev-strip';
+                strip.style.background = entry.ev.color||'var(--accent2)';
+                stripRow.appendChild(strip);
+              }
+            });
+            cell.appendChild(stripRow);
+
+            // Collect all voters across events for this date
+            var voterMap = {}; // uid -> {vote, color}
+            entries.forEach(function(entry) {
+              var ev = entry.ev; var slot = entry.slot;
+              var key = slot.date+'_'+slot.start;
+              var allUids = [ev.createdBy].concat(ev.invitedUids||[]);
+              allUids.forEach(function(uid) {
+                if (!uid) return;
+                var vote = ((ev.responses||{})[uid]||{})[key]||'none';
+                if (!voterMap[uid] || vote !== 'none') {
+                  voterMap[uid] = {vote:vote, color:uidToColor(uid)};
+                }
+              });
+            });
+
+            // Dot row
+            var dotRow = document.createElement('div'); dotRow.className='dot-row';
+            var voters = Object.keys(voterMap);
+            voters.forEach(function(uid) {
+              var info = voterMap[uid];
+              var dot = document.createElement('div');
+              dot.className = 'v-dot vote-'+info.vote;
+              dot.style.backgroundColor = info.color;
+              dot.style.borderColor = info.color;
+              if (info.vote === 'no') dot.style.backgroundColor = 'transparent';
+              if (info.vote === 'none') { dot.style.borderColor = info.color; dot.style.backgroundColor = 'transparent'; }
+              dotRow.appendChild(dot);
+            });
+            if (voters.length) cell.appendChild(dotRow);
+
+            // Score row
+            var yes=0, no=0, maybe=0;
+            Object.keys(voterMap).forEach(function(uid) {
+              var v = voterMap[uid].vote;
+              if (v==='yes') yes++; else if (v==='no') no++; else if (v==='maybe') maybe++;
+            });
+            if (yes+no+maybe > 0) {
+              var score = document.createElement('div'); score.className='cal-score';
+              score.innerHTML = '<span class="s-yes">'+yes+'</span><span style="color:var(--muted)"> / </span><span class="s-maybe">'+maybe+'</span><span style="color:var(--muted)"> / </span><span class="s-no">'+no+'</span>';
+              cell.appendChild(score);
+            }
+          }
+          grid.appendChild(cell);
+        }
+
+        // Legend
+        renderCalLegend(events);
+        renderCalEventList(events);
+      }
+
+      function renderCalLegend(events) {
+        var el = document.getElementById('cal-legend'); el.innerHTML = '';
+        if (!events.length) return;
+        // Event colors
+        var seen = {};
+        events.forEach(function(ev) {
+          if (!seen[ev.id]) {
+            seen[ev.id] = true;
+            var item = document.createElement('div'); item.className='legend-item';
+            var dot = document.createElement('div'); dot.className='legend-dot'; dot.style.background=ev.color||'var(--accent2)';
+            item.appendChild(dot);
+            var txt = document.createElement('span'); txt.textContent=ev.name; txt.style.cssText='font-size:.75rem;color:var(--text)';
+            item.appendChild(txt);
+            el.appendChild(item);
           }
         });
-      });
-
-      // Dot row
-      var dotRow = document.createElement('div'); dotRow.className='dot-row';
-      var voters = Object.keys(voterMap);
-      voters.forEach(function(uid) {
-        var info = voterMap[uid];
-        var dot = document.createElement('div');
-        dot.className = 'v-dot vote-'+info.vote;
-        dot.style.backgroundColor = info.color;
-        dot.style.borderColor = info.color;
-        if (info.vote === 'no') dot.style.backgroundColor = 'transparent';
-        if (info.vote === 'none') { dot.style.borderColor = info.color; dot.style.backgroundColor = 'transparent'; }
-        dotRow.appendChild(dot);
-      });
-      if (voters.length) cell.appendChild(dotRow);
-
-      // Score row
-      var yes=0, no=0, maybe=0;
-      Object.keys(voterMap).forEach(function(uid) {
-        var v = voterMap[uid].vote;
-        if (v==='yes') yes++; else if (v==='no') no++; else if (v==='maybe') maybe++;
-      });
-      if (yes+no+maybe > 0) {
-        var score = document.createElement('div'); score.className='cal-score';
-        score.innerHTML = '<span class="s-yes">'+yes+'</span><span style="color:var(--muted)"> / </span><span class="s-maybe">'+maybe+'</span><span style="color:var(--muted)"> / </span><span class="s-no">'+no+'</span>';
-        cell.appendChild(score);
-      }
-    }
-    grid.appendChild(cell);
-  }
-
-  // Legend
-  renderCalLegend(events);
-  renderCalEventList(events);
-}
-
-function renderCalLegend(events) {
-  var el = document.getElementById('cal-legend'); el.innerHTML = '';
-  if (!events.length) return;
-  // Event colors
-  var seen = {};
-  events.forEach(function(ev) {
-    if (!seen[ev.id]) {
-      seen[ev.id] = true;
-      var item = document.createElement('div'); item.className='legend-item';
-      var dot = document.createElement('div'); dot.className='legend-dot'; dot.style.background=ev.color||'var(--accent2)';
-      item.appendChild(dot);
-      var txt = document.createElement('span'); txt.textContent=ev.name; txt.style.cssText='font-size:.75rem;color:var(--text)';
-      item.appendChild(txt);
-      el.appendChild(item);
-    }
-  });
-  // Dot legend
-  var dotLegend = [
-    {cls:'v-dot vote-yes',style:'background:#4ade80;width:10px;height:10px;border-radius:50%;display:inline-block',txt:'Oui'},
-    {cls:'',style:'width:10px;height:10px;border-radius:50%;border:2px dashed #9ca3af;display:inline-block',txt:'Peut-etre'},
-    {cls:'',style:'width:10px;height:10px;border-radius:50%;border:2px solid #f472b6;display:inline-block',txt:'Non / absent'},
-  ];
-  dotLegend.forEach(function(item) {
-    var wrap = document.createElement('div'); wrap.className='legend-item';
-    var dot = document.createElement('span'); dot.style.cssText=item.style; wrap.appendChild(dot);
-    var txt = document.createElement('span'); txt.textContent=item.txt; txt.style.cssText='font-size:.75rem;color:var(--muted)';
-    wrap.appendChild(txt); el.appendChild(wrap);
-  });
-}
-
-function renderCalEventList(events) {
-  var el = document.getElementById('cal-event-list');
-  if (!events.length) { el.innerHTML='<p class="text-muted">Aucun evenement ce mois-ci.</p>'; return; }
-  el.innerHTML='';
-  var isMJ = userProfile.role==='MJ';
-  events.forEach(function(ev) {
-    var card = document.createElement('div'); card.className='card';
-    var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
-    var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
-    var actBtn = isMJ
-      ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">Resume</button>'
-      : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button>';
-    card.innerHTML = colorBar+'<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div></div><div class="card-actions">'+actBtn+'</div></div><div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>';
-    el.appendChild(card);
-  });
-}
-
-function openDayDetail(entries) {
-  if (userProfile.role==='JR') openEventDetail(entries[0].ev.id);
-  else openMJSummary(entries[0].ev.id);
-}
-window.calMove = function(dir) {
-  calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar();
-};
-
-// ============================================================
-// MJ EVENTS LIST
-// ============================================================
-function loadMJEvents() {
-  var q = query(collection(db,'events'),where('createdBy','==',currentUser.uid));
-  var unsub = onSnapshot(q, function(snap) {
-    var events = [];
-    snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
-    events.sort(function(a,b){var ta=a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0;var tb=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;return tb-ta;});
-    renderMJEvents(events);
-  }, function(err){console.error('loadMJEvents',err);});
-  unsubs.push(unsub);
-}
-
-function renderMJEvents(events) {
-  var el = document.getElementById('events-list');
-  if (!events.length) { el.innerHTML='<p class="text-muted">Aucun evenement. Creez-en un !</p>'; return; }
-  el.innerHTML='';
-  events.forEach(function(ev) {
-    var card = document.createElement('div');
-    var code = ev.code||'';
-    var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
-    var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
-    card.innerHTML = evCardOpen(ev)+colorBar+
-      '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div>'+
-      '<div class="card-meta"><span class="code-badge">Code : <strong>'+code+'</strong> <span class="copy-btn" onclick="copyCode(\''+code+'\')">copier</span></span></div></div>'+
-      '<div class="card-actions">'+
-      '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">Resume</button>'+
-      (ev.closed?'':' <button class="btn btn-outline btn-sm" onclick="openEditEvent(\''+ev.id+'\')">Modifier</button>')+
-      ' <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent(\''+ev.id+'\',\''+ev.name.replace(/'/g,'')+'\')">Supprimer</button>'+
-      '</div></div>'+
-      '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">'+(ev.invitedUsernames||[]).map(function(u){return '<div class="player-chip">'+u+'</div>';}).join('')+'</div>'+evCardClose(ev);
-    el.appendChild(card);
-  });
-}
-
-// ============================================================
-// CREATE / EDIT EVENT
-// ============================================================
-window.openCreateEvent = async function() {
-  editingEventId=null; evDateSlots=[]; evPlayers=[]; evSelectedDates=[];
-  document.getElementById('ev-name').value='';
-  document.getElementById('ev-desc').value='';
-  document.getElementById('ev-date-slots').innerHTML='';
-  document.getElementById('ev-player-chips').innerHTML='';
-  document.getElementById('modal-event-title').textContent='Creer un evenement';
-  document.getElementById('ev-save-btn').textContent='Creer';
-  document.getElementById('ev-time-section').style.display='none';
-  document.getElementById('ev-img-url').value='';
-  document.getElementById('ev-img-preview').style.display='none';
-  document.getElementById('ev-opacity-field').style.display='none';
-  document.getElementById('ev-opacity').value=70;
-  document.getElementById('ev-opacity-val').textContent='70';
-  // Auto-pick color
-  try {
-    var q=query(collection(db,'events'),where('createdBy','==',currentUser.uid));
-    var snap=await getDocs(q); var used=[];
-    snap.forEach(function(d){if(d.data().color) used.push(d.data().color);});
-    evSelectedColor=autoPickColor(used);
-  } catch(e){evSelectedColor=EVENT_COLORS[0];}
-  buildColorPicker(evSelectedColor);
-  var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
-  renderEvCal();
-  openModal('modal-event');
-};
-
-window.openEditEvent = async function(id) {
-  var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
-  var ev=snap.data();
-  editingEventId=id; evSelectedDates=[];
-  evDateSlots=(ev.dates||[]).slice();
-  evPlayers=(ev.invitedUids||[]).map(function(uid,i){return{uid:uid,username:(ev.invitedUsernames||[])[i]||uid};});
-  document.getElementById('ev-name').value=ev.name||'';
-  document.getElementById('ev-desc').value=ev.description||'';
-  document.getElementById('modal-event-title').textContent='Modifier';
-  document.getElementById('ev-save-btn').textContent='Enregistrer';
-  evSelectedColor=ev.color||EVENT_COLORS[0];
-  buildColorPicker(evSelectedColor);
-  var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
-  renderEvCal(); renderDateSlots(); renderPlayerChips();
-  document.getElementById('ev-time-section').style.display='none';
-  var imgUrl = ev.imgUrl||'';
-  var imgOpacity = ev.imgOpacity||70;
-  document.getElementById('ev-img-url').value = imgUrl;
-  document.getElementById('ev-opacity').value = imgOpacity;
-  document.getElementById('ev-opacity-val').textContent = imgOpacity;
-  document.getElementById('ev-opacity-field').style.display = imgUrl ? '' : 'none';
-  var prev = document.getElementById('ev-img-preview');
-  if (imgUrl) { prev.src=imgUrl; prev.style.display=''; } else { prev.style.display='none'; }
-  openModal('modal-event');
-};
-
-function renderEvCal() {
-  document.getElementById('ev-cal-month').textContent=MONTHS_FR[evCalMonth]+' '+evCalYear;
-  var grid=document.getElementById('ev-cal-grid'); grid.innerHTML='';
-  DAYS_FR.forEach(function(d){var h=document.createElement('div');h.className='cal-header-cell';h.textContent=d;grid.appendChild(h);});
-  var firstDay=new Date(evCalYear,evCalMonth,1);
-  var totalDays=new Date(evCalYear,evCalMonth+1,0).getDate();
-  var startOffset=firstDay.getDay()-1; if(startOffset<0) startOffset=6;
-  for(var i=0;i<startOffset;i++){var em=document.createElement('div');em.className='cal-cell empty';grid.appendChild(em);}
-  for(var d=1;d<=totalDays;d++) {
-    var dateStr=evCalYear+'-'+String(evCalMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    var cell=document.createElement('div'); cell.className='cal-cell';
-    var past=isPast(dateStr);
-    if (past) { cell.classList.add('past'); }
-    else {
-      var hasSlot=evDateSlots.filter(function(s){return s.date===dateStr;}).length>0;
-      var isSel=evSelectedDates.indexOf(dateStr)!==-1;
-      if (hasSlot) cell.classList.add('already-slotted');
-      if (isSel) cell.classList.add('selected-day');
-      cell.classList.add('selectable');
-      (function(ds,cl){cl.onclick=function(){toggleEvDate(ds,cl);};})(dateStr,cell);
-    }
-    var dn=document.createElement('div'); dn.className='day-num'; dn.textContent=d; cell.appendChild(dn);
-    grid.appendChild(cell);
-  }
-}
-window.evCalMove=function(dir){evCalMonth+=dir;if(evCalMonth>11){evCalMonth=0;evCalYear++;}if(evCalMonth<0){evCalMonth=11;evCalYear--;}renderEvCal();};
-function toggleEvDate(dateStr,cell) {
-  var idx=evSelectedDates.indexOf(dateStr);
-  if(idx===-1){evSelectedDates.push(dateStr);cell.classList.add('selected-day');}
-  else{evSelectedDates.splice(idx,1);cell.classList.remove('selected-day');}
-  document.getElementById('ev-time-section').style.display=evSelectedDates.length>0?'':'none';
-}
-window.applyTimeToSelected=function() {
-  var s=document.getElementById('slot-start').value;
-  var e=document.getElementById('slot-end').value;
-  evSelectedDates.forEach(function(dateStr){
-    if(!evDateSlots.filter(function(x){return x.date===dateStr&&x.start===s;}).length) evDateSlots.push({date:dateStr,start:s,end:e});
-  });
-  evDateSlots.sort(function(a,b){return a.date.localeCompare(b.date);});
-  evSelectedDates=[]; renderEvCal(); renderDateSlots();
-  document.getElementById('ev-time-section').style.display='none';
-};
-function renderDateSlots() {
-  var el=document.getElementById('ev-date-slots');
-  el.innerHTML=evDateSlots.map(function(s,i){
-    return '<div class="date-slot">'+fmtDate(s.date)+' '+s.start+'-'+s.end+' <span class="remove-slot" onclick="removeDateSlot('+i+')">x</span></div>';
-  }).join('');
-}
-window.removeDateSlot=function(i){evDateSlots.splice(i,1);renderDateSlots();renderEvCal();};
-
-// SEARCH PLAYERS
-window.searchPlayersForEvent=async function() {
-  clearTimeout(_searchTimeout);
-  var val=document.getElementById('ev-player-input').value.trim();
-  var resEl=document.getElementById('ev-player-search-results');
-  if(val.length<2){resEl.classList.add('hidden');return;}
-  _searchTimeout=setTimeout(async function(){
-    try {
-      var results=[];
-      var q1=query(collection(db,'users'),where('username','>=',val),where('username','<=',val+'\uf8ff'),limit(6));
-      var s1=await getDocs(q1);
-      s1.forEach(function(d){if(d.id!==currentUser.uid) results.push(Object.assign({id:d.id},d.data()));});
-      if(val.indexOf('@')!==-1){
-        var q2=query(collection(db,'users'),where('email','==',val));
-        var s2=await getDocs(q2);
-        s2.forEach(function(d){if(d.id!==currentUser.uid&&!results.filter(function(r){return r.id===d.id;}).length) results.push(Object.assign({id:d.id},d.data()));});
-      }
-      if(!results.length){resEl.innerHTML='<div class="search-result-item" style="cursor:default;color:var(--muted)">Aucun utilisateur</div>';resEl.classList.remove('hidden');return;}
-      resEl.innerHTML=results.map(function(u){return '<div class="search-result-item" onclick="addPlayerFromSearch(\''+u.id+'\',\''+u.username+'\')"><span>'+u.username+'</span><span class="sr-meta">'+u.role+'</span></div>';}).join('');
-      resEl.classList.remove('hidden');
-    } catch(e){console.error(e);}
-  },300);
-};
-window.addPlayerFromSearch=function(uid,username) {
-  if(evPlayers.filter(function(p){return p.uid===uid;}).length) return;
-  evPlayers.push({uid:uid,username:username});
-  document.getElementById('ev-player-input').value='';
-  document.getElementById('ev-player-search-results').classList.add('hidden');
-  renderPlayerChips();
-};
-function renderPlayerChips() {
-  document.getElementById('ev-player-chips').innerHTML=evPlayers.map(function(p,i){
-    return '<div class="player-chip">'+p.username+' <span class="remove-player" onclick="removePlayer('+i+')">x</span></div>';
-  }).join('');
-}
-window.removePlayer=function(i){evPlayers.splice(i,1);renderPlayerChips();};
-
-window.previewEvImg=function(){
-  var url = document.getElementById('ev-img-url').value.trim();
-  var prev = document.getElementById('ev-img-preview');
-  var opField = document.getElementById('ev-opacity-field');
-  if (url) { prev.src=url; prev.style.display=''; opField.style.display=''; }
-  else { prev.style.display='none'; opField.style.display='none'; }
-};
-window.updateOpacityLabel=function(){
-  document.getElementById('ev-opacity-val').textContent = document.getElementById('ev-opacity').value;
-};
-window.saveEvent=async function() {
-  var name=document.getElementById('ev-name').value.trim();
-  if(!name) return toast('Donnez un nom.','error');
-  if(!evDateSlots.length) return toast('Selectionnez au moins une date.','error');
-  var imgUrl = document.getElementById('ev-img-url').value.trim();
-  var imgOpacity = parseInt(document.getElementById('ev-opacity').value)||70;
-  var data={name:name,description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username};
-  try {
-    if(editingEventId){await updateDoc(doc(db,'events',editingEventId),data);toast('Evenement mis a jour.');}
-    else{data.code=genCode(6);data.createdAt=serverTimestamp();data.responses={};data.closed=false;data.finalDates=[];await addDoc(collection(db,'events'),data);toast('Evenement cree.');}
-    closeModal('modal-event'); renderCalendar();
-  } catch(e){toast('Erreur : '+e.message,'error');}
-};
-
-// ============================================================
-// MJ SUMMARY + CLOTURE
-// ============================================================
-window.openMJSummary=async function(id) {
-  var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
-  var ev=snap.data();
-  document.getElementById('summary-title').textContent=ev.name+(ev.closed?' [CLOTURE]':'');
-  var responses=ev.responses||{}, players=ev.invitedUids||[], playerNames={};
-  (ev.invitedUids||[]).forEach(function(uid,i){playerNames[uid]=(ev.invitedUsernames||[])[i]||uid;});
-  var dates=ev.dates||[], fd=ev.finalDates||[];
-  var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
-  var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
-  var html=colorBar+imgHtml+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
-  if(ev.closed&&fd.length){
-    html+='<div style="margin-bottom:1rem"><strong style="color:var(--success)">Dates definitives :</strong><div style="margin-top:.4rem">';
-    fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});
-    html+='</div></div>';
-  }
-  if(!dates.length){html+='<p class="text-muted">Aucune date.</p>';}
-  else {
-    html+='<div style="overflow-x:auto"><table class="presence-table"><thead><tr><th>Joueur</th>';
-    dates.forEach(function(s){
-      var past=isPast(s.date)?'<br><small style="color:var(--muted)">(passee)</small>':'';
-      var fin=fd.indexOf(s.date+'_'+s.start)!==-1?' '+E_STAR:'';
-      html+='<th>'+fmtDate(s.date)+'<br><small>'+s.start+'</small>'+fin+past+'</th>';
-    });
-    html+='</tr></thead><tbody>';
-    if(!players.length){html+='<tr><td colspan="'+(dates.length+1)+'" class="text-muted">Aucun joueur invite.</td></tr>';}
-    else {
-      players.forEach(function(uid){
-        html+='<tr><td>'+(playerNames[uid]||uid)+'</td>';
-        dates.forEach(function(s){
-          var key=s.date+'_'+s.start, r=((responses[uid]||{})[key])||'none';
-          var em={yes:'<span class="s-yes">'+E_YES+'</span>',no:'<span class="s-no">'+E_NO+'</span>',maybe:'<span class="s-maybe">'+E_MAYBE+'</span>',none:'<span class="s-none">-</span>'};
-          html+='<td>'+em[r]+'</td>';
+        // Dot legend
+        var dotLegend = [
+          {cls:'v-dot vote-yes',style:'background:#4ade80;width:10px;height:10px;border-radius:50%;display:inline-block',txt:'Oui'},
+          {cls:'',style:'width:10px;height:10px;border-radius:50%;border:2px dashed #9ca3af;display:inline-block',txt:'Peut-etre'},
+          {cls:'',style:'width:10px;height:10px;border-radius:50%;border:2px solid #f472b6;display:inline-block',txt:'Non / absent'},
+        ];
+        dotLegend.forEach(function(item) {
+          var wrap = document.createElement('div'); wrap.className='legend-item';
+          var dot = document.createElement('span'); dot.style.cssText=item.style; wrap.appendChild(dot);
+          var txt = document.createElement('span'); txt.textContent=item.txt; txt.style.cssText='font-size:.75rem;color:var(--muted)';
+          wrap.appendChild(txt); el.appendChild(wrap);
         });
-        html+='</tr>';
-      });
-    }
-    html+='</tbody></table></div>';
-    html+='<div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem">';
-    dates.forEach(function(s){
-      if(isPast(s.date)) return;
-      var key=s.date+'_'+s.start,yes=0,no=0,maybe=0;
-      players.forEach(function(uid){var r=((responses[uid]||{})[key])||'none';if(r==='yes')yes++;else if(r==='no')no++;else if(r==='maybe')maybe++;});
-      html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.4rem .7rem;font-size:.85rem"><strong>'+fmtDate(s.date)+' '+s.start+'</strong><br><span class="s-yes">'+E_YES+' '+yes+'</span> <span class="s-maybe">'+E_MAYBE+' '+maybe+'</span> <span class="s-no">'+E_NO+' '+no+'</span></div>';
-    });
-    html+='</div>';
-  }
-  document.getElementById('summary-body').innerHTML=html;
-  var footer=document.getElementById('summary-footer');
-  footer.innerHTML='<button class="btn btn-outline" onclick="closeModal(\'modal-summary\')">Fermer</button>';
-  if(!ev.closed) footer.innerHTML+=' <button class="btn btn-success" onclick="openCloseEventModal(\''+id+'\')">Cloturer et valider</button>';
-  else footer.innerHTML+=' <button class="btn btn-outline" onclick="reopenEvent(\''+id+'\')">Reouvrir</button>';
-  openModal('modal-summary');
-};
-
-window.openCloseEventModal=async function(id) {
-  var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
-  var ev=snap.data(); closeModal('modal-summary');
-  var dates=ev.dates||[], responses=ev.responses||{}, players=ev.invitedUids||[];
-  var html='<p class="text-muted" style="margin-bottom:1rem">Cochez les dates definitives a valider :</p>';
-  dates.forEach(function(s) {
-    if(isPast(s.date)) return; // skip past dates
-    var key=s.date+'_'+s.start, yes=0,no=0,maybe=0;
-    players.forEach(function(uid){var r=((responses[uid]||{})[key])||'none';if(r==='yes')yes++;else if(r==='no')no++;else if(r==='maybe')maybe++;});
-    html+='<label style="display:flex;align-items:center;gap:.7rem;padding:.6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;cursor:pointer;color:var(--text)">'+
-      '<input type="checkbox" value="'+key+'" style="width:16px;height:16px;accent-color:var(--accent)">'+
-      '<strong>'+fmtDate(s.date)+' '+s.start+'</strong> '+
-      '<span class="s-yes">'+E_YES+' '+yes+'</span> <span class="s-maybe">'+E_MAYBE+' '+maybe+'</span> <span class="s-no">'+E_NO+' '+no+'</span></label>';
-  });
-  document.getElementById('confirm-title').textContent='Cloturer "'+ev.name+'"';
-  document.getElementById('confirm-msg').innerHTML=html;
-  document.getElementById('confirm-ok-btn').textContent='Confirmer la cloture';
-  document.getElementById('confirm-ok-btn').className='btn btn-success';
-  document.getElementById('confirm-ok-btn').onclick=async function(){
-    var checks=document.querySelectorAll('#confirm-msg input[type=checkbox]:checked');
-    var finalDates=[]; checks.forEach(function(c){finalDates.push(c.value);});
-    try{await updateDoc(doc(db,'events',id),{closed:true,finalDates:finalDates});toast('Evenement cloture !');closeModal('modal-confirm');renderCalendar();}
-    catch(e){toast('Erreur : '+e.message,'error');}
-  };
-  openModal('modal-confirm');
-};
-
-window.reopenEvent=async function(id){
-  await updateDoc(doc(db,'events',id),{closed:false,finalDates:[]});
-  toast('Evenement rouvert.'); closeModal('modal-summary'); renderCalendar();
-};
-
-// ============================================================
-// PLAYER RESPONSE
-// ============================================================
-window.openEventDetail=async function(id) {
-  var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
-  var ev=snap.data();
-  document.getElementById('detail-title').textContent=ev.name+(ev.closed?' [CLOTURE]':'');
-  var myR=(ev.responses||{})[currentUser.uid]||{}, dates=ev.dates||[], fd=ev.finalDates||[];
-  var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
-  var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
-  var html=colorBar+imgHtml+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+'</p>';
-  if(ev.closed){
-    html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture.</div>';
-    if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});html+='</div></div>';}
-  }
-  html+='<p class="text-muted" style="margin-bottom:1rem">Votre disponibilite :</p>';
-  dates.forEach(function(s){
-    var key=s.date+'_'+s.start, cur=myR[key]||'none', past=isPast(s.date);
-    var fin=fd.indexOf(key)!==-1?'<span style="color:var(--success);margin-left:.4rem">'+E_STAR+' Confirme</span>':'';
-    html+='<div class="response-row" style="'+(past?'opacity:.5;':'')+'">'+
-      '<div><strong>'+fmtDate(s.date)+'</strong>'+fin+'<br><small>'+s.start+' - '+s.end+'</small></div>'+
-      '<div class="response-btns">'+
-      '<button class="resp-btn'+(cur==='yes'?' active-yes':'')+'" title="Disponible" onclick="setResponse(\''+id+'\',\''+key+'\',\'yes\')">'+E_YES+'</button>'+
-      '<button class="resp-btn'+(cur==='no'?' active-no':'')+'" title="Indisponible" onclick="setResponse(\''+id+'\',\''+key+'\',\'no\')">'+E_NO+'</button>'+
-      '<button class="resp-btn'+(cur==='maybe'?' active-maybe':'')+'" title="Peut-etre" onclick="setResponse(\''+id+'\',\''+key+'\',\'maybe\')">'+E_MAYBE+'</button>'+
-      '<button class="resp-btn'+(cur==='none'?' active-none':'')+'" title="Effacer" onclick="setResponse(\''+id+'\',\''+key+'\',\'none\')">'+E_ERASE+'</button>'+
-      '</div></div>';
-  });
-  document.getElementById('detail-body').innerHTML=html;
-  openModal('modal-detail');
-};
-
-window.setResponse=async function(evId,key,state) {
-  try{var upd={};upd['responses.'+currentUser.uid+'.'+key]=state;await updateDoc(doc(db,'events',evId),upd);toast('Reponse enregistree.');openEventDetail(evId);renderCalendar();}
-  catch(e){toast('Erreur.','error');}
-};
-
-// ============================================================
-// JOIN BY CODE
-// ============================================================
-window.joinByCode=async function() {
-  var code=document.getElementById('join-code-input').value.trim().toUpperCase();
-  if(!code) return toast('Entrez un code.','error');
-  try{
-    var q=query(collection(db,'events'),where('code','==',code));
-    var snap=await getDocs(q);
-    if(snap.empty) return toast('Code introuvable.','error');
-    var evDoc=snap.docs[0], ev=evDoc.data();
-    if((ev.invitedUids||[]).indexOf(currentUser.uid)!==-1) return toast('Vous etes deja dans cet evenement.');
-    await updateDoc(doc(db,'events',evDoc.id),{invitedUids:arrayUnion(currentUser.uid),invitedUsernames:arrayUnion(userProfile.username)});
-    toast('Rejoint : '+ev.name+' !');
-    document.getElementById('join-code-input').value='';
-    loadJoinedEvents(); renderCalendar();
-  }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
-};
-
-function loadJoinedEvents() {
-  var q=query(collection(db,'events'),where('invitedUids','array-contains',currentUser.uid));
-  var unsub=onSnapshot(q,function(snap){
-    var events=[]; snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
-    renderJoinedEvents(events);
-  },function(err){console.error('loadJoinedEvents',err);});
-  unsubs.push(unsub);
-}
-function renderJoinedEvents(events) {
-  var el=document.getElementById('joined-events-list');
-  if(!events.length){el.innerHTML='<p class="text-muted">Aucun evenement rejoint.</p>';return;}
-  el.innerHTML='';
-  events.forEach(function(ev){
-    var card=document.createElement('div'); card.className='card';
-    var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
-    var closed=ev.closed?'<span class="closed-badge">CLOTURE</span>':'';
-    card.innerHTML=evCardOpen(ev)+colorBar+
-      '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div><div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div></div>'+
-      '<div class="card-actions">'+
-      '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button> '+
-      '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+ev.name.replace(/'/g,'')+'\')">Quitter</button>'+
-      '</div></div>'+
-      '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
-    el.appendChild(card);
-  });
-}
-
-// ============================================================
-// AMIS  - usage unique: requestor regenerates code after use
-// Permissions fix: use a "friend-requests" collection instead of
-// writing to another user's document directly
-// ============================================================
-function renderFriendCode(){
-  document.getElementById('my-friend-code').textContent=userProfile.friendCode||'...';
-}
-window.copyMyFriendCode=function(){
-  navigator.clipboard.writeText(userProfile.friendCode||'').then(function(){toast('Code ami copie !');}).catch(function(){toast('Copie impossible.','error');});
-};
-window.refreshFriendCode=async function(){
-  var fc=genCode(8);
-  await updateDoc(doc(db,'users',currentUser.uid),{friendCode:fc});
-  userProfile.friendCode=fc; renderFriendCode(); toast('Nouveau code genere !');
-};
-
-window.addFriendByCode=async function(){
-  var code=document.getElementById('friend-code-input').value.trim().toUpperCase();
-  if(!code) return toast('Entrez un code.','error');
-  try{
-    var q=query(collection(db,'users'),where('friendCode','==',code));
-    var snap=await getDocs(q);
-    if(snap.empty) return toast('Code ami introuvable.','error');
-    var otherDoc=snap.docs[0]; var otherId=otherDoc.id;
-    if(otherId===currentUser.uid) return toast("C'est votre propre code !",'error');
-    if((userProfile.friends||[]).indexOf(otherId)!==-1) return toast('Deja dans votre liste d\'amis.');
-    // Add to own friends list
-    await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayUnion(otherId)});
-    userProfile.friends=(userProfile.friends||[]).concat(otherId);
-    // Create a pending request doc so the other user can accept
-    await setDoc(doc(db,'friendRequests',currentUser.uid+'_'+otherId),{
-      from:currentUser.uid, fromUsername:userProfile.username,
-      to:otherId, createdAt:serverTimestamp()
-    });
-    // Regenerate own code (usage unique)
-    var newFc=genCode(8);
-    await updateDoc(doc(db,'users',currentUser.uid),{friendCode:newFc});
-    userProfile.friendCode=newFc; renderFriendCode();
-    document.getElementById('friend-code-input').value='';
-    toast('Ami ajoute : '+otherDoc.data().username+' ! Il vous verra quand il actualisera.');
-    loadFriends();
-    // Also try to add reciprocally (may fail if rules block it, that's ok)
-    try { await updateDoc(doc(db,'users',otherId),{friends:arrayUnion(currentUser.uid)}); } catch(e){}
-  }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
-};
-
-async function loadFriends(){
-  var el=document.getElementById('friends-list'); if(!el) return;
-  // Also check incoming friend requests
-  try {
-    var reqQ=query(collection(db,'friendRequests'),where('to','==',currentUser.uid));
-    var reqSnap=await getDocs(reqQ);
-    for(var ri=0;ri<reqSnap.docs.length;ri++){
-      var rd=reqSnap.docs[ri].data();
-      if((userProfile.friends||[]).indexOf(rd.from)===-1){
-        await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayUnion(rd.from)});
-        userProfile.friends=(userProfile.friends||[]).concat(rd.from);
       }
-      await deleteDoc(reqSnap.docs[ri].ref);
-    }
-  } catch(e){}
 
-  var friends=userProfile.friends||[];
-  if(!friends.length){el.innerHTML='<p class="text-muted">Aucun ami pour l\'instant.</p>';return;}
-  el.innerHTML='<div class="loading">Chargement...</div>';
-  try{
-    var results=[];
-    for(var i=0;i<friends.length;i++){
-      var s=await getDoc(doc(db,'users',friends[i]));
-      if(s.exists()) results.push(Object.assign({id:s.id},s.data()));
-    }
-    if(!results.length){el.innerHTML='<p class="text-muted">Aucun ami.</p>';return;}
-    el.innerHTML=results.map(function(u){
-      return '<div class="friend-chip"><span class="fc-role'+(u.role==='MJ'?' mj':'')+'">'+u.role+'</span><span style="flex:1">'+u.username+'</span><button class="btn btn-danger btn-sm" onclick="removeFriend(\''+u.id+'\',\''+u.username+'\')">Retirer</button></div>';
-    }).join('');
-  }catch(e){el.innerHTML='<p class="text-muted">Erreur.</p>';console.error(e);}
-}
+      function renderCalEventList(events) {
+        var el = document.getElementById('cal-event-list');
+        if (!events.length) { el.innerHTML='<p class="text-muted">Aucun evenement ce mois-ci.</p>'; return; }
+        el.innerHTML='';
+        var isMJ = userProfile.role==='MJ';
+        events.forEach(function(ev) {
+          var card = document.createElement('div'); card.className='card';
+          var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
+          var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
+          var actBtn = isMJ
+            ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">Resume</button>'
+            : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button>';
+          card.innerHTML = colorBar+'<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div></div><div class="card-actions">'+actBtn+'</div></div><div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>';
+          el.appendChild(card);
+        });
+      }
 
-window.removeFriend=async function(uid,username){
-  if(!confirm('Retirer '+username+' ?')) return;
-  await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayRemove(uid)});
-  try{await updateDoc(doc(db,'users',uid),{friends:arrayRemove(currentUser.uid)});}catch(e){}
-  userProfile.friends=(userProfile.friends||[]).filter(function(id){return id!==uid;});
-  toast(username+' retire.'); loadFriends();
-};
+      function openDayDetail(entries) {
+        if (userProfile.role==='JR') openEventDetail(entries[0].ev.id);
+        else openMJSummary(entries[0].ev.id);
+      }
+      window.calMove = function(dir) {
+        calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar();
+      };
 
-// ============================================================
-// PROFIL
-// ============================================================
-window.saveProfile=async function(){
-  var username=document.getElementById('profile-username').value.trim();
-  var role=document.getElementById('profile-role').value;
-  if(!username) return toast('Nom requis.','error');
-  await updateDoc(doc(db,'users',currentUser.uid),{username:username,role:role});
-  userProfile.username=username; userProfile.role=role;
-  document.getElementById('header-username').textContent=username;
-  var badge=document.getElementById('header-role-badge');
-  badge.textContent=role; badge.className='role-badge'+(role==='MJ'?' mj':'');
-  toast('Profil mis a jour.'); initMainApp();
-};
+      // ============================================================
+      // MJ EVENTS LIST
+      // ============================================================
+      function loadMJEvents() {
+        var q = query(collection(db,'events'),where('createdBy','==',currentUser.uid));
+        var unsub = onSnapshot(q, function(snap) {
+          var events = [];
+          snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
+          events.sort(function(a,b){var ta=a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0;var tb=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;return tb-ta;});
+          renderMJEvents(events);
+        }, function(err){console.error('loadMJEvents',err);});
+        unsubs.push(unsub);
+      }
 
-// CONFIRM / DELETE
-window.confirmDeleteEvent=function(id,name){
-  document.getElementById('confirm-title').textContent='Supprimer';
-  document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Supprimer "'+name+'" ? Action irreversible.</p>';
-  document.getElementById('confirm-ok-btn').textContent='Supprimer';
-  document.getElementById('confirm-ok-btn').className='btn btn-danger';
-  document.getElementById('confirm-ok-btn').onclick=async function(){await deleteDoc(doc(db,'events',id));toast('Supprime.');closeModal('modal-confirm');renderCalendar();};
-  openModal('modal-confirm');
-};
-window.confirmLeaveEvent=function(id,name){
-  document.getElementById('confirm-title').textContent='Quitter';
-  document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Quitter "'+name+'" ?</p>';
-  document.getElementById('confirm-ok-btn').textContent='Quitter';
-  document.getElementById('confirm-ok-btn').className='btn btn-danger';
-  document.getElementById('confirm-ok-btn').onclick=async function(){
-    await updateDoc(doc(db,'events',id),{invitedUids:arrayRemove(currentUser.uid),invitedUsernames:arrayRemove(userProfile.username)});
-    toast('Quitte.'); closeModal('modal-confirm'); loadJoinedEvents(); renderCalendar();
-  };
-  openModal('modal-confirm');
-};
-window.confirmDeleteAccount=function(){
-  document.getElementById('confirm-title').textContent='Supprimer mon compte';
-  document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Action irreversible.</p>';
-  document.getElementById('confirm-ok-btn').textContent='Supprimer';
-  document.getElementById('confirm-ok-btn').className='btn btn-danger';
-  document.getElementById('confirm-ok-btn').onclick=async function(){await deleteDoc(doc(db,'users',currentUser.uid));await deleteUser(currentUser);closeModal('modal-confirm');};
-  openModal('modal-confirm');
-};
+      function renderMJEvents(events) {
+        var el = document.getElementById('events-list');
+        if (!events.length) { el.innerHTML='<p class="text-muted">Aucun evenement. Creez-en un !</p>'; return; }
+        el.innerHTML='';
+        events.forEach(function(ev) {
+          var card = document.createElement('div');
+          var code = ev.code||'';
+          var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
+          var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
+          card.innerHTML = evCardOpen(ev)+colorBar+
+            '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div>'+
+            '<div class="card-meta"><span class="code-badge">Code : <strong>'+code+'</strong> <span class="copy-btn" onclick="copyCode(\''+code+'\')">copier</span></span></div></div>'+
+            '<div class="card-actions">'+
+            '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">Resume</button>'+
+            (ev.closed?'':' <button class="btn btn-outline btn-sm" onclick="openEditEvent(\''+ev.id+'\')">Modifier</button>')+
+            ' <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent(\''+ev.id+'\',\''+ev.name.replace(/'/g,'')+'\')">Supprimer</button>'+
+            '</div></div>'+
+            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+
+            '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">'+(ev.invitedUsernames||[]).map(function(u){return '<div class="player-chip">'+u+'</div>';}).join('')+'</div>'+evCardClose(ev);
+          el.appendChild(card);
+        });
+      }
 
-window.copyCode=function(code){navigator.clipboard.writeText(code).then(function(){toast('Code copie !');}).catch(function(){toast('Copie impossible.','error');});};
-window.closeModal=closeModal;
-</script>
-</body>
+      // ============================================================
+      // CREATE / EDIT EVENT
+      // ============================================================
+      window.openCreateEvent = async function() {
+        editingEventId=null; evDateSlots=[]; evPlayers=[]; evSelectedDates=[];
+        document.getElementById('ev-name').value='';
+        document.getElementById('ev-desc').value='';
+        document.getElementById('ev-date-slots').innerHTML='';
+        document.getElementById('ev-player-chips').innerHTML='';
+        document.getElementById('modal-event-title').textContent='Creer un evenement';
+        document.getElementById('ev-save-btn').textContent='Creer';
+        document.getElementById('ev-time-section').style.display='none';
+        document.getElementById('ev-img-url').value='';
+        document.getElementById('ev-img-preview').style.display='none';
+        document.getElementById('ev-opacity-field').style.display='none';
+        document.getElementById('ev-opacity').value=70;
+        document.getElementById('ev-opacity-val').textContent='70';
+        // Auto-pick color
+        try {
+          var q=query(collection(db,'events'),where('createdBy','==',currentUser.uid));
+          var snap=await getDocs(q); var used=[];
+          snap.forEach(function(d){if(d.data().color) used.push(d.data().color);});
+          evSelectedColor=autoPickColor(used);
+        } catch(e){evSelectedColor=EVENT_COLORS[0];}
+        buildColorPicker(evSelectedColor);
+        var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
+        renderEvCal();
+        openModal('modal-event');
+      };
+
+      window.openEditEvent = async function(id) {
+        var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
+        var ev=snap.data();
+        editingEventId=id; evSelectedDates=[];
+        evDateSlots=(ev.dates||[]).slice();
+        evPlayers=(ev.invitedUids||[]).map(function(uid,i){return{uid:uid,username:(ev.invitedUsernames||[])[i]||uid};});
+        document.getElementById('ev-name').value=ev.name||'';
+        document.getElementById('ev-desc').value=ev.description||'';
+        document.getElementById('modal-event-title').textContent='Modifier';
+        document.getElementById('ev-save-btn').textContent='Enregistrer';
+        evSelectedColor=ev.color||EVENT_COLORS[0];
+        buildColorPicker(evSelectedColor);
+        var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
+        renderEvCal(); renderDateSlots(); renderPlayerChips();
+        document.getElementById('ev-time-section').style.display='none';
+        var imgUrl = ev.imgUrl||'';
+        var imgOpacity = ev.imgOpacity||70;
+        document.getElementById('ev-img-url').value = imgUrl;
+        document.getElementById('ev-opacity').value = imgOpacity;
+        document.getElementById('ev-opacity-val').textContent = imgOpacity;
+        document.getElementById('ev-opacity-field').style.display = imgUrl ? '' : 'none';
+        var prev = document.getElementById('ev-img-preview');
+        if (imgUrl) { prev.src=imgUrl; prev.style.display=''; } else { prev.style.display='none'; }
+        openModal('modal-event');
+      };
+
+      function renderEvCal() {
+        document.getElementById('ev-cal-month').textContent=MONTHS_FR[evCalMonth]+' '+evCalYear;
+        var grid=document.getElementById('ev-cal-grid'); grid.innerHTML='';
+        DAYS_FR.forEach(function(d){var h=document.createElement('div');h.className='cal-header-cell';h.textContent=d;grid.appendChild(h);});
+        var firstDay=new Date(evCalYear,evCalMonth,1);
+        var totalDays=new Date(evCalYear,evCalMonth+1,0).getDate();
+        var startOffset=firstDay.getDay()-1; if(startOffset<0) startOffset=6;
+        for(var i=0;i<startOffset;i++){var em=document.createElement('div');em.className='cal-cell empty';grid.appendChild(em);}
+        for(var d=1;d<=totalDays;d++) {
+          var dateStr=evCalYear+'-'+String(evCalMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+          var cell=document.createElement('div'); cell.className='cal-cell';
+          var past=isPast(dateStr);
+          if (past) { cell.classList.add('past'); }
+          else {
+            var hasSlot=evDateSlots.filter(function(s){return s.date===dateStr;}).length>0;
+            var isSel=evSelectedDates.indexOf(dateStr)!==-1;
+            if (hasSlot) cell.classList.add('already-slotted');
+            if (isSel) cell.classList.add('selected-day');
+            cell.classList.add('selectable');
+            (function(ds,cl){cl.onclick=function(){toggleEvDate(ds,cl);};})(dateStr,cell);
+          }
+          var dn=document.createElement('div'); dn.className='day-num'; dn.textContent=d; cell.appendChild(dn);
+          grid.appendChild(cell);
+        }
+      }
+      window.evCalMove=function(dir){evCalMonth+=dir;if(evCalMonth>11){evCalMonth=0;evCalYear++;}if(evCalMonth<0){evCalMonth=11;evCalYear--;}renderEvCal();};
+      function toggleEvDate(dateStr,cell) {
+        var idx=evSelectedDates.indexOf(dateStr);
+        if(idx===-1){evSelectedDates.push(dateStr);cell.classList.add('selected-day');}
+        else{evSelectedDates.splice(idx,1);cell.classList.remove('selected-day');}
+        document.getElementById('ev-time-section').style.display=evSelectedDates.length>0?'':'none';
+      }
+      window.applyTimeToSelected=function() {
+        var s=document.getElementById('slot-start').value;
+        var e=document.getElementById('slot-end').value;
+        evSelectedDates.forEach(function(dateStr){
+          if(!evDateSlots.filter(function(x){return x.date===dateStr&&x.start===s;}).length) evDateSlots.push({date:dateStr,start:s,end:e});
+        });
+        evDateSlots.sort(function(a,b){return a.date.localeCompare(b.date);});
+        evSelectedDates=[]; renderEvCal(); renderDateSlots();
+        document.getElementById('ev-time-section').style.display='none';
+      };
+      function renderDateSlots() {
+        var el=document.getElementById('ev-date-slots');
+        el.innerHTML=evDateSlots.map(function(s,i){
+          return '<div class="date-slot">'+fmtDate(s.date)+' '+s.start+'-'+s.end+' <span class="remove-slot" onclick="removeDateSlot('+i+')">x</span></div>';
+        }).join('');
+      }
+      window.removeDateSlot=function(i){evDateSlots.splice(i,1);renderDateSlots();renderEvCal();};
+
+      // SEARCH PLAYERS
+      window.searchPlayersForEvent=async function() {
+        clearTimeout(_searchTimeout);
+        var val=document.getElementById('ev-player-input').value.trim();
+        var resEl=document.getElementById('ev-player-search-results');
+        if(val.length<2){resEl.classList.add('hidden');return;}
+        _searchTimeout=setTimeout(async function(){
+          try {
+            var results=[];
+            var q1=query(collection(db,'users'),where('username','>=',val),where('username','<=',val+'\uf8ff'),limit(6));
+            var s1=await getDocs(q1);
+            s1.forEach(function(d){if(d.id!==currentUser.uid) results.push(Object.assign({id:d.id},d.data()));});
+            if(val.indexOf('@')!==-1){
+              var q2=query(collection(db,'users'),where('email','==',val));
+              var s2=await getDocs(q2);
+              s2.forEach(function(d){if(d.id!==currentUser.uid&&!results.filter(function(r){return r.id===d.id;}).length) results.push(Object.assign({id:d.id},d.data()));});
+            }
+            if(!results.length){resEl.innerHTML='<div class="search-result-item" style="cursor:default;color:var(--muted)">Aucun utilisateur</div>';resEl.classList.remove('hidden');return;}
+            resEl.innerHTML=results.map(function(u){return '<div class="search-result-item" onclick="addPlayerFromSearch(\''+u.id+'\',\''+u.username+'\')"><span>'+u.username+'</span><span class="sr-meta">'+u.role+'</span></div>';}).join('');
+            resEl.classList.remove('hidden');
+          } catch(e){console.error(e);}
+        },300);
+      };
+      window.addPlayerFromSearch=function(uid,username) {
+        if(evPlayers.filter(function(p){return p.uid===uid;}).length) return;
+        evPlayers.push({uid:uid,username:username});
+        document.getElementById('ev-player-input').value='';
+        document.getElementById('ev-player-search-results').classList.add('hidden');
+        renderPlayerChips();
+      };
+      function renderPlayerChips() {
+        document.getElementById('ev-player-chips').innerHTML=evPlayers.map(function(p,i){
+          return '<div class="player-chip">'+p.username+' <span class="remove-player" onclick="removePlayer('+i+')">x</span></div>';
+        }).join('');
+      }
+      window.removePlayer=function(i){evPlayers.splice(i,1);renderPlayerChips();};
+
+      window.previewEvImg=function(){
+        var url = document.getElementById('ev-img-url').value.trim();
+        var prev = document.getElementById('ev-img-preview');
+        var opField = document.getElementById('ev-opacity-field');
+        if (url) { prev.src=url; prev.style.display=''; opField.style.display=''; }
+        else { prev.style.display='none'; opField.style.display='none'; }
+      };
+      window.updateOpacityLabel=function(){
+        document.getElementById('ev-opacity-val').textContent = document.getElementById('ev-opacity').value;
+      };
+      window.saveEvent=async function() {
+        var name=document.getElementById('ev-name').value.trim();
+        if(!name) return toast('Donnez un nom.','error');
+        if(!evDateSlots.length) return toast('Selectionnez au moins une date.','error');
+        var imgUrl = document.getElementById('ev-img-url').value.trim();
+        var imgOpacity = parseInt(document.getElementById('ev-opacity').value)||70;
+        var data={name:name,description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username};
+        try {
+          if(editingEventId){await updateDoc(doc(db,'events',editingEventId),data);toast('Evenement mis a jour.');}
+          else{data.code=genCode(6);data.createdAt=serverTimestamp();data.responses={};data.closed=false;data.finalDates=[];await addDoc(collection(db,'events'),data);toast('Evenement cree.');}
+          closeModal('modal-event'); renderCalendar();
+        } catch(e){toast('Erreur : '+e.message,'error');}
+      };
+
+      // ============================================================
+      // MJ SUMMARY + CLOTURE
+      // ============================================================
+      window.openMJSummary=async function(id) {
+        var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
+        var ev=snap.data();
+        document.getElementById('summary-title').textContent=ev.name+(ev.closed?' [CLOTURE]':'');
+        var responses=ev.responses||{}, players=ev.invitedUids||[], playerNames={};
+        (ev.invitedUids||[]).forEach(function(uid,i){playerNames[uid]=(ev.invitedUsernames||[])[i]||uid;});
+        var dates=ev.dates||[], fd=ev.finalDates||[];
+        var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
+        var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
+        var html=colorBar+imgHtml+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
+        if(ev.closed&&fd.length){
+          html+='<div style="margin-bottom:1rem"><strong style="color:var(--success)">Dates definitives :</strong><div style="margin-top:.4rem">';
+          fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});
+          html+='</div></div>';
+        }
+        if(!dates.length){html+='<p class="text-muted">Aucune date.</p>';}
+        else {
+          html+='<div style="overflow-x:auto"><table class="presence-table"><thead><tr><th>Joueur</th>';
+          dates.forEach(function(s){
+            var past=isPast(s.date)?'<br><small style="color:var(--muted)">(passee)</small>':'';
+            var fin=fd.indexOf(s.date+'_'+s.start)!==-1?' '+E_STAR:'';
+            html+='<th>'+fmtDate(s.date)+'<br><small>'+s.start+'</small>'+fin+past+'</th>';
+          });
+          html+='</tr></thead><tbody>';
+          if(!players.length){html+='<tr><td colspan="'+(dates.length+1)+'" class="text-muted">Aucun joueur invite.</td></tr>';}
+          else {
+            players.forEach(function(uid){
+              html+='<tr><td>'+(playerNames[uid]||uid)+'</td>';
+              dates.forEach(function(s){
+                var key=s.date+'_'+s.start, r=((responses[uid]||{})[key])||'none';
+                var em={yes:'<span class="s-yes">'+E_YES+'</span>',no:'<span class="s-no">'+E_NO+'</span>',maybe:'<span class="s-maybe">'+E_MAYBE+'</span>',none:'<span class="s-none">-</span>'};
+                html+='<td>'+em[r]+'</td>';
+              });
+              html+='</tr>';
+            });
+          }
+          html+='</tbody></table></div>';
+          html+='<div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem">';
+          dates.forEach(function(s){
+            if(isPast(s.date)) return;
+            var key=s.date+'_'+s.start,yes=0,no=0,maybe=0;
+            players.forEach(function(uid){var r=((responses[uid]||{})[key])||'none';if(r==='yes')yes++;else if(r==='no')no++;else if(r==='maybe')maybe++;});
+            html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.4rem .7rem;font-size:.85rem"><strong>'+fmtDate(s.date)+' '+s.start+'</strong><br><span class="s-yes">'+E_YES+' '+yes+'</span> <span class="s-maybe">'+E_MAYBE+' '+maybe+'</span> <span class="s-no">'+E_NO+' '+no+'</span></div>';
+          });
+          html+='</div>';
+        }
+        document.getElementById('summary-body').innerHTML=html;
+        var footer=document.getElementById('summary-footer');
+        footer.innerHTML='<button class="btn btn-outline" onclick="closeModal(\'modal-summary\')">Fermer</button>';
+        if(!ev.closed) footer.innerHTML+=' <button class="btn btn-success" onclick="openCloseEventModal(\''+id+'\')">Cloturer et valider</button>';
+        else footer.innerHTML+=' <button class="btn btn-outline" onclick="reopenEvent(\''+id+'\')">Reouvrir</button>';
+        openModal('modal-summary');
+      };
+
+      window.openCloseEventModal=async function(id) {
+        var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
+        var ev=snap.data(); closeModal('modal-summary');
+        var dates=ev.dates||[], responses=ev.responses||{}, players=ev.invitedUids||[];
+        var html='<p class="text-muted" style="margin-bottom:1rem">Cochez les dates definitives a valider :</p>';
+        dates.forEach(function(s) {
+          if(isPast(s.date)) return; // skip past dates
+          var key=s.date+'_'+s.start, yes=0,no=0,maybe=0;
+          players.forEach(function(uid){var r=((responses[uid]||{})[key])||'none';if(r==='yes')yes++;else if(r==='no')no++;else if(r==='maybe')maybe++;});
+          html+='<label style="display:flex;align-items:center;gap:.7rem;padding:.6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;cursor:pointer;color:var(--text)">'+
+            '<input type="checkbox" value="'+key+'" style="width:16px;height:16px;accent-color:var(--accent)">'+
+            '<strong>'+fmtDate(s.date)+' '+s.start+'</strong> '+
+            '<span class="s-yes">'+E_YES+' '+yes+'</span> <span class="s-maybe">'+E_MAYBE+' '+maybe+'</span> <span class="s-no">'+E_NO+' '+no+'</span></label>';
+        });
+        document.getElementById('confirm-title').textContent='Cloturer "'+ev.name+'"';
+        document.getElementById('confirm-msg').innerHTML=html;
+        document.getElementById('confirm-ok-btn').textContent='Confirmer la cloture';
+        document.getElementById('confirm-ok-btn').className='btn btn-success';
+        document.getElementById('confirm-ok-btn').onclick=async function(){
+          var checks=document.querySelectorAll('#confirm-msg input[type=checkbox]:checked');
+          var finalDates=[]; checks.forEach(function(c){finalDates.push(c.value);});
+          try{await updateDoc(doc(db,'events',id),{closed:true,finalDates:finalDates});toast('Evenement cloture !');closeModal('modal-confirm');renderCalendar();}
+          catch(e){toast('Erreur : '+e.message,'error');}
+        };
+        openModal('modal-confirm');
+      };
+
+      window.reopenEvent=async function(id){
+        await updateDoc(doc(db,'events',id),{closed:false,finalDates:[]});
+        toast('Evenement rouvert.'); closeModal('modal-summary'); renderCalendar();
+      };
+
+      // ============================================================
+      // PLAYER RESPONSE
+      // ============================================================
+      window.openEventDetail=async function(id) {
+        var snap=await getDoc(doc(db,'events',id)); if(!snap.exists()) return;
+        var ev=snap.data();
+        document.getElementById('detail-title').textContent=ev.name+(ev.closed?' [CLOTURE]':'');
+        var myR=(ev.responses||{})[currentUser.uid]||{}, dates=ev.dates||[], fd=ev.finalDates||[];
+        var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
+        var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
+        var html=colorBar+imgHtml+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+'</p>';
+        if(ev.closed){
+          html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture.</div>';
+          if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});html+='</div></div>';}
+        }
+        html+='<p class="text-muted" style="margin-bottom:1rem">Votre disponibilite :</p>';
+        dates.forEach(function(s){
+          var key=s.date+'_'+s.start, cur=myR[key]||'none', past=isPast(s.date);
+          var fin=fd.indexOf(key)!==-1?'<span style="color:var(--success);margin-left:.4rem">'+E_STAR+' Confirme</span>':'';
+          html+='<div class="response-row" style="'+(past?'opacity:.5;':'')+'">'+
+            '<div><strong>'+fmtDate(s.date)+'</strong>'+fin+'<br><small>'+s.start+' - '+s.end+'</small></div>'+
+            '<div class="response-btns">'+
+            '<button class="resp-btn'+(cur==='yes'?' active-yes':'')+'" title="Disponible" onclick="setResponse(\''+id+'\',\''+key+'\',\'yes\')">'+E_YES+'</button>'+
+            '<button class="resp-btn'+(cur==='no'?' active-no':'')+'" title="Indisponible" onclick="setResponse(\''+id+'\',\''+key+'\',\'no\')">'+E_NO+'</button>'+
+            '<button class="resp-btn'+(cur==='maybe'?' active-maybe':'')+'" title="Peut-etre" onclick="setResponse(\''+id+'\',\''+key+'\',\'maybe\')">'+E_MAYBE+'</button>'+
+            '<button class="resp-btn'+(cur==='none'?' active-none':'')+'" title="Effacer" onclick="setResponse(\''+id+'\',\''+key+'\',\'none\')">'+E_ERASE+'</button>'+
+            '</div></div>';
+        });
+        document.getElementById('detail-body').innerHTML=html;
+        openModal('modal-detail');
+      };
+
+      window.setResponse=async function(evId,key,state) {
+        try{var upd={};upd['responses.'+currentUser.uid+'.'+key]=state;await updateDoc(doc(db,'events',evId),upd);toast('Reponse enregistree.');openEventDetail(evId);renderCalendar();}
+        catch(e){toast('Erreur.','error');}
+      };
+
+      // ============================================================
+      // JOIN BY CODE
+      // ============================================================
+      window.joinByCode=async function() {
+        var code=document.getElementById('join-code-input').value.trim().toUpperCase();
+        if(!code) return toast('Entrez un code.','error');
+        try{
+          var q=query(collection(db,'events'),where('code','==',code));
+          var snap=await getDocs(q);
+          if(snap.empty) return toast('Code introuvable.','error');
+          var evDoc=snap.docs[0], ev=evDoc.data();
+          if((ev.invitedUids||[]).indexOf(currentUser.uid)!==-1) return toast('Vous etes deja dans cet evenement.');
+          await updateDoc(doc(db,'events',evDoc.id),{invitedUids:arrayUnion(currentUser.uid),invitedUsernames:arrayUnion(userProfile.username)});
+          toast('Rejoint : '+ev.name+' !');
+          document.getElementById('join-code-input').value='';
+          loadJoinedEvents(); renderCalendar();
+        }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
+      };
+
+      function loadJoinedEvents() {
+        var q=query(collection(db,'events'),where('invitedUids','array-contains',currentUser.uid));
+        var unsub=onSnapshot(q,function(snap){
+          var events=[]; snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
+          renderJoinedEvents(events);
+        },function(err){console.error('loadJoinedEvents',err);});
+        unsubs.push(unsub);
+      }
+      function renderJoinedEvents(events) {
+        var el=document.getElementById('joined-events-list');
+        if(!events.length){el.innerHTML='<p class="text-muted">Aucun evenement rejoint.</p>';return;}
+        el.innerHTML='';
+        events.forEach(function(ev){
+          var card=document.createElement('div'); card.className='card';
+          var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
+          var closed=ev.closed?'<span class="closed-badge">CLOTURE</span>':'';
+          card.innerHTML=evCardOpen(ev)+colorBar+
+            '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div><div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div></div>'+
+            '<div class="card-actions">'+
+            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button> '+
+            '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+ev.name.replace(/'/g,'')+'\')">Quitter</button>'+
+            '</div></div>'+
+            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
+          el.appendChild(card);
+        });
+      }
+
+      // ============================================================
+      // AMIS  - usage unique: requestor regenerates code after use
+      // Permissions fix: use a "friend-requests" collection instead of
+      // writing to another user's document directly
+      // ============================================================
+      function renderFriendCode(){
+        document.getElementById('my-friend-code').textContent=userProfile.friendCode||'...';
+      }
+      window.copyMyFriendCode=function(){
+        navigator.clipboard.writeText(userProfile.friendCode||'').then(function(){toast('Code ami copie !');}).catch(function(){toast('Copie impossible.','error');});
+      };
+      window.refreshFriendCode=async function(){
+        var fc=genCode(8);
+        await updateDoc(doc(db,'users',currentUser.uid),{friendCode:fc});
+        userProfile.friendCode=fc; renderFriendCode(); toast('Nouveau code genere !');
+      };
+
+      window.addFriendByCode=async function(){
+        var code=document.getElementById('friend-code-input').value.trim().toUpperCase();
+        if(!code) return toast('Entrez un code.','error');
+        try{
+          var q=query(collection(db,'users'),where('friendCode','==',code));
+          var snap=await getDocs(q);
+          if(snap.empty) return toast('Code ami introuvable.','error');
+          var otherDoc=snap.docs[0]; var otherId=otherDoc.id;
+          if(otherId===currentUser.uid) return toast("C'est votre propre code !",'error');
+          if((userProfile.friends||[]).indexOf(otherId)!==-1) return toast('Deja dans votre liste d\'amis.');
+          // Add to own friends list
+          await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayUnion(otherId)});
+          userProfile.friends=(userProfile.friends||[]).concat(otherId);
+          // Create a pending request doc so the other user can accept
+          await setDoc(doc(db,'friendRequests',currentUser.uid+'_'+otherId),{
+            from:currentUser.uid, fromUsername:userProfile.username,
+            to:otherId, createdAt:serverTimestamp()
+          });
+          // Regenerate own code (usage unique)
+          var newFc=genCode(8);
+          await updateDoc(doc(db,'users',currentUser.uid),{friendCode:newFc});
+          userProfile.friendCode=newFc; renderFriendCode();
+          document.getElementById('friend-code-input').value='';
+          toast('Ami ajoute : '+otherDoc.data().username+' ! Il vous verra quand il actualisera.');
+          loadFriends();
+          // Also try to add reciprocally (may fail if rules block it, that's ok)
+          try { await updateDoc(doc(db,'users',otherId),{friends:arrayUnion(currentUser.uid)}); } catch(e){}
+        }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
+      };
+
+      async function loadFriends(){
+        var el=document.getElementById('friends-list'); if(!el) return;
+        // Also check incoming friend requests
+        try {
+          var reqQ=query(collection(db,'friendRequests'),where('to','==',currentUser.uid));
+          var reqSnap=await getDocs(reqQ);
+          for(var ri=0;ri<reqSnap.docs.length;ri++){
+            var rd=reqSnap.docs[ri].data();
+            if((userProfile.friends||[]).indexOf(rd.from)===-1){
+              await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayUnion(rd.from)});
+              userProfile.friends=(userProfile.friends||[]).concat(rd.from);
+            }
+            await deleteDoc(reqSnap.docs[ri].ref);
+          }
+        } catch(e){}
+
+        var friends=userProfile.friends||[];
+        if(!friends.length){el.innerHTML='<p class="text-muted">Aucun ami pour l\'instant.</p>';return;}
+        el.innerHTML='<div class="loading">Chargement...</div>';
+        try{
+          var results=[];
+          for(var i=0;i<friends.length;i++){
+            var s=await getDoc(doc(db,'users',friends[i]));
+            if(s.exists()) results.push(Object.assign({id:s.id},s.data()));
+          }
+          if(!results.length){el.innerHTML='<p class="text-muted">Aucun ami.</p>';return;}
+          el.innerHTML=results.map(function(u){
+            return '<div class="friend-chip"><span class="fc-role'+(u.role==='MJ'?' mj':'')+'">'+u.role+'</span><span style="flex:1">'+u.username+'</span><button class="btn btn-danger btn-sm" onclick="removeFriend(\''+u.id+'\',\''+u.username+'\')">Retirer</button></div>';
+          }).join('');
+        }catch(e){el.innerHTML='<p class="text-muted">Erreur.</p>';console.error(e);}
+      }
+
+      window.removeFriend=async function(uid,username){
+        if(!confirm('Retirer '+username+' ?')) return;
+        await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayRemove(uid)});
+        try{await updateDoc(doc(db,'users',uid),{friends:arrayRemove(currentUser.uid)});}catch(e){}
+        userProfile.friends=(userProfile.friends||[]).filter(function(id){return id!==uid;});
+        toast(username+' retire.'); loadFriends();
+      };
+
+      // ============================================================
+      // PROFIL
+      // ============================================================
+      window.saveProfile=async function(){
+        var username=document.getElementById('profile-username').value.trim();
+        var role=document.getElementById('profile-role').value;
+        if(!username) return toast('Nom requis.','error');
+        await updateDoc(doc(db,'users',currentUser.uid),{username:username,role:role});
+        userProfile.username=username; userProfile.role=role;
+        document.getElementById('header-username').textContent=username;
+        var badge=document.getElementById('header-role-badge');
+        badge.textContent=role; badge.className='role-badge'+(role==='MJ'?' mj':'');
+        toast('Profil mis a jour.'); initMainApp();
+      };
+
+      // CONFIRM / DELETE
+      window.confirmDeleteEvent=function(id,name){
+        document.getElementById('confirm-title').textContent='Supprimer';
+        document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Supprimer "'+name+'" ? Action irreversible.</p>';
+        document.getElementById('confirm-ok-btn').textContent='Supprimer';
+        document.getElementById('confirm-ok-btn').className='btn btn-danger';
+        document.getElementById('confirm-ok-btn').onclick=async function(){await deleteDoc(doc(db,'events',id));toast('Supprime.');closeModal('modal-confirm');renderCalendar();};
+        openModal('modal-confirm');
+      };
+      window.confirmLeaveEvent=function(id,name){
+        document.getElementById('confirm-title').textContent='Quitter';
+        document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Quitter "'+name+'" ?</p>';
+        document.getElementById('confirm-ok-btn').textContent='Quitter';
+        document.getElementById('confirm-ok-btn').className='btn btn-danger';
+        document.getElementById('confirm-ok-btn').onclick=async function(){
+          await updateDoc(doc(db,'events',id),{invitedUids:arrayRemove(currentUser.uid),invitedUsernames:arrayRemove(userProfile.username)});
+          toast('Quitte.'); closeModal('modal-confirm'); loadJoinedEvents(); renderCalendar();
+        };
+        openModal('modal-confirm');
+      };
+      window.confirmDeleteAccount=function(){
+        document.getElementById('confirm-title').textContent='Supprimer mon compte';
+        document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Action irreversible.</p>';
+        document.getElementById('confirm-ok-btn').textContent='Supprimer';
+        document.getElementById('confirm-ok-btn').className='btn btn-danger';
+        document.getElementById('confirm-ok-btn').onclick=async function(){await deleteDoc(doc(db,'users',currentUser.uid));await deleteUser(currentUser);closeModal('modal-confirm');};
+        openModal('modal-confirm');
+      };
+
+      window.copyCode=function(code){navigator.clipboard.writeText(code).then(function(){toast('Code copie !');}).catch(function(){toast('Copie impossible.','error');});};
+      window.closeModal=closeModal;
+    </script>
+  </body>
 </html>
