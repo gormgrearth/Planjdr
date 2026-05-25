@@ -2349,8 +2349,8 @@
           card.innerHTML=evCardOpen(ev)+colorBar+
             '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div><div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div></div>'+
             '<div class="card-actions">'+
-            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(''+ev.id+'')">Repondre</button> '+
-            '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(''+ev.id+'',''+safeName+'')">Quitter</button>'+
+            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button> '+
+            '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+safeName+'\')">Quitter</button>'+
             '</div></div>'+
             '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
           el.appendChild(card);
