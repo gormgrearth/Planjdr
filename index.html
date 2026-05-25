@@ -25,6 +25,249 @@
         --muted: #8878a8;
         --radius: 10px;
       }
+      /* ============================================================
+         THEME: CYBERPUNK
+         ============================================================ */
+      [data-theme="cyberpunk"] {
+        --bg: #050a0f;
+        --surface: #0a1520;
+        --surface2: #0f1f30;
+        --border: #00f5ff33;
+        --accent: #00f5ff;
+        --accent2: #ff00aa;
+        --danger: #ff4466;
+        --success: #00ff88;
+        --maybe: #ffaa00;
+        --text: #c8f0ff;
+        --muted: #4a8fa8;
+        --radius: 2px;
+      }
+      [data-theme="cyberpunk"] body {
+        font-family: "Rajdhani", "Share Tech Mono", sans-serif;
+        font-size: 16px;
+      }
+      [data-theme="cyberpunk"] body::before {
+        background:
+          radial-gradient(ellipse 70% 50% at 90% 5%, rgba(0,245,255,0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 60% at 5% 95%, rgba(255,0,170,0.10) 0%, transparent 60%),
+          repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,245,255,0.03) 40px),
+          repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,245,255,0.02) 40px);
+      }
+      [data-theme="cyberpunk"] .logo-title h1,
+      [data-theme="cyberpunk"] header .logo {
+        font-family: "Share Tech Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        text-shadow: 0 0 20px rgba(0,245,255,0.8), 0 0 40px rgba(0,245,255,0.4);
+      }
+      [data-theme="cyberpunk"] .auth-card,
+      [data-theme="cyberpunk"] .card,
+      [data-theme="cyberpunk"] .modal {
+        border-color: var(--accent);
+        box-shadow: 0 0 20px rgba(0,245,255,0.15), inset 0 0 40px rgba(0,245,255,0.03);
+      }
+      [data-theme="cyberpunk"] header {
+        border-bottom-color: var(--accent);
+        box-shadow: 0 2px 20px rgba(0,245,255,0.2);
+      }
+      [data-theme="cyberpunk"] .btn-primary {
+        background: transparent;
+        border: 2px solid var(--accent);
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-family: "Share Tech Mono", monospace;
+        box-shadow: 0 0 12px rgba(0,245,255,0.3);
+      }
+      [data-theme="cyberpunk"] .btn-primary:hover {
+        background: rgba(0,245,255,0.15);
+        box-shadow: 0 0 24px rgba(0,245,255,0.5);
+        filter: none;
+      }
+      [data-theme="cyberpunk"] .nav-tab,
+      [data-theme="cyberpunk"] .auth-tab {
+        font-family: "Share Tech Mono", monospace;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      [data-theme="cyberpunk"] .auth-tab.active {
+        background: transparent;
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow: 0 0 10px rgba(0,245,255,0.4);
+      }
+      [data-theme="cyberpunk"] .nav-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        text-shadow: 0 0 10px rgba(0,245,255,0.6);
+      }
+      [data-theme="cyberpunk"] .field input,
+      [data-theme="cyberpunk"] .field select,
+      [data-theme="cyberpunk"] .field textarea {
+        font-family: "Share Tech Mono", monospace;
+        border-color: rgba(0,245,255,0.3);
+      }
+      [data-theme="cyberpunk"] .field input:focus,
+      [data-theme="cyberpunk"] .field select:focus,
+      [data-theme="cyberpunk"] .field textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(0,245,255,0.4);
+      }
+      [data-theme="cyberpunk"] .section-title {
+        font-family: "Share Tech Mono", monospace;
+        color: var(--accent);
+        letter-spacing: 0.15em;
+      }
+      [data-theme="cyberpunk"] .card-title {
+        font-family: "Share Tech Mono", monospace;
+        color: var(--accent);
+        text-shadow: 0 0 8px rgba(0,245,255,0.4);
+      }
+      [data-theme="cyberpunk"] .cal-cell {
+        border-radius: 2px;
+      }
+      [data-theme="cyberpunk"] .cal-cell.has-event {
+        box-shadow: inset 0 0 8px rgba(0,245,255,0.1);
+      }
+      [data-theme="cyberpunk"] .modal-title {
+        font-family: "Share Tech Mono", monospace;
+        text-shadow: 0 0 10px rgba(0,245,255,0.5);
+      }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        box-shadow: 0 0 6px rgba(0,245,255,0.5);
+      }
+
+      /* ============================================================
+         THEME: MEDIEVAL
+         ============================================================ */
+      [data-theme="medieval"] {
+        --bg: #1a1209;
+        --surface: #241a0e;
+        --surface2: #2e2112;
+        --border: #6b4f2a;
+        --accent: #d4a843;
+        --accent2: #8b3a1a;
+        --danger: #c0392b;
+        --success: #2e7d32;
+        --maybe: #a08060;
+        --text: #f0e6d0;
+        --muted: #9a7e5a;
+        --radius: 4px;
+      }
+      [data-theme="medieval"] body {
+        font-family: "IM Fell English", "Crimson Pro", Georgia, serif;
+        font-size: 17px;
+      }
+      [data-theme="medieval"] body::before {
+        background:
+          radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,67,0.08) 0%, transparent 70%),
+          radial-gradient(ellipse 60% 40% at 10% 100%, rgba(139,58,26,0.10) 0%, transparent 60%),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 L55 30 L30 55 L5 30 Z' fill='none' stroke='rgba(107,79,42,0.08)' stroke-width='1'/%3E%3C/svg%3E");
+      }
+      [data-theme="medieval"] .logo-title h1 {
+        font-family: "Cinzel", serif;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 30px rgba(212,168,67,0.3);
+      }
+      [data-theme="medieval"] header .logo {
+        font-family: "Cinzel", serif;
+        letter-spacing: 0.12em;
+      }
+      [data-theme="medieval"] .auth-card,
+      [data-theme="medieval"] .card,
+      [data-theme="medieval"] .modal {
+        border-color: var(--border);
+        border-width: 2px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,168,67,0.1);
+      }
+      [data-theme="medieval"] header {
+        border-bottom: 2px solid var(--border);
+        background: linear-gradient(180deg, var(--surface) 0%, rgba(26,18,9,0.95) 100%);
+      }
+      [data-theme="medieval"] .btn-primary {
+        background: linear-gradient(180deg, #d4a843 0%, #a07828 100%);
+        color: #1a1209;
+        border: 1px solid #6b4f2a;
+        text-shadow: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+      }
+      [data-theme="medieval"] .btn-primary:hover {
+        background: linear-gradient(180deg, #e0b84e 0%, #b08838 100%);
+        filter: none;
+      }
+      [data-theme="medieval"] .btn-outline {
+        border-color: var(--border);
+        border-width: 2px;
+      }
+      [data-theme="medieval"] .nav-tab {
+        font-family: "Cinzel", serif;
+        letter-spacing: 0.08em;
+      }
+      [data-theme="medieval"] .auth-tab {
+        font-family: "Cinzel", serif;
+      }
+      [data-theme="medieval"] .auth-tab.active {
+        background: linear-gradient(180deg, #d4a843 0%, #a07828 100%);
+        border-color: #6b4f2a;
+      }
+      [data-theme="medieval"] .section-title {
+        font-family: "Cinzel", serif;
+        color: var(--accent);
+        border-bottom-color: var(--border);
+        border-bottom-width: 2px;
+      }
+      [data-theme="medieval"] .card-title {
+        font-family: "Cinzel", serif;
+        color: var(--accent);
+      }
+      [data-theme="medieval"] .card-meta,
+      [data-theme="medieval"] .text-muted {
+        font-family: "IM Fell English", serif;
+        font-style: italic;
+      }
+      [data-theme="medieval"] .field input,
+      [data-theme="medieval"] .field select,
+      [data-theme="medieval"] .field textarea {
+        font-family: "IM Fell English", serif;
+        border-color: var(--border);
+        border-width: 2px;
+      }
+      [data-theme="medieval"] .field input:focus,
+      [data-theme="medieval"] .field select:focus,
+      [data-theme="medieval"] .field textarea:focus {
+        border-color: var(--accent);
+      }
+      [data-theme="medieval"] .modal-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.2rem;
+        letter-spacing: 0.1em;
+      }
+      [data-theme="medieval"] .nav-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        border-bottom-width: 3px;
+      }
+      [data-theme="medieval"] .cal-cell {
+        border-radius: 3px;
+        border-width: 1px;
+      }
+      [data-theme="medieval"] .cal-cell.has-event {
+        background: rgba(212,168,67,0.06);
+      }
+      [data-theme="medieval"] ::-webkit-scrollbar-thumb {
+        background: var(--border);
+      }
+      [data-theme="medieval"] .role-badge {
+        border-radius: 2px;
+      }
+      [data-theme="medieval"] .code-badge {
+        font-family: "IM Fell English", serif;
+        border-style: solid;
+      }
+
+
       *,
       *::before,
       *::after {
@@ -447,7 +690,7 @@
         border-radius: 7px;
         padding: 0.35rem 0.2rem 0.4rem;
         text-align: center;
-        min-height: 72px;
+        min-height: 80px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1032,24 +1275,27 @@
       }
       /* PLAYER INITIALS in calendar cells */
       .player-initial {
-        font-size: 0.5rem;
+        font-size: 0.62rem;
         font-family: "Share Tech Mono", monospace;
         font-weight: 700;
-        padding: 1px 2px;
+        padding: 0 2px;
         border-radius: 2px;
-        line-height: 1.3;
+        line-height: 1.4;
+        text-rendering: geometricPrecision;
+        -webkit-font-smoothing: antialiased;
+        letter-spacing: 0;
       }
       .player-initial.vote-yes   { color: #4ade80; }
       .player-initial.vote-no    { color: #f87171; }
       .player-initial.vote-maybe { color: #f59e0b; }
-      .player-initial.vote-none  { color: var(--muted); opacity: 0.6; }
+      .player-initial.vote-none  { color: var(--muted); opacity: 0.75; }
       .initials-row {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 1px;
-        margin-top: 2px;
-        min-height: 12px;
+        gap: 2px;
+        margin-top: 3px;
+        min-height: 14px;
       }
       @media (max-width: 600px) {
         header {
