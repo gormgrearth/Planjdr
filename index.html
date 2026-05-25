@@ -1002,6 +1002,55 @@
         height: 10px;
         border-radius: 50%;
       }
+      /* THEME SWITCHER */
+      .theme-switcher {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 4px 8px;
+      }
+      .theme-btn {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        flex-shrink: 0;
+      }
+      .theme-btn[data-t="default"] { background: var(--accent); }
+      .theme-btn[data-t="cyberpunk"] { background: #00f5ff; }
+      .theme-btn[data-t="medieval"] { background: #8b4513; }
+      .theme-btn:hover { transform: scale(1.2); }
+      .theme-btn.active {
+        border-color: #fff;
+        transform: scale(1.15);
+        box-shadow: 0 0 6px rgba(255,255,255,0.4);
+      }
+      /* PLAYER INITIALS in calendar cells */
+      .player-initial {
+        font-size: 0.5rem;
+        font-family: "Share Tech Mono", monospace;
+        font-weight: 700;
+        padding: 1px 2px;
+        border-radius: 2px;
+        line-height: 1.3;
+      }
+      .player-initial.vote-yes   { color: #4ade80; }
+      .player-initial.vote-no    { color: #f87171; }
+      .player-initial.vote-maybe { color: #f59e0b; }
+      .player-initial.vote-none  { color: var(--muted); opacity: 0.6; }
+      .initials-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1px;
+        margin-top: 2px;
+        min-height: 12px;
+      }
       @media (max-width: 600px) {
         header {
           padding: 0.6rem 1rem;
@@ -1845,12 +1894,18 @@
               var evColor = ev.color||'var(--accent2)';
 
               // Collect voters for THIS event on THIS day
+              // Build a name map: uid -> display name (first 3 chars)
               var voterMap = {};
+              var nameMap = {};
+              nameMap[ev.createdBy] = ev.creatorUsername || 'MJ';
+              (ev.invitedUids||[]).forEach(function(uid,i){
+                nameMap[uid] = (ev.invitedUsernames||[])[i] || uid;
+              });
               var allUids = [ev.createdBy].concat(ev.invitedUids||[]);
               allUids.forEach(function(uid) {
                 if (!uid) return;
                 var vote = ((ev.responses||{})[uid]||{})[key]||'none';
-                voterMap[uid] = {vote:vote, color:uidToColor(uid)};
+                voterMap[uid] = {vote:vote, name:(nameMap[uid]||uid).substring(0,3).toUpperCase()};
               });
 
               // Color strip label
@@ -1858,32 +1913,17 @@
               strip.style.cssText = 'width:90%;height:3px;border-radius:2px;margin:2px auto 1px;background:'+evColor;
               cell.appendChild(strip);
 
-              // Dot row for this event
-              var dotRow = document.createElement('div'); dotRow.className='dot-row';
+              // Player initials row (replaces dot row)
+              var initialsRow = document.createElement('div'); initialsRow.className='initials-row';
               Object.keys(voterMap).forEach(function(uid) {
                 var info = voterMap[uid];
-                var dot = document.createElement('div');
-                dot.className = 'v-dot vote-'+info.vote;
-                dot.style.backgroundColor = info.color;
-                dot.style.borderColor = info.color;
-                if (info.vote==='no') dot.style.backgroundColor='transparent';
-                if (info.vote==='none') { dot.style.borderColor=info.color; dot.style.backgroundColor='transparent'; }
-                dotRow.appendChild(dot);
+                var span = document.createElement('span');
+                span.className = 'player-initial vote-'+info.vote;
+                span.textContent = info.name;
+                span.title = (nameMap[uid]||uid) + ' : ' + info.vote;
+                initialsRow.appendChild(span);
               });
-              cell.appendChild(dotRow);
-
-              // Score for this event
-              var yes=0,no=0,maybe=0;
-              Object.keys(voterMap).forEach(function(uid) {
-                var v=voterMap[uid].vote;
-                if(v==='yes')yes++;else if(v==='no')no++;else if(v==='maybe')maybe++;
-              });
-              if (yes+no+maybe > 0) {
-                var score = document.createElement('div');
-                score.style.cssText = 'font-size:.6rem;color:var(--text);line-height:1;margin-bottom:1px';
-                score.innerHTML = '<span class="s-yes">'+yes+'</span>'+'<span style="color:var(--muted)">|</span>'+'<span class="s-maybe">'+maybe+'</span>'+'<span style="color:var(--muted)">|</span>'+'<span class="s-no">'+no+'</span>';
-                cell.appendChild(score);
-              }
+              cell.appendChild(initialsRow);
             });
           }
           grid.appendChild(cell);
@@ -1910,16 +1950,21 @@
             el.appendChild(item);
           }
         });
-        // Dot legend
-        var dotLegend = [
-          {cls:'v-dot vote-yes',style:'background:#4ade80;width:10px;height:10px;border-radius:50%;display:inline-block',txt:'Oui'},
-          {cls:'',style:'width:10px;height:10px;border-radius:50%;border:2px dashed #9ca3af;display:inline-block',txt:'Peut-etre'},
-          {cls:'',style:'width:10px;height:10px;border-radius:50%;border:2px solid #f472b6;display:inline-block',txt:'Non / absent'},
+        // Initials legend
+        var initialLegend = [
+          {cls:'vote-yes',  txt:'NOM = Disponible'},
+          {cls:'vote-no',   txt:'NOM = Indisponible'},
+          {cls:'vote-maybe',txt:'NOM = Peut-etre'},
+          {cls:'vote-none', txt:'NOM = Pas repondu'},
         ];
-        dotLegend.forEach(function(item) {
+        initialLegend.forEach(function(item) {
           var wrap = document.createElement('div'); wrap.className='legend-item';
-          var dot = document.createElement('span'); dot.style.cssText=item.style; wrap.appendChild(dot);
-          var txt = document.createElement('span'); txt.textContent=item.txt; txt.style.cssText='font-size:.75rem;color:var(--muted)';
+          var samp = document.createElement('span');
+          samp.className = 'player-initial '+item.cls;
+          samp.textContent = 'NOM';
+          samp.style.cssText = 'font-size:.55rem;font-family:"Share Tech Mono",monospace;font-weight:700';
+          wrap.appendChild(samp);
+          var txt = document.createElement('span'); txt.textContent=item.txt.replace('NOM = ',''); txt.style.cssText='font-size:.72rem;color:var(--muted)';
           wrap.appendChild(txt); el.appendChild(wrap);
         });
       }
@@ -1930,13 +1975,22 @@
         el.innerHTML='';
         var isMJ = userProfile.role==='MJ';
         events.forEach(function(ev) {
-          var card = document.createElement('div'); card.className='card';
+          var card = document.createElement('div');
           var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
           var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
           var actBtn = isMJ
-            ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">Resume</button>'
-            : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button>';
-          card.innerHTML = colorBar+'<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div></div><div class="card-actions">'+actBtn+'</div></div><div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>';
+            ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(''+ev.id+'')">Resume</button>'
+            : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(''+ev.id+'')">Repondre</button>';
+          var imgHtml = ev.imgUrl
+            ? '<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display='none'"/>'
+            : '';
+          var descHtml = ev.description
+            ? '<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>'
+            : '';
+          card.innerHTML = evCardOpen(ev)+colorBar+imgHtml+
+            '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div></div><div class="card-actions">'+actBtn+'</div></div>'+
+            descHtml+
+            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
           el.appendChild(card);
         });
       }
@@ -2002,15 +2056,19 @@
           var code = ev.code||'';
           var safeName = ev.name.split("'").join('');
           var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
+          var closed = ev.closed ? '<span class="closed-badge">CLOTURE</span>' : '';
           var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
-          card.innerHTML = evCardOpen(ev)+colorBar+
+          var imgHtml3=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display='none'"/>':'';
+          var descHtml3=ev.description?'<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
+          card.innerHTML = evCardOpen(ev)+colorBar+imgHtml3+
             '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div>'+
-            '<div class="card-meta"><span class="code-badge">Code : <strong>'+code+'</strong> <span class="copy-btn" onclick="copyCode(\''+code+'\')">copier</span></span></div></div>'+
+            '<div class="card-meta"><span class="code-badge">Code : <strong>'+code+'</strong> <span class="copy-btn" onclick="copyCode(''+code+'')">copier</span></span></div></div>'+
             '<div class="card-actions">'+
-            '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">Resume</button>'+
-            (ev.closed?'':' <button class="btn btn-outline btn-sm" onclick="openEditEvent(\''+ev.id+'\')">Modifier</button>')+
-            ' <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent(\''+ev.id+'\',\''+safeName+'\')">Supprimer</button>'+
+            '<button class="btn btn-outline btn-sm" onclick="openMJSummary(''+ev.id+'')">Resume</button>'+
+            (ev.closed?'':' <button class="btn btn-outline btn-sm" onclick="openEditEvent(''+ev.id+'')">Modifier</button>')+
+            ' <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent(''+ev.id+'',''+safeName+'')">Supprimer</button>'+
             '</div></div>'+
+            descHtml3+
             '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+
             '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">'+(ev.invitedUsernames||[]).map(function(u){return '<div class="player-chip">'+u+'</div>';}).join('')+'</div>'+evCardClose(ev);
           el.appendChild(card);
@@ -2196,7 +2254,8 @@
         var dates=ev.dates||[], fd=ev.finalDates||[];
         var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
         var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
-        var html=colorBar+imgHtml+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
+        var descStr2=ev.description?'<p style="font-size:.95rem;color:var(--muted);margin:.3rem 0 .8rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
+        var html=colorBar+imgHtml+descStr2+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
         if(ev.closed&&fd.length){
           html+='<div style="margin-bottom:1rem"><strong style="color:var(--success)">Dates definitives :</strong><div style="margin-top:.4rem">';
           fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});
@@ -2283,7 +2342,8 @@
         var myR=(ev.responses||{})[currentUser.uid]||{}, dates=ev.dates||[], fd=ev.finalDates||[];
         var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
         var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
-        var html=colorBar+imgHtml+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+'</p>';
+        var descStr=ev.description?'<p style="font-size:.95rem;color:var(--muted);margin:.3rem 0 .8rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
+        var html=colorBar+imgHtml+descStr+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+'</p>';
         if(ev.closed){
           html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture.</div>';
           if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});html+='</div></div>';}
@@ -2317,12 +2377,24 @@
         var code=document.getElementById('join-code-input').value.trim().toUpperCase();
         if(!code) return toast('Entrez un code.','error');
         try{
-          var q=query(collection(db,'events'),where('code','==',code));
-          var snap=await getDocs(q);
-          if(snap.empty) return toast('Code introuvable.','error');
-          var evDoc=snap.docs[0], ev=evDoc.data();
+          var evDoc=null, ev=null;
+          // First try: query by code field (requires Firestore rules to allow it)
+          try {
+            var q=query(collection(db,'events'),where('code','==',code));
+            var snap=await getDocs(q);
+            if(!snap.empty){ evDoc=snap.docs[0]; ev=evDoc.data(); }
+          } catch(permErr) {
+            // Firestore rules may block list queries for JR — show helpful message
+            toast('Permission refusee. Demandez au MJ de vous ajouter directement, ou verifiez les regles Firestore (autoriser read sur events pour les utilisateurs connectes).','error');
+            console.error('joinByCode permission error:',permErr);
+            return;
+          }
+          if(!evDoc) return toast('Code introuvable. Verifiez le code aupres de votre MJ.','error');
           if((ev.invitedUids||[]).indexOf(currentUser.uid)!==-1) return toast('Vous etes deja dans cet evenement.');
-          await updateDoc(doc(db,'events',evDoc.id),{invitedUids:arrayUnion(currentUser.uid),invitedUsernames:arrayUnion(userProfile.username)});
+          await updateDoc(doc(db,'events',evDoc.id),{
+            invitedUids:arrayUnion(currentUser.uid),
+            invitedUsernames:arrayUnion(userProfile.username)
+          });
           toast('Rejoint : '+ev.name+' !');
           document.getElementById('join-code-input').value='';
           loadJoinedEvents(); renderCalendar();
@@ -2342,16 +2414,19 @@
         if(!events.length){el.innerHTML='<p class="text-muted">Aucun evenement rejoint.</p>';return;}
         el.innerHTML='';
         events.forEach(function(ev){
-          var card=document.createElement('div'); card.className='card';
+          var card=document.createElement('div');
           var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
           var closed=ev.closed?'<span class="closed-badge">CLOTURE</span>':'';
           var safeName=ev.name.split("'").join('');
-          card.innerHTML=evCardOpen(ev)+colorBar+
+          var imgHtml2=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display='none'"/>':'';
+          var descHtml2=ev.description?'<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
+          card.innerHTML=evCardOpen(ev)+colorBar+imgHtml2+
             '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div><div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div></div>'+
             '<div class="card-actions">'+
-            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button> '+
-            '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+safeName+'\')">Quitter</button>'+
+            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(''+ev.id+'')">Repondre</button> '+
+            '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(''+ev.id+'',''+safeName+'')">Quitter</button>'+
             '</div></div>'+
+            descHtml2+
             '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
           el.appendChild(card);
         });
@@ -2406,7 +2481,7 @@
 
       async function loadFriends(){
         var el=document.getElementById('friends-list'); if(!el) return;
-        // Also check incoming friend requests
+        // Check incoming friend requests first
         try {
           var reqQ=query(collection(db,'friendRequests'),where('to','==',currentUser.uid));
           var reqSnap=await getDocs(reqQ);
@@ -2420,8 +2495,19 @@
           }
         } catch(e){}
 
+        // Re-read friends from Firestore to get latest persisted state,
+        // then merge with local (so newly added friends appear immediately)
+        try {
+          var mySnap=await getDoc(doc(db,'users',currentUser.uid));
+          if(mySnap.exists()){
+            var latestFriends=mySnap.data().friends||[];
+            var merged=(userProfile.friends||[]).concat(latestFriends);
+            userProfile.friends=merged.filter(function(v,i,a){return a.indexOf(v)===i;});
+          }
+        } catch(e){}
+
         var friends=userProfile.friends||[];
-        if(!friends.length){el.innerHTML='<p class="text-muted">Aucun ami pour l\'instant.</p>';return;}
+        if(!friends.length){el.innerHTML='<p class="text-muted">Aucun ami pour l'instant.</p>';return;}
         el.innerHTML='<div class="loading">Chargement...</div>';
         try{
           var results=[];
@@ -2431,7 +2517,7 @@
           }
           if(!results.length){el.innerHTML='<p class="text-muted">Aucun ami.</p>';return;}
           el.innerHTML=results.map(function(u){
-            return '<div class="friend-chip"><span class="fc-role'+(u.role==='MJ'?' mj':'')+'">'+u.role+'</span><span style="flex:1">'+u.username+'</span><button class="btn btn-danger btn-sm" onclick="removeFriend(\''+u.id+'\',\''+u.username+'\')">Retirer</button></div>';
+            return '<div class="friend-chip"><span class="fc-role'+(u.role==='MJ'?' mj':'')+'">'+u.role+'</span><span style="flex:1">'+u.username+'</span><button class="btn btn-danger btn-sm" onclick="removeFriend(''+u.id+'',''+u.username+'')">Retirer</button></div>';
           }).join('');
         }catch(e){el.innerHTML='<p class="text-muted">Erreur.</p>';console.error(e);}
       }
