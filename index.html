@@ -1297,6 +1297,56 @@
         margin-top: 3px;
         min-height: 14px;
       }
+
+      /* Vote status indicator on JR event cards */
+      .vote-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .vote-status-badge.voted-all   { background: rgba(82,196,120,0.15); color: #52c478; border: 1px solid rgba(82,196,120,0.3); }
+      .vote-status-badge.voted-some  { background: rgba(201,168,76,0.15); color: #c9a84c; border: 1px solid rgba(201,168,76,0.3); }
+      .vote-status-badge.voted-none  { background: rgba(224,82,82,0.12);  color: #e05252; border: 1px solid rgba(224,82,82,0.25); }
+      /* Privacy badge */
+      .privacy-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.7rem;
+        padding: 2px 7px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .privacy-badge.private { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+      .privacy-badge.public  { background: rgba(82,196,120,0.1);  color: #52c478; border: 1px solid rgba(82,196,120,0.2); }
+      /* Join request notification */
+      .join-requests-panel {
+        background: rgba(201,168,76,0.08);
+        border: 1px solid rgba(201,168,76,0.25);
+        border-radius: var(--radius);
+        padding: 0.8rem 1rem;
+        margin-bottom: 1rem;
+      }
+      .join-request-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.88rem;
+      }
+      .join-request-row:last-child { border-bottom: none; }
+      .join-request-row .jr-name { flex: 1; color: var(--text); }
+      .join-request-row .jr-ev   { color: var(--muted); font-size: 0.78rem; }
       @media (max-width: 600px) {
         header {
           padding: 0.6rem 1rem;
@@ -1495,6 +1545,7 @@
                 + Creer
               </button>
             </div>
+            <div id="join-requests-panel" class="join-requests-panel" style="display:none"></div>
             <div id="events-list"><div class="loading">Chargement...</div></div>
           </div>
           <!-- PANEL REJOINDRE -->
@@ -1720,6 +1771,17 @@
               value="70"
               oninput="updateOpacityLabel()"
             />
+          </div>
+          <div class="field" style="margin-bottom:.6rem">
+            <label>Visibilite de l&#39;evenement</label>
+            <div style="display:flex;gap:.8rem;margin-top:.4rem">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.9rem">
+                <input type="radio" name="ev-privacy" id="ev-privacy-public" value="public" checked /> Public
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.9rem">
+                <input type="radio" name="ev-privacy" id="ev-privacy-private" value="private" /> Prive (approbation requise)
+              </label>
+            </div>
           </div>
           <p class="text-muted mt-sm" style="font-size: 0.82rem">
             Un code sera genere automatiquement.
@@ -2050,7 +2112,7 @@
 
         var now = new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
         renderCalendar();
-        if (isMJ) loadMJEvents();
+        if (isMJ) { loadMJEvents(); loadJoinRequests(); }
         else loadJoinedEvents();
         loadFriends();
         // Re-sync theme buttons now that header is visible
@@ -2095,9 +2157,14 @@
         } catch(e) { console.error(e); }
 
         // Build dateMap: date -> list of {ev, slot}
+        // For CLOSED events, only show finalDates (confirmed slots), not rejected ones
         var dateMap = {};
         events.forEach(function(ev) {
-          (ev.dates||[]).forEach(function(slot) {
+          var fd=ev.finalDates||[];
+          var slotsToShow=ev.closed
+            ? (ev.dates||[]).filter(function(s){return fd.indexOf(s.date+'_'+s.start)!==-1;})
+            : (ev.dates||[]);
+          slotsToShow.forEach(function(slot) {
             if (slot.date && slot.date.startsWith(monthStr)) {
               if (!dateMap[slot.date]) dateMap[slot.date] = [];
               dateMap[slot.date].push({ev:ev,slot:slot});
@@ -2293,6 +2360,53 @@
         unsubs.push(unsub);
       }
 
+      // ============================================================
+      // JOIN REQUESTS (MJ approval flow for private events)
+      // ============================================================
+      async function loadJoinRequests() {
+        var el=document.getElementById('join-requests-panel');
+        if(!el) return;
+        try{
+          var q=query(collection(db,'joinRequests'),where('createdBy','==',currentUser.uid),where('status','==','pending'));
+          var snap=await getDocs(q);
+          if(snap.empty){ el.style.display='none'; return; }
+          el.style.display='';
+          var html='<div style="font-weight:700;color:var(--accent);margin-bottom:.5rem;font-size:.85rem">&#128228; Demandes d'adhesion en attente</div>';
+          snap.forEach(function(d){
+            var r=d.data();
+            html+='<div class="join-request-row">'+
+              '<div><div class="jr-name">'+r.username+'</div><div class="jr-ev">'+r.eventName+'</div></div>'+
+              '<button class="btn btn-success btn-sm" onclick="approveJoinRequest(\''+d.id+'\',\''+r.eventId+'\',\''+r.uid+'\',\''+r.username+'\')">'+'Accepter</button>'+
+              '<button class="btn btn-danger btn-sm" onclick="rejectJoinRequest(\''+d.id+'\')">'+'Refuser</button>'+
+            '</div>';
+          });
+          el.innerHTML=html;
+        }catch(e){ el.style.display='none'; console.error(e); }
+      }
+      window.approveJoinRequest=async function(reqId,eventId,uid,username){
+        try{
+          await updateDoc(doc(db,'events',eventId),{invitedUids:arrayUnion(uid),invitedUsernames:arrayUnion(username)});
+          await updateDoc(doc(db,'joinRequests',reqId),{status:'approved'});
+          toast(username+' accepte dans l'evenement !');
+          loadJoinRequests(); renderMJEventsList();
+        }catch(e){toast('Erreur.','error');console.error(e);}
+      };
+      window.rejectJoinRequest=async function(reqId){
+        try{
+          await updateDoc(doc(db,'joinRequests',reqId),{status:'rejected'});
+          toast('Demande refusee.');
+          loadJoinRequests();
+        }catch(e){toast('Erreur.','error');console.error(e);}
+      };
+      function renderMJEventsList(){
+        var q=query(collection(db,'events'),where('createdBy','==',currentUser.uid));
+        getDocs(q).then(function(snap){
+          var events=[]; snap.forEach(function(d){events.push(Object.assign({id:d.id},d.data()));});
+          renderMJEvents(events);
+        });
+      }
+
+
       function renderMJEvents(events) {
         var el = document.getElementById('events-list');
         if (!events.length) { el.innerHTML='<p class="text-muted">Aucun evenement. Creez-en un !</p>'; return; }
@@ -2307,7 +2421,8 @@
           var imgHtml3=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=\'none\'" />':'';
           var descHtml3=ev.description?'<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
           card.innerHTML = evCardOpen(ev)+colorBar+imgHtml3+
-            '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div>'+
+            var privBadge=ev.isPrivate?'<span class="privacy-badge private">&#128274; Prive</span>':'<span class="privacy-badge public">&#127760; Public</span>';
+            '<div class="card-header"><div><div class="card-title">'+ev.name+closed+privBadge+'</div>'+
             '<div class="card-meta"><span class="code-badge">Code : <strong>'+code+'</strong> <span class="copy-btn" onclick="copyCode(\''+code+'\')">'+'copier</span></span></div></div>'+
             '<div class="card-actions">'+
             '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\')">'+'Resume</button>'+
@@ -2348,6 +2463,12 @@
         buildColorPicker(evSelectedColor);
         var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
         renderEvCal();
+        // Reset privacy to public
+        var pubRadio=document.getElementById('ev-privacy-public');
+        if(pubRadio) pubRadio.checked=true;
+        // Restore privacy
+        var privRadio=document.getElementById(ev.isPrivate?'ev-privacy-private':'ev-privacy-public');
+        if(privRadio) privRadio.checked=true;
         openModal('modal-event');
       };
 
@@ -2480,10 +2601,18 @@
         if(!evDateSlots.length) return toast('Selectionnez au moins une date.','error');
         var imgUrl = document.getElementById('ev-img-url').value.trim();
         var imgOpacity = parseInt(document.getElementById('ev-opacity').value)||70;
-        var data={name:name,description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username};
+        var privacyEl=document.querySelector('input[name="ev-privacy"]:checked');
+        var isPrivate=privacyEl?privacyEl.value==='private':false;
+        var data={name:name,description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate};
         try {
           if(editingEventId){await updateDoc(doc(db,'events',editingEventId),data);toast('Evenement mis a jour.');}
-          else{data.code=genCode(6);data.createdAt=serverTimestamp();data.responses={};data.closed=false;data.finalDates=[];await addDoc(collection(db,'events'),data);toast('Evenement cree.');}
+          else{
+            data.code=genCode(6);data.createdAt=serverTimestamp();data.responses={};data.closed=false;data.finalDates=[];
+            var newRef=await addDoc(collection(db,'events'),data);
+            // Write public joinCode mirror so players can look up by code
+            try{ await setDoc(doc(db,'joinCodes',data.code),{eventId:newRef.id,createdBy:currentUser.uid,isPrivate:isPrivate}); }catch(e2){}
+            toast('Evenement cree.');
+          }
           closeModal('modal-event'); renderCalendar();
         } catch(e){toast('Erreur : '+e.message,'error');}
       };
@@ -2591,14 +2720,15 @@
         var descStr=ev.description?'<p style="font-size:.95rem;color:var(--muted);margin:.3rem 0 .8rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
         var html=colorBar+imgHtml+descStr+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+'</p>';
         if(ev.closed){
-          html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture.</div>';
+          html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture. Aucune modification possible.</div>';
           if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});html+='</div></div>';}
         }
         html+='<p class="text-muted" style="margin-bottom:1rem">Votre disponibilite :</p>';
         dates.forEach(function(s){
           var key=s.date+'_'+s.start, cur=myR[key]||'none', past=isPast(s.date);
           var fin=fd.indexOf(key)!==-1?'<span style="color:var(--success);margin-left:.4rem">'+E_STAR+' Confirme</span>':'';
-          html+='<div class="response-row" style="'+(past?'opacity:.5;':'')+'">'+
+          var rowStyle=(past?'opacity:.5;':'')+(ev.closed?'pointer-events:none;opacity:.6;':'' );
+          html+='<div class="response-row" style="'+rowStyle+'">'+
             '<div><strong>'+fmtDate(s.date)+'</strong>'+fin+'<br><small>'+s.start+' - '+s.end+'</small></div>'+
             '<div class="response-btns">'+
             '<button class="resp-btn'+(cur==='yes'?' active-yes':'')+'" title="Disponible" onclick="setResponse(\''+id+'\',\''+key+'\',\'yes\')">'+E_YES+'</button>'+
@@ -2623,27 +2753,54 @@
         var code=document.getElementById('join-code-input').value.trim().toUpperCase();
         if(!code) return toast('Entrez un code.','error');
         try{
+          // Query joinCodes collection (separate, player-readable collection)
+          // The MJ writes to joinCodes when creating an event.
+          // Fallback: query events directly (needs permissive Firestore rules).
           var evDoc=null, ev=null;
-          // First try: query by code field (requires Firestore rules to allow it)
           try {
             var q=query(collection(db,'events'),where('code','==',code));
             var snap=await getDocs(q);
             if(!snap.empty){ evDoc=snap.docs[0]; ev=evDoc.data(); }
           } catch(permErr) {
-            // Firestore rules may block list queries for JR — show helpful message
-            toast('Permission refusee. Demandez au MJ de vous ajouter directement, ou verifiez les regles Firestore (autoriser read sur events pour les utilisateurs connectes).','error');
-            console.error('joinByCode permission error:',permErr);
-            return;
+            // Firestore rules block direct event listing.
+            // Try the public joinCodes mirror collection instead.
+            try {
+              var codeSnap=await getDoc(doc(db,'joinCodes',code));
+              if(codeSnap.exists()){
+                var codeData=codeSnap.data();
+                var evSnap=await getDoc(doc(db,'events',codeData.eventId));
+                if(evSnap.exists()){ evDoc=evSnap; ev=evSnap.data(); }
+              }
+            } catch(e2){
+              toast('Code introuvable ou acces refuse. Verifiez le code ou demandez au MJ.','error');
+              console.error('joinByCode error:',permErr,e2);
+              return;
+            }
           }
           if(!evDoc) return toast('Code introuvable. Verifiez le code aupres de votre MJ.','error');
           if((ev.invitedUids||[]).indexOf(currentUser.uid)!==-1) return toast('Vous etes deja dans cet evenement.');
-          await updateDoc(doc(db,'events',evDoc.id),{
-            invitedUids:arrayUnion(currentUser.uid),
-            invitedUsernames:arrayUnion(userProfile.username)
-          });
-          toast('Rejoint : '+ev.name+' !');
-          document.getElementById('join-code-input').value='';
-          loadJoinedEvents(); renderCalendar();
+          // If event is private -> create a join request for MJ to approve
+          if(ev.isPrivate){
+            var reqRef=doc(db,'joinRequests',evDoc.id+'_'+currentUser.uid);
+            var existing=await getDoc(reqRef);
+            if(existing.exists()) return toast('Demande deja envoyee. Le MJ doit valider.');
+            await setDoc(reqRef,{
+              eventId:evDoc.id, eventName:ev.name,
+              uid:currentUser.uid, username:userProfile.username,
+              createdBy:ev.createdBy, createdAt:serverTimestamp(), status:'pending'
+            });
+            toast('Evenement prive : demande d'adhesion envoyee au MJ !');
+            document.getElementById('join-code-input').value='';
+          } else {
+            // Public event: add directly
+            await updateDoc(doc(db,'events',evDoc.id),{
+              invitedUids:arrayUnion(currentUser.uid),
+              invitedUsernames:arrayUnion(userProfile.username)
+            });
+            toast('Rejoint : '+ev.name+' !');
+            document.getElementById('join-code-input').value='';
+            loadJoinedEvents(); renderCalendar();
+          }
         }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
       };
 
@@ -2664,12 +2821,30 @@
           var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
           var closed=ev.closed?'<span class="closed-badge">CLOTURE</span>':'';
           var safeName=ev.name.split("'").join('');
-          var imgHtml2=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=\'none\'" />':'';
+          var imgHtml2=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display='none'" />':'';
           var descHtml2=ev.description?'<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
+          // Vote status badge
+          var myR=(ev.responses||{})[currentUser.uid]||{};
+          var evDates=ev.dates||[];
+          var total=evDates.length;
+          var voted=0;
+          evDates.forEach(function(s){var k=s.date+'_'+s.start;if(myR[k]&&myR[k]!=='none')voted++;});
+          var vBadge='';
+          if(!ev.closed&&total>0){
+            if(voted===total) vBadge='<span class="vote-status-badge voted-all">&#10003; Tout vote</span>';
+            else if(voted>0) vBadge='<span class="vote-status-badge voted-some">&#9719; '+voted+'/'+total+'</span>';
+            else vBadge='<span class="vote-status-badge voted-none">&#9711; Non vote</span>';
+          }
+          // Repondre disabled if closed
+          var replyBtn=ev.closed
+            ? '<button class="btn btn-outline btn-sm" disabled style="opacity:.5;cursor:not-allowed">Cloture</button>'
+            : '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">Repondre</button>';
           card.innerHTML=evCardOpen(ev)+colorBar+imgHtml2+
-            '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div><div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div></div>'+
-            '<div class="card-actions">'+
-            '<button class="btn btn-outline btn-sm" onclick="openEventDetail(\''+ev.id+'\')">'+'Repondre</button> '+
+            '<div class="card-header"><div>'+
+              '<div class="card-title">'+ev.name+closed+vBadge+'</div>'+
+              '<div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div>'+
+            '</div>'+
+            '<div class="card-actions">'+replyBtn+' '+
             '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+safeName+'\')">'+'Quitter</button>'+
             '</div></div>'+
             descHtml2+
