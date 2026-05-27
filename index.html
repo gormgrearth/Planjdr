@@ -2371,7 +2371,7 @@
           var snap=await getDocs(q);
           if(snap.empty){ el.style.display='none'; return; }
           el.style.display='';
-          var html='<div style="font-weight:700;color:var(--accent);margin-bottom:.5rem;font-size:.85rem">&#128228; Demandes d'adhesion en attente</div>';
+          var html='<div style="font-weight:700;color:var(--accent);margin-bottom:.5rem;font-size:.85rem">&#128228; Demandes d\'adhesion en attente</div>';
           snap.forEach(function(d){
             var r=d.data();
             html+='<div class="join-request-row">'+
@@ -2789,7 +2789,7 @@
               uid:currentUser.uid, username:userProfile.username,
               createdBy:ev.createdBy, createdAt:serverTimestamp(), status:'pending'
             });
-            toast('Evenement prive : demande d'adhesion envoyee au MJ !');
+            toast('Evenement prive : demande d\'adhesion envoyee au MJ !');
             document.getElementById('join-code-input').value='';
           } else {
             // Public event: add directly
