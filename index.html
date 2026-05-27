@@ -2821,7 +2821,7 @@
           var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
           var closed=ev.closed?'<span class="closed-badge">CLOTURE</span>':'';
           var safeName=ev.name.split("'").join('');
-          var imgHtml2=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display='none'" />':'';
+          var imgHtml2=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=\'none\'" />':'';
           var descHtml2=ev.description?'<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
           // Vote status badge
           var myR=(ev.responses||{})[currentUser.uid]||{};
