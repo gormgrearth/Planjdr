@@ -2387,7 +2387,7 @@
         try{
           await updateDoc(doc(db,'events',eventId),{invitedUids:arrayUnion(uid),invitedUsernames:arrayUnion(username)});
           await updateDoc(doc(db,'joinRequests',reqId),{status:'approved'});
-          toast(username+' accepte dans l'evenement !');
+          toast(username+' accepte dans l\'evenement !');
           loadJoinRequests(); renderMJEventsList();
         }catch(e){toast('Erreur.','error');console.error(e);}
       };
