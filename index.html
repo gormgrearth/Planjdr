@@ -2459,9 +2459,6 @@
         // Reset privacy to public
         var pubRadio=document.getElementById('ev-privacy-public');
         if(pubRadio) pubRadio.checked=true;
-        // Restore privacy
-        var privRadio=document.getElementById(ev.isPrivate?'ev-privacy-private':'ev-privacy-public');
-        if(privRadio) privRadio.checked=true;
         openModal('modal-event');
       };
 
@@ -2488,6 +2485,9 @@
         document.getElementById('ev-opacity-field').style.display = imgUrl ? '' : 'none';
         var prev = document.getElementById('ev-img-preview');
         if (imgUrl) { prev.src=imgUrl; prev.style.display=''; } else { prev.style.display='none'; }
+        // Restore privacy radio
+        var privRadio=document.getElementById(ev.isPrivate?'ev-privacy-private':'ev-privacy-public');
+        if(privRadio) privRadio.checked=true;
         openModal('modal-event');
       };
 
