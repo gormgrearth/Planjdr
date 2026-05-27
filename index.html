@@ -2420,8 +2420,8 @@
           var colorBar = '<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.8rem"></div>';
           var imgHtml3=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=\'none\'" />':'';
           var descHtml3=ev.description?'<p style="font-size:.88rem;color:var(--muted);margin:.4rem 0 .7rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
+          var privBadge=ev.isPrivate?'<span class="privacy-badge private">&#128274; Prive</span>':'<span class="privacy-badge public">&#127760; Public</span>';
           card.innerHTML = evCardOpen(ev)+colorBar+imgHtml3+
-            var privBadge=ev.isPrivate?'<span class="privacy-badge private">&#128274; Prive</span>':'<span class="privacy-badge public">&#127760; Public</span>';
             '<div class="card-header"><div><div class="card-title">'+ev.name+closed+privBadge+'</div>'+
             '<div class="card-meta"><span class="code-badge">Code : <strong>'+code+'</strong> <span class="copy-btn" onclick="copyCode(\''+code+'\')">'+'copier</span></span></div></div>'+
             '<div class="card-actions">'+
