@@ -1550,30 +1550,22 @@
           </div>
           <!-- PANEL REJOINDRE -->
           <div class="panel hidden" id="panel-join">
-            <div class="section-title">Rejoindre un evenement</div>
-            <div class="card">
-              <div class="field">
-                <label>Code d'invitation</label
-                ><input
+            <div class="section-title">Evenements disponibles</div>
+            <div class="card" style="margin-bottom:.8rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.7rem">Code d'invitation (evenement prive ou acces restreint)</div>
+              <div style="display:flex;gap:.5rem">
+                <input
                   type="text"
                   id="join-code-input"
                   placeholder="EX: AB3X7K"
                   maxlength="10"
-                  style="
-                    text-transform: uppercase;
-                    letter-spacing: 0.12em;
-                    font-family: &quot;Cinzel&quot;, serif;
-                  "
+                  style="flex:1;text-transform:uppercase;letter-spacing:.12em;font-family:&quot;Cinzel&quot;,serif"
                 />
+                <button class="btn btn-primary btn-sm" onclick="joinByCode()">Acceder</button>
               </div>
-              <button class="btn btn-primary" onclick="joinByCode()">
-                Rejoindre
-              </button>
             </div>
-            <div class="section-title mt-md">Evenements rejoints</div>
-            <div id="joined-events-list">
-              <div class="loading">Chargement...</div>
-            </div>
+            <div id="private-events-list"></div>
+            <div id="public-events-list"><div class="loading">Chargement...</div></div>
           </div>
           <!-- PANEL AMIS -->
           <div class="panel hidden" id="panel-friends">
@@ -1952,9 +1944,9 @@
         var opacity = ev.imgOpacity||70;
         var overlayAlpha = (100 - opacity) / 100;
         if (!url) return '<div class="card">';
-        // Use inline style background-image with overlay
         var overlay = 'rgba(13,11,15,'+overlayAlpha.toFixed(2)+')';
-        return '<div class="card ev-card-bg" style="background:none"><img class="ev-bg-img" src="'+url+'"/><div class="ev-card-content" style="padding:1.5rem;background:'+overlay+';border-radius:var(--radius)">';
+        // Single card element with background image — no inner wrapper card
+        return '<div class="card ev-card-bg" style="padding:0;border:1px solid var(--border)"><img class="ev-bg-img" src="'+url+'" onerror="this.style.display=\'none\'"/><div class="ev-card-content" style="padding:1.5rem;background:'+overlay+';border-radius:var(--radius);position:relative;z-index:1">';
       }
       function evCardClose(ev) {
         if (!ev.imgUrl) return '</div>';
@@ -2113,7 +2105,7 @@
         var now = new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
         renderCalendar();
         if (isMJ) { loadMJEvents(); loadJoinRequests(); }
-        else loadJoinedEvents();
+        else { loadJoinedEvents(); loadPublicEvents(); }
         loadFriends();
         // Re-sync theme buttons now that header is visible
         var saved = localStorage.getItem('rpg_theme')||'default';
@@ -2226,14 +2218,15 @@
               strip.style.cssText = 'width:90%;height:3px;border-radius:2px;margin:2px auto 1px;background:'+evColor;
               cell.appendChild(strip);
 
-              // Player initials row (replaces dot row)
+              // Player initials row — MJ gets a crown prefix
               var initialsRow = document.createElement('div'); initialsRow.className='initials-row';
               Object.keys(voterMap).forEach(function(uid) {
                 var info = voterMap[uid];
                 var span = document.createElement('span');
                 span.className = 'player-initial vote-'+info.vote;
-                span.textContent = info.name;
-                span.title = (nameMap[uid]||uid) + ' : ' + info.vote;
+                var label = uid === ev.createdBy ? '♛'+info.name : info.name;
+                span.textContent = label;
+                span.title = (uid===ev.createdBy?'MJ : ':'')+( nameMap[uid]||uid) + ' — ' + info.vote;
                 initialsRow.appendChild(span);
               });
               cell.appendChild(initialsRow);
@@ -2749,60 +2742,156 @@
       // ============================================================
       // JOIN BY CODE
       // ============================================================
+      // ============================================================
+      // JOIN EVENT (public: direct; private: request to MJ)
+      // ============================================================
+      window.joinEvent=async function(evId, evName, isPrivate, createdBy) {
+        try {
+          var evSnap=await getDoc(doc(db,'events',evId));
+          if(!evSnap.exists()) return toast('Evenement introuvable.','error');
+          var ev=evSnap.data();
+          if((ev.invitedUids||[]).indexOf(currentUser.uid)!==-1){
+            toast('Vous participez deja a cet evenement.'); loadPublicEvents(); return;
+          }
+          if(isPrivate){
+            var reqRef=doc(db,'joinRequests',evId+'_'+currentUser.uid);
+            var existing=await getDoc(reqRef);
+            if(existing.exists()) return toast('Demande deja envoyee. En attente du MJ.');
+            await setDoc(reqRef,{
+              eventId:evId, eventName:evName, uid:currentUser.uid,
+              username:userProfile.username, createdBy:createdBy,
+              createdAt:serverTimestamp(), status:'pending'
+            });
+            toast('Demande d\'adhesion envoyee au MJ !');
+          } else {
+            await updateDoc(doc(db,'events',evId),{
+              invitedUids:arrayUnion(currentUser.uid),
+              invitedUsernames:arrayUnion(userProfile.username)
+            });
+            toast('Vous avez rejoint : '+evName+' !');
+            renderCalendar();
+          }
+          loadPublicEvents();
+        } catch(e){ toast('Erreur : '+e.message,'error'); console.error(e); }
+      };
+
+      // joinByCode: find event by code, handle public/private
       window.joinByCode=async function() {
         var code=document.getElementById('join-code-input').value.trim().toUpperCase();
         if(!code) return toast('Entrez un code.','error');
         try{
-          // Query joinCodes collection (separate, player-readable collection)
-          // The MJ writes to joinCodes when creating an event.
-          // Fallback: query events directly (needs permissive Firestore rules).
-          var evDoc=null, ev=null;
+          var evId=null, evData=null;
+          // Step 1: joinCodes public collection (always readable)
           try {
-            var q=query(collection(db,'events'),where('code','==',code));
-            var snap=await getDocs(q);
-            if(!snap.empty){ evDoc=snap.docs[0]; ev=evDoc.data(); }
-          } catch(permErr) {
-            // Firestore rules block direct event listing.
-            // Try the public joinCodes mirror collection instead.
-            try {
-              var codeSnap=await getDoc(doc(db,'joinCodes',code));
-              if(codeSnap.exists()){
-                var codeData=codeSnap.data();
-                var evSnap=await getDoc(doc(db,'events',codeData.eventId));
-                if(evSnap.exists()){ evDoc=evSnap; ev=evSnap.data(); }
-              }
-            } catch(e2){
-              toast('Code introuvable ou acces refuse. Verifiez le code ou demandez au MJ.','error');
-              console.error('joinByCode error:',permErr,e2);
-              return;
+            var codeSnap=await getDoc(doc(db,'joinCodes',code));
+            if(codeSnap.exists()){
+              var cd=codeSnap.data(); evId=cd.eventId;
+              var evSnap=await getDoc(doc(db,'events',evId));
+              if(evSnap.exists()) evData=evSnap.data();
             }
+          } catch(e1){ console.warn('joinCodes lookup:',e1); }
+          // Step 2: fallback query events directly
+          if(!evId){
+            try{
+              var q=query(collection(db,'events'),where('code','==',code));
+              var snap=await getDocs(q);
+              if(!snap.empty){ evId=snap.docs[0].id; evData=snap.docs[0].data(); }
+            } catch(e2){ console.warn('events lookup:',e2); }
           }
-          if(!evDoc) return toast('Code introuvable. Verifiez le code aupres de votre MJ.','error');
-          if((ev.invitedUids||[]).indexOf(currentUser.uid)!==-1) return toast('Vous etes deja dans cet evenement.');
-          // If event is private -> create a join request for MJ to approve
-          if(ev.isPrivate){
-            var reqRef=doc(db,'joinRequests',evDoc.id+'_'+currentUser.uid);
-            var existing=await getDoc(reqRef);
-            if(existing.exists()) return toast('Demande deja envoyee. Le MJ doit valider.');
-            await setDoc(reqRef,{
-              eventId:evDoc.id, eventName:ev.name,
-              uid:currentUser.uid, username:userProfile.username,
-              createdBy:ev.createdBy, createdAt:serverTimestamp(), status:'pending'
-            });
-            toast('Evenement prive : demande d\'adhesion envoyee au MJ !');
+          if(!evId||!evData) return toast('Code introuvable. Verifiez aupres de votre MJ.','error');
+          if((evData.invitedUids||[]).indexOf(currentUser.uid)!==-1){
+            toast('Vous participez deja a cet evenement.');
+            document.getElementById('join-code-input').value=''; return;
+          }
+          if(evData.isPrivate){
+            // Show private event card at top of list
+            var pel=document.getElementById('private-events-list');
+            if(!document.getElementById('priv-ev-'+evId)){
+              var card=document.createElement('div'); card.id='priv-ev-'+evId;
+              var safeName=evData.name.replace(/'/g,'');
+              var imgH=evData.imgUrl?'<img src="'+evData.imgUrl+'" style="width:100%;max-height:90px;object-fit:cover;border-radius:6px;margin-bottom:.5rem" onerror="this.style.display=\'none\'"/>':'';
+              var desc=evData.description?'<p style="font-size:.82rem;color:var(--muted);font-style:italic;margin:.3rem 0">'+evData.description+'</p>':'';
+              card.innerHTML='<div class="card" style="border-color:var(--accent2);margin-bottom:.6rem">'+
+                '<div style="font-size:.68rem;color:var(--accent2);font-weight:700;margin-bottom:.4rem">&#128274; EVENEMENT PRIVE</div>'+
+                imgH+'<div class="card-title" style="margin-bottom:.3rem">'+evData.name+'</div>'+desc+
+                '<div style="margin-top:.7rem;display:flex;gap:.4rem">'+
+                '<button class="btn btn-primary btn-sm" onclick="joinEvent(\''+evId+'\',\''+safeName+'\',true,\''+evData.createdBy+'\')">Demander au MJ</button>'+
+                '<button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'priv-ev-'+evId+'\').remove()">Fermer</button>'+
+                '</div></div>';
+              pel.insertBefore(card, pel.firstChild);
+            }
             document.getElementById('join-code-input').value='';
+            toast('Evenement prive trouve. Envoyez une demande au MJ.');
           } else {
-            // Public event: add directly
-            await updateDoc(doc(db,'events',evDoc.id),{
+            await updateDoc(doc(db,'events',evId),{
               invitedUids:arrayUnion(currentUser.uid),
               invitedUsernames:arrayUnion(userProfile.username)
             });
-            toast('Rejoint : '+ev.name+' !');
+            toast('Vous avez rejoint : '+evData.name+' !');
             document.getElementById('join-code-input').value='';
-            loadJoinedEvents(); renderCalendar();
+            loadPublicEvents(); renderCalendar();
           }
         }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
       };
+
+      // Load all non-private open events for browsing
+      async function loadPublicEvents(){
+        var el=document.getElementById('public-events-list');
+        if(!el) return;
+        el.innerHTML='<div class="loading">Chargement...</div>';
+        try{
+          var q=query(collection(db,'events'),where('isPrivate','==',false));
+          var snap=await getDocs(q);
+          var events=[];
+          snap.forEach(function(d){
+            var ev=Object.assign({id:d.id},d.data());
+            if(!ev.closed) events.push(ev);
+          });
+          events.sort(function(a,b){
+            var ta=a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0;
+            var tb=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
+            return tb-ta;
+          });
+          renderPublicEvents(events);
+        } catch(e){
+          el.innerHTML='<div class="card" style="font-size:.85rem;color:var(--muted)">'+
+            '<strong style="color:var(--text)">Acces aux evenements publics indisponible.</strong><br><br>'+
+            'Ajoutez cette regle dans la console Firebase :<br>'+
+            '<code style="font-size:.72rem;color:var(--accent)">match /events/{id} { allow read: if request.auth != null; }</code><br><br>'+
+            'En attendant, utilisez un code d\'invitation.'+
+          '</div>';
+          console.error('loadPublicEvents:',e);
+        }
+      }
+
+      function renderPublicEvents(events){
+        var el=document.getElementById('public-events-list');
+        if(!el) return;
+        if(!events.length){ el.innerHTML='<p class="text-muted" style="margin-top:.5rem">Aucun evenement public disponible.</p>'; return; }
+        el.innerHTML='<div class="section-title" style="margin-bottom:.8rem">Evenements publics</div>';
+        events.forEach(function(ev){
+          var alreadyJoined=(ev.invitedUids||[]).indexOf(currentUser.uid)!==-1;
+          var isOwner=ev.createdBy===currentUser.uid;
+          var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:.7rem"></div>';
+          var imgH=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:90px;object-fit:cover;border-radius:6px;margin-bottom:.5rem" onerror="this.style.display=\'none\'"/>':'';
+          var desc=ev.description?'<p style="font-size:.82rem;color:var(--muted);font-style:italic;margin:.3rem 0 .4rem">'+ev.description+'</p>':'';
+          var slots=(ev.dates||[]).length;
+          var safeName=ev.name.replace(/'/g,'');
+          var joinBtn=isOwner
+            ? '<span style="font-size:.72rem;color:var(--muted)">Votre evenement</span>'
+            : alreadyJoined
+              ? '<span style="font-size:.72rem;color:var(--success)">&#10003; Rejoint</span>'
+              : '<button class="btn btn-primary btn-sm" onclick="joinEvent(\''+ev.id+'\',\''+safeName+'\',false,\''+ev.createdBy+'\')">Rejoindre</button>';
+          var card=document.createElement('div'); card.className='card'; card.style.marginBottom='.6rem';
+          card.innerHTML=colorBar+imgH+
+            '<div class="card-header" style="margin-bottom:.3rem"><div>'+
+              '<div class="card-title" style="font-size:.9rem">'+ev.name+'</div>'+
+              '<div class="card-meta">MJ : '+(ev.creatorUsername||'')+(slots?' &middot; '+slots+' date'+(slots>1?'s':''):'')+'</div>'+
+            '</div><div style="flex-shrink:0">'+joinBtn+'</div></div>'+desc+
+            '<div class="date-slots" style="margin-top:.4rem">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>';
+          el.appendChild(card);
+        });
+      }
 
       function loadJoinedEvents() {
         var q=query(collection(db,'events'),where('invitedUids','array-contains',currentUser.uid));
@@ -2814,6 +2903,7 @@
       }
       function renderJoinedEvents(events) {
         var el=document.getElementById('joined-events-list');
+        if(!el) return; // element may not exist in new layout
         if(!events.length){el.innerHTML='<p class="text-muted">Aucun evenement rejoint.</p>';return;}
         el.innerHTML='';
         events.forEach(function(ev){
