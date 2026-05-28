@@ -2110,13 +2110,6 @@
                 <label>Nom d'utilisateur</label
                 ><input type="text" id="profile-username" maxlength="24" />
               </div>
-              <div class="field">
-                <label>Role</label
-                ><select id="profile-role">
-                  <option value="MJ">MJ - Meneur de jeu</option>
-                  <option value="JR">Joueur</option>
-                </select>
-              </div>
               <div class="flex gap-sm mt-sm">
                 <button class="btn btn-primary" onclick="saveProfile()">
                   Enregistrer
@@ -2605,7 +2598,6 @@
         badge.textContent = isMJ ? 'MJ' : 'JR';
         badge.className = 'role-badge'+(isMJ?' mj':'');
         document.getElementById('profile-username').value = userProfile.username;
-        document.getElementById('profile-role').value = userProfile.role;
 
         // Role switch button: visible for ALL users
         var switchBtn = document.getElementById('role-switch-btn');
@@ -3026,6 +3018,8 @@
           evSelectedColor=autoPickColor(used);
         } catch(e){evSelectedColor=EVENT_COLORS[0];}
         buildColorPicker(evSelectedColor);
+        // Show system suggestions from user's characters
+        buildSystemSuggestions(null);
         var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
         renderEvCal();
         // Reset privacy to public
@@ -3047,6 +3041,8 @@
         document.getElementById('ev-save-btn').textContent='Enregistrer';
         evSelectedColor=ev.color||EVENT_COLORS[0];
         buildColorPicker(evSelectedColor);
+        // Show system suggestions from user's characters
+        buildSystemSuggestions(ev.rpgSystem||null);
         var now=new Date(); evCalYear=now.getFullYear(); evCalMonth=now.getMonth();
         renderEvCal(); renderDateSlots(); renderPlayerChips();
         document.getElementById('ev-time-section').style.display='none';
@@ -3163,6 +3159,38 @@
       window.updateOpacityLabel=function(){
         document.getElementById('ev-opacity-val').textContent = document.getElementById('ev-opacity').value;
       };
+      // Build system suggestion chips from user's characters and past events
+      function buildSystemSuggestions(currentVal) {
+        var sysInput = document.getElementById('ev-rpgsystem');
+        var existing = document.getElementById('ev-system-suggestions');
+        if (existing) existing.remove();
+        var chars = userProfile.characters || [];
+        var systems = [];
+        chars.forEach(function(c){ if(c.system && systems.indexOf(c.system)===-1) systems.push(c.system); });
+        if (!systems.length) return;
+        var wrapper = document.createElement('div');
+        wrapper.id = 'ev-system-suggestions';
+        wrapper.style.cssText = 'display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.4rem';
+        systems.forEach(function(sys) {
+          var chip = document.createElement('span');
+          chip.className = 'char-badge';
+          chip.style.cssText = 'cursor:pointer;padding:.2rem .55rem;font-size:.78rem;border:1px solid var(--border);border-radius:20px;transition:background .15s';
+          chip.textContent = sys;
+          if (currentVal && currentVal === sys) { chip.style.borderColor = 'var(--accent)'; chip.style.color = 'var(--accent)'; }
+          chip.onclick = function() {
+            sysInput.value = sys;
+            wrapper.querySelectorAll('span').forEach(function(s){ s.style.borderColor=''; s.style.color=''; });
+            chip.style.borderColor = 'var(--accent)'; chip.style.color = 'var(--accent)';
+          };
+          wrapper.appendChild(chip);
+        });
+        var hint = document.createElement('div');
+        hint.style.cssText = 'font-size:.73rem;color:var(--muted);margin-bottom:.2rem;width:100%';
+        hint.textContent = '↩ Systèmes de vos personnages :';
+        wrapper.prepend(hint);
+        sysInput.parentNode.insertBefore(wrapper, sysInput.nextSibling);
+      }
+
       window.saveEvent=async function() {
         var name=document.getElementById('ev-name').value.trim();
         if(!name) return toast('Donnez un nom.','error');
@@ -3209,18 +3237,21 @@
         }
         if(!dates.length){html+='<p class="text-muted">Aucune date.</p>';}
         else {
-          html+='<div style="overflow-x:auto"><table class="presence-table"><thead><tr><th>Joueur</th>';
+          html+='<div style="overflow-x:auto"><table class="presence-table"><thead><tr><th>Personnage</th><th>Joueur</th>';
           dates.forEach(function(s){
             var past=isPast(s.date)?'<br><small style="color:var(--muted)">(passee)</small>':'';
             var fin=fd.indexOf(s.date+'_'+s.start)!==-1?' '+E_STAR:'';
             html+='<th>'+fmtDate(s.date)+'<br><small>'+s.start+'</small>'+fin+past+'</th>';
           });
           html+='</tr></thead><tbody>';
-          if(!players.length){html+='<tr><td colspan="'+(dates.length+1)+'" class="text-muted">Aucun joueur invite.</td></tr>';}
+          if(!players.length){html+='<tr><td colspan="'+(dates.length+2)+'" class="text-muted">Aucun joueur invite.</td></tr>';}
           else {
             players.forEach(function(uid){
-              var charTag=(charChoices[uid]&&charChoices[uid].name)?'<span class="char-badge" style="margin-left:.3rem">'+charChoices[uid].name+'</span>':'';
-              html+='<tr><td>'+(playerNames[uid]||uid)+charTag+'</td>';
+              var charChoice=charChoices[uid];
+              var charCell=charChoice&&charChoice.name
+                ? charChoice.name+(charChoice.system?'<span class="char-badge" style="margin-left:.3rem">'+charChoice.system+'</span>':'')
+                : '<span style="color:var(--muted);font-style:italic;font-size:.82rem">—</span>';
+              html+='<tr><td>'+charCell+'</td><td>'+(playerNames[uid]||uid)+'</td>';
               dates.forEach(function(s){
                 var key=s.date+'_'+s.start, r=((responses[uid]||{})[key])||'none';
                 var em={yes:'<span class="s-yes">'+E_YES+'</span>',no:'<span class="s-no">'+E_NO+'</span>',maybe:'<span class="s-maybe">'+E_MAYBE+'</span>',none:'<span class="s-none">-</span>'};
@@ -3257,7 +3288,7 @@
           var key=s.date+'_'+s.start, yes=0,no=0,maybe=0;
           players.forEach(function(uid){var r=((responses[uid]||{})[key])||'none';if(r==='yes')yes++;else if(r==='no')no++;else if(r==='maybe')maybe++;});
           html+='<label style="display:flex;align-items:center;gap:.7rem;padding:.6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;cursor:pointer;color:var(--text)">'+
-            '<input type="checkbox" value="'+key+'" style="width:16px;height:16px;accent-color:var(--accent)">'+
+            '<input type="checkbox" value="'+key+'" checked style="width:16px;height:16px;accent-color:var(--accent)">'+
             '<strong>'+fmtDate(s.date)+' '+s.start+'</strong> '+
             '<span class="s-yes">'+E_YES+' '+yes+'</span> <span class="s-maybe">'+E_MAYBE+' '+maybe+'</span> <span class="s-no">'+E_NO+' '+no+'</span></label>';
         });
@@ -3617,6 +3648,18 @@
           }
         } catch(e){}
 
+        // Check for pending friend removals (when other user removed us)
+        try {
+          var remQ=query(collection(db,'friendRemovals'),where('to','==',currentUser.uid));
+          var remSnap=await getDocs(remQ);
+          for(var rri=0;rri<remSnap.docs.length;rri++){
+            var rrd=remSnap.docs[rri].data();
+            await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayRemove(rrd.from)});
+            userProfile.friends=(userProfile.friends||[]).filter(function(id){return id!==rrd.from;});
+            await deleteDoc(remSnap.docs[rri].ref);
+          }
+        } catch(e){}
+
         // Re-read friends from Firestore to get latest persisted state,
         // then merge with local (so newly added friends appear immediately)
         try {
@@ -3646,10 +3689,20 @@
 
       window.removeFriend=async function(uid,username){
         if(!confirm('Retirer '+username+' ?')) return;
+        // Remove from own list
         await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayRemove(uid)});
-        try{await updateDoc(doc(db,'users',uid),{friends:arrayRemove(currentUser.uid)});}catch(e){}
         userProfile.friends=(userProfile.friends||[]).filter(function(id){return id!==uid;});
-        toast(username+' retire.'); loadFriends();
+        // Try direct mutual removal (may fail due to Firestore rules)
+        try{ await updateDoc(doc(db,'users',uid),{friends:arrayRemove(currentUser.uid)}); }
+        catch(e){
+          // Fallback: write a friendRemoval doc so the other user's list is cleaned when they load
+          try{
+            await setDoc(doc(db,'friendRemovals',currentUser.uid+'_'+uid),{
+              from:currentUser.uid, to:uid, createdAt:serverTimestamp()
+            });
+          }catch(e2){}
+        }
+        toast(username+' retiré.'); loadFriends();
       };
 
       // ============================================================
@@ -3719,7 +3772,26 @@
         var charId = sel.value;
         var chars = userProfile.characters || [];
         var char = chars.find(function(c){ return c.id === charId; }) || null;
-        var upd = {};
+        // Try writing directly to the event (works if Firestore rules allow invitedUids to write characterChoices)
+        try {
+          var upd = {};
+          upd['characterChoices.'+currentUser.uid] = char ? { id: char.id, name: char.name, system: char.system } : null;
+          await updateDoc(doc(db,'events',eventId), upd);
+          toast(char ? 'Personnage sélectionné : '+char.name : 'Choix effacé.');
+        } catch(e) {
+          // Fallback: store in the user's own profile (always writable)
+          try {
+            var choices = userProfile.characterChoices || {};
+            choices[eventId] = char ? { id: char.id, name: char.name, system: char.system } : null;
+            await updateDoc(doc(db,'users',currentUser.uid), { characterChoices: choices });
+            userProfile.characterChoices = choices;
+            toast(char ? 'Personnage sélectionné : '+char.name : 'Choix effacé.');
+          } catch(e2) {
+            toast('Impossible de sauvegarder le choix de personnage.', 'error');
+            console.error('saveCharacterChoice fallback failed:', e2);
+          }
+        }
+      //};
         upd['characterChoices.'+currentUser.uid] = char ? { id: char.id, name: char.name, system: char.system } : null;
         await updateDoc(doc(db,'events',eventId), upd);
         toast(char ? 'Personnage sélectionné : '+char.name : 'Choix effacé.');
@@ -3727,13 +3799,10 @@
 
       window.saveProfile=async function(){
         var username=document.getElementById('profile-username').value.trim();
-        var role=document.getElementById('profile-role').value;
         if(!username) return toast('Nom requis.','error');
-        await updateDoc(doc(db,'users',currentUser.uid),{username:username,role:role});
-        userProfile.username=username; userProfile.role=role;
+        await updateDoc(doc(db,'users',currentUser.uid),{username:username});
+        userProfile.username=username;
         document.getElementById('header-username').textContent=username;
-        var badge=document.getElementById('header-role-badge');
-        badge.textContent=role; badge.className='role-badge'+(role==='MJ'?' mj':'');
         toast('Profil mis a jour.'); initMainApp();
       };
 
