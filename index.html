@@ -3,6 +3,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9876;</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chroniques - Planificateur JDR</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -2231,7 +2232,7 @@
         return activeMode === 'MJ';
       }
 
-      function switchRole() {
+      window.switchRole = function switchRole() {
         activeMode = (activeMode === 'MJ') ? 'JR' : 'MJ';
         localStorage.setItem('rpg_mode', activeMode);
         toast(activeMode === 'MJ' ? '⚔ Mode Meneur activé' : '⚛ Mode Joueur activé');
