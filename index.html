@@ -268,6 +268,311 @@
         border-style: solid;
       }
 
+      /* ============================================================
+         MODE MJ — thème par défaut (Fantastique / violet-or)
+         Ambiance : commandement, mystère, autorité
+         ============================================================ */
+      body[data-mode="mj"] {
+        --bg:      #0d0b0f;
+        --surface: #13101a;
+        --surface2:#1c1826;
+        --border:  #3a2e58;
+        --accent:  #c9a84c;
+        --accent2: #9b59e8;
+        --text:    #ede5ff;
+        --muted:   #9080b8;
+      }
+      body[data-mode="mj"] header {
+        background: linear-gradient(90deg, #1a0e2e 0%, #12101a 60%);
+        border-bottom: 2px solid var(--accent2);
+        box-shadow: 0 2px 18px rgba(139,92,246,0.18);
+      }
+      body[data-mode="mj"] header .logo::before {
+        content: "♛ ";
+        color: var(--accent);
+        opacity: .8;
+      }
+      body[data-mode="mj"] .role-badge.mj {
+        background: linear-gradient(135deg, #c9a84c, #9b59e8);
+        color: #fff;
+        box-shadow: 0 0 8px rgba(155,89,232,.5);
+      }
+      body[data-mode="mj"] .nav-tab.active {
+        color: var(--accent2);
+        border-bottom-color: var(--accent2);
+        text-shadow: 0 0 12px rgba(139,92,246,0.6);
+      }
+      body[data-mode="mj"] .section-title {
+        border-bottom-color: var(--accent2);
+      }
+      body[data-mode="mj"] .card {
+        border-color: #2e2448;
+        background: linear-gradient(160deg, #16121e 0%, #131020 100%);
+      }
+      body[data-mode="mj"] .btn-primary {
+        background: linear-gradient(135deg, #9b59e8 0%, #7c3db8 100%);
+        border-color: #9b59e8;
+        box-shadow: 0 0 12px rgba(155,89,232,0.3);
+      }
+      body[data-mode="mj"] .btn-primary:hover {
+        background: linear-gradient(135deg, #b06ef5 0%, #9b59e8 100%);
+        filter: none;
+      }
+      body[data-mode="mj"] #role-switch-btn {
+        border-color: rgba(155,89,232,0.4);
+        color: #b98af5;
+      }
+      body[data-mode="mj"] body::before {
+        background:
+          radial-gradient(ellipse 60% 50% at 15% 10%, rgba(139,92,246,0.14) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 40% at 85% 85%, rgba(201,168,76,0.07) 0%, transparent 55%);
+      }
+
+      /* ============================================================
+         MODE JR — thème par défaut (Fantastique / vert-teal)
+         Ambiance : aventure, espoir, action
+         ============================================================ */
+      body[data-mode="jr"] {
+        --bg:      #080f0d;
+        --surface: #0f1a16;
+        --surface2:#162420;
+        --border:  #1e3d32;
+        --accent:  #3dd68c;
+        --accent2: #1ca8a0;
+        --text:    #e0f5ee;
+        --muted:   #5a9e88;
+      }
+      body[data-mode="jr"] header {
+        background: linear-gradient(90deg, #0a1f18 0%, #0d1a14 60%);
+        border-bottom: 2px solid var(--accent2);
+        box-shadow: 0 2px 18px rgba(28,168,160,0.15);
+      }
+      body[data-mode="jr"] header .logo::before {
+        content: "⚔ ";
+        color: var(--accent);
+        opacity: .7;
+      }
+      body[data-mode="jr"] .role-badge {
+        background: linear-gradient(135deg, #1ca8a0, #3dd68c);
+        color: #051a12;
+        box-shadow: 0 0 8px rgba(61,214,140,.35);
+      }
+      body[data-mode="jr"] .nav-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        text-shadow: 0 0 10px rgba(61,214,140,0.5);
+      }
+      body[data-mode="jr"] .section-title {
+        border-bottom-color: var(--accent2);
+        color: var(--accent);
+      }
+      body[data-mode="jr"] .card {
+        border-color: #1a3028;
+        background: linear-gradient(160deg, #0f1e18 0%, #0c1812 100%);
+      }
+      body[data-mode="jr"] .btn-primary {
+        background: linear-gradient(135deg, #1ca8a0 0%, #138a82 100%);
+        border-color: #1ca8a0;
+        box-shadow: 0 0 10px rgba(28,168,160,0.28);
+        color: #e0fff8;
+      }
+      body[data-mode="jr"] .btn-primary:hover {
+        background: linear-gradient(135deg, #3dd68c 0%, #1ca8a0 100%);
+        filter: none;
+      }
+      body[data-mode="jr"] #role-switch-btn {
+        border-color: rgba(28,168,160,0.4);
+        color: #3dd68c;
+      }
+      body[data-mode="jr"] body::before {
+        background:
+          radial-gradient(ellipse 55% 45% at 80% 10%, rgba(61,214,140,0.10) 0%, transparent 60%),
+          radial-gradient(ellipse 45% 50% at 10% 85%, rgba(28,168,160,0.08) 0%, transparent 55%);
+      }
+
+      /* ============================================================
+         MODE MJ — CYBERPUNK
+         Ambiance : hacker suprême, réseau, rouge sang
+         ============================================================ */
+      [data-theme="cyberpunk"] body[data-mode="mj"],
+      [data-theme="cyberpunk"][data-mode="mj"] body,
+      body[data-mode="mj"][data-theme="cyberpunk"] {
+        --accent:  #ff003c;
+        --accent2: #ff6600;
+        --border:  #ff003c44;
+        --muted:   #883344;
+        --text:    #ffe0e8;
+      }
+      [data-theme="cyberpunk"] body[data-mode="mj"] header,
+      body[data-mode="mj"] [data-theme="cyberpunk"] header {
+        border-bottom-color: #ff003c;
+        box-shadow: 0 2px 20px rgba(255,0,60,0.25);
+        background: linear-gradient(90deg, #1a0008 0%, #050a0f 60%);
+      }
+      [data-theme="cyberpunk"] body[data-mode="mj"] .btn-primary,
+      body[data-mode="mj"][data-theme="cyberpunk"] .btn-primary {
+        border-color: #ff003c;
+        color: #ff003c;
+        box-shadow: 0 0 12px rgba(255,0,60,0.4);
+      }
+      [data-theme="cyberpunk"] body[data-mode="mj"] .nav-tab.active,
+      body[data-mode="mj"][data-theme="cyberpunk"] .nav-tab.active {
+        color: #ff003c;
+        border-bottom-color: #ff003c;
+        text-shadow: 0 0 12px rgba(255,0,60,0.8);
+      }
+      [data-theme="cyberpunk"] body[data-mode="mj"] .card,
+      body[data-mode="mj"][data-theme="cyberpunk"] .card {
+        border-color: #ff003c;
+        box-shadow: 0 0 16px rgba(255,0,60,0.12);
+      }
+      [data-theme="cyberpunk"] body[data-mode="mj"] header .logo::before,
+      body[data-mode="mj"][data-theme="cyberpunk"] header .logo::before {
+        content: "▲ ";
+        color: #ff003c;
+      }
+
+      /* ============================================================
+         MODE JR — CYBERPUNK
+         Ambiance : runner, néon bleu-vert, vitesse
+         ============================================================ */
+      [data-theme="cyberpunk"] body[data-mode="jr"] header,
+      body[data-mode="jr"][data-theme="cyberpunk"] header {
+        border-bottom-color: #00f5ff;
+        box-shadow: 0 2px 20px rgba(0,245,255,0.2);
+      }
+      [data-theme="cyberpunk"] body[data-mode="jr"] header .logo::before,
+      body[data-mode="jr"][data-theme="cyberpunk"] header .logo::before {
+        content: "> ";
+        color: #00f5ff;
+      }
+      /* JR cyberpunk keeps the default cyan — just add subtle green tint */
+      [data-theme="cyberpunk"] body[data-mode="jr"] .nav-tab.active,
+      body[data-mode="jr"][data-theme="cyberpunk"] .nav-tab.active {
+        color: #00ff88;
+        border-bottom-color: #00ff88;
+        text-shadow: 0 0 10px rgba(0,255,136,0.7);
+      }
+      [data-theme="cyberpunk"] body[data-mode="jr"] .btn-primary,
+      body[data-mode="jr"][data-theme="cyberpunk"] .btn-primary {
+        border-color: #00ff88;
+        color: #00ff88;
+        box-shadow: 0 0 12px rgba(0,255,136,0.3);
+      }
+
+      /* ============================================================
+         MODE MJ — MEDIEVAL
+         Ambiance : souverain, sceau royal, bordeaux et or
+         ============================================================ */
+      [data-theme="medieval"] body[data-mode="mj"],
+      body[data-mode="mj"][data-theme="medieval"] {
+        --accent:  #d4a843;
+        --accent2: #8b1a1a;
+        --surface: #1e1008;
+        --surface2:#271508;
+        --border:  #7a3a18;
+      }
+      [data-theme="medieval"] body[data-mode="mj"] header,
+      body[data-mode="mj"][data-theme="medieval"] header {
+        background: linear-gradient(90deg, #2a0a0a 0%, #1e1008 60%);
+        border-bottom: 2px solid #8b1a1a;
+        box-shadow: 0 2px 16px rgba(139,26,26,0.3);
+      }
+      [data-theme="medieval"] body[data-mode="mj"] header .logo::before,
+      body[data-mode="mj"][data-theme="medieval"] header .logo::before {
+        content: "♛ ";
+        color: #d4a843;
+      }
+      [data-theme="medieval"] body[data-mode="mj"] .nav-tab.active,
+      body[data-mode="mj"][data-theme="medieval"] .nav-tab.active {
+        color: #d4a843;
+        border-bottom-color: #8b1a1a;
+        border-bottom-width: 3px;
+      }
+      [data-theme="medieval"] body[data-mode="mj"] .card,
+      body[data-mode="mj"][data-theme="medieval"] .card {
+        border-color: #7a3a18;
+        background: linear-gradient(160deg, #1e1008 0%, #180d05 100%);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,168,67,0.08);
+      }
+      [data-theme="medieval"] body[data-mode="mj"] .btn-primary,
+      body[data-mode="mj"][data-theme="medieval"] .btn-primary {
+        background: linear-gradient(180deg, #8b1a1a 0%, #6b1010 100%);
+        color: #f0d090;
+        border-color: #7a3a18;
+        box-shadow: 0 2px 8px rgba(139,26,26,0.4);
+      }
+      [data-theme="medieval"] body[data-mode="mj"] .btn-primary:hover,
+      body[data-mode="mj"][data-theme="medieval"] .btn-primary:hover {
+        background: linear-gradient(180deg, #a82020 0%, #8b1a1a 100%);
+        filter: none;
+      }
+      [data-theme="medieval"] body[data-mode="mj"] .section-title,
+      body[data-mode="mj"][data-theme="medieval"] .section-title {
+        border-bottom-color: #8b1a1a;
+      }
+
+      /* ============================================================
+         MODE JR — MEDIEVAL
+         Ambiance : voyageur, forêt, vert mousse et bois clair
+         ============================================================ */
+      [data-theme="medieval"] body[data-mode="jr"],
+      body[data-mode="jr"][data-theme="medieval"] {
+        --bg:      #0d1209;
+        --surface: #141d0e;
+        --surface2:#1b2713;
+        --border:  #3a5c28;
+        --accent:  #7ec850;
+        --accent2: #c8a43c;
+        --text:    #e8f0d8;
+        --muted:   #7a9860;
+      }
+      [data-theme="medieval"] body[data-mode="jr"] header,
+      body[data-mode="jr"][data-theme="medieval"] header {
+        background: linear-gradient(90deg, #0d1a08 0%, #101808 60%);
+        border-bottom: 2px solid #3a5c28;
+        box-shadow: 0 2px 14px rgba(58,92,40,0.3);
+      }
+      [data-theme="medieval"] body[data-mode="jr"] header .logo::before,
+      body[data-mode="jr"][data-theme="medieval"] header .logo::before {
+        content: "⚔ ";
+        color: #7ec850;
+      }
+      [data-theme="medieval"] body[data-mode="jr"] .nav-tab.active,
+      body[data-mode="jr"][data-theme="medieval"] .nav-tab.active {
+        color: #7ec850;
+        border-bottom-color: #7ec850;
+        border-bottom-width: 3px;
+      }
+      [data-theme="medieval"] body[data-mode="jr"] .card,
+      body[data-mode="jr"][data-theme="medieval"] .card {
+        border-color: #2e4a1e;
+        background: linear-gradient(160deg, #141d0e 0%, #101508 100%);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(126,200,80,0.06);
+      }
+      [data-theme="medieval"] body[data-mode="jr"] .btn-primary,
+      body[data-mode="jr"][data-theme="medieval"] .btn-primary {
+        background: linear-gradient(180deg, #4a8c28 0%, #386820 100%);
+        color: #e8f5d0;
+        border-color: #3a5c28;
+        box-shadow: 0 2px 8px rgba(74,140,40,0.35);
+      }
+      [data-theme="medieval"] body[data-mode="jr"] .btn-primary:hover,
+      body[data-mode="jr"][data-theme="medieval"] .btn-primary:hover {
+        background: linear-gradient(180deg, #5caa30 0%, #4a8c28 100%);
+        filter: none;
+      }
+      [data-theme="medieval"] body[data-mode="jr"] .section-title,
+      body[data-mode="jr"][data-theme="medieval"] .section-title {
+        border-bottom-color: #3a5c28;
+        color: #7ec850;
+      }
+      [data-theme="medieval"] body[data-mode="jr"] .card-title,
+      body[data-mode="jr"][data-theme="medieval"] .card-title {
+        color: #7ec850;
+      }
+
+
 
       *,
       *::before,
@@ -2294,6 +2599,7 @@
         document.getElementById('header-username').textContent = userProfile.username;
 
         var isMJ = effectiveIsMJ();
+        document.body.setAttribute('data-mode', isMJ ? 'mj' : 'jr');
 
         var badge = document.getElementById('header-role-badge');
         badge.textContent = isMJ ? 'MJ' : 'JR';
