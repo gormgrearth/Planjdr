@@ -1356,6 +1356,42 @@
       .join-request-row:last-child { border-bottom: none; }
       .join-request-row .jr-name { flex: 1; color: var(--text); }
       .join-request-row .jr-ev   { color: var(--muted); font-size: 0.78rem; }
+
+      /* CHARACTER LIST */
+      .char-list { display:flex; flex-direction:column; gap:.4rem; margin-top:.5rem; }
+      .char-item {
+        display:flex; align-items:center; gap:.6rem;
+        background:var(--surface2); border:1px solid var(--border);
+        border-radius:8px; padding:.45rem .8rem; font-size:.9rem;
+      }
+      .char-item .char-name { flex:1; color:var(--text); }
+      .char-item .char-system { font-size:.75rem; color:var(--muted); }
+      .char-add-row {
+        display:flex; gap:.5rem; margin-top:.6rem;
+      }
+      .char-add-row input { flex:1; }
+      /* Character select in join/detail modal */
+      .char-select-field {
+        background:var(--surface2); border:1px solid var(--accent);
+        border-radius:8px; padding:.6rem .9rem; margin-bottom:.8rem;
+        font-size:.88rem;
+      }
+      .char-select-field label {
+        font-size:.72rem; text-transform:uppercase;
+        letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:.35rem;
+      }
+      .char-select-field select {
+        background:var(--surface2); border:1px solid var(--border);
+        color:var(--text); font-family:"Crimson Pro",serif;
+        font-size:.95rem; padding:.4rem .6rem;
+        border-radius:6px; width:100%; outline:none;
+      }
+      .char-badge {
+        display:inline-flex; align-items:center; gap:3px;
+        background:rgba(201,168,76,.12); color:var(--accent);
+        border:1px solid rgba(201,168,76,.25); border-radius:12px;
+        font-size:.7rem; padding:1px 7px; font-weight:600;
+      }
       /* ===================================================
          MOBILE — smartphones (≤600px)
          =================================================== */
@@ -1782,6 +1818,15 @@
                 </button>
               </div>
               <hr class="divider" />
+              <div class="section-title" style="font-size:.8rem;margin-bottom:.6rem">&#127985; Mes personnages</div>
+              <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Personnages que vous pouvez utiliser pour rejoindre des parties.</p>
+              <div class="char-list" id="char-list"></div>
+              <div class="char-add-row">
+                <input type="text" id="char-name-input" placeholder="Nom du personnage..." maxlength="40" style="flex:2"/>
+                <input type="text" id="char-system-input" placeholder="Systeme (D&amp;D, CoC...)" maxlength="30" style="flex:1"/>
+                <button class="btn btn-primary btn-sm" onclick="addCharacter()">+</button>
+              </div>
+              <hr class="divider" />
               <button class="btn btn-danger" onclick="confirmDeleteAccount()">
                 Supprimer mon compte
               </button>
@@ -1803,6 +1848,10 @@
               id="ev-name"
               placeholder="La Nuit du Dragon..."
             />
+          </div>
+          <div class="field">
+            <label>Jeu de r&#244;le (optionnel)</label
+            ><input type="text" id="ev-rpgsystem" placeholder="D&amp;D 5e, Pathfinder, Call of Cthulhu..." maxlength="50"/>
           </div>
           <div class="field">
             <label>Description (optionnel)</label
@@ -2274,6 +2323,7 @@
             switchTab(t.id);
             if(t.id==='join' && !isMJ) { loadPublicEvents(); loadMyJoinRequests(); }
             if(t.id==='events' && isMJ) loadJoinRequests();
+            if(t.id==='profile') renderCharacters();
           };
           tabsEl.appendChild(btn);
         });
@@ -2284,6 +2334,8 @@
         if(isMJ) { loadMJEvents(); loadJoinRequests(); }
         else { loadJoinedEvents(); loadPublicEvents(); loadMyJoinRequests(); }
         loadFriends();
+        // Load characters if profile tab visible
+        if(userProfile.characters) renderCharacters();
         var saved = localStorage.getItem('rpg_theme')||'default';
         document.querySelectorAll('.theme-btn').forEach(function(btn){
           btn.classList.toggle('active', btn.getAttribute('data-t')===saved);
@@ -2648,6 +2700,7 @@
       window.openCreateEvent = async function() {
         editingEventId=null; evDateSlots=[]; evPlayers=[]; evSelectedDates=[];
         document.getElementById('ev-name').value='';
+        document.getElementById('ev-rpgsystem').value='';
         document.getElementById('ev-desc').value='';
         document.getElementById('ev-date-slots').innerHTML='';
         document.getElementById('ev-player-chips').innerHTML='';
@@ -2682,6 +2735,7 @@
         evDateSlots=(ev.dates||[]).slice();
         evPlayers=(ev.invitedUids||[]).map(function(uid,i){return{uid:uid,username:(ev.invitedUsernames||[])[i]||uid};});
         document.getElementById('ev-name').value=ev.name||'';
+        document.getElementById('ev-rpgsystem').value=ev.rpgSystem||'';
         document.getElementById('ev-desc').value=ev.description||'';
         document.getElementById('modal-event-title').textContent='Modifier';
         document.getElementById('ev-save-btn').textContent='Enregistrer';
@@ -2812,7 +2866,7 @@
         var privacyEl=document.querySelector('input[name="ev-privacy"]:checked');
         var privacyMode=privacyEl?privacyEl.value:'public';
         var isPrivate=privacyMode!=='public';
-        var data={name:name,description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate,privacyMode:privacyMode};
+        var data={name:name,rpgSystem:document.getElementById('ev-rpgsystem').value.trim(),description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate,privacyMode:privacyMode};
         try {
           if(editingEventId){await updateDoc(doc(db,'events',editingEventId),data);toast('Evenement mis a jour.');}
           else{
@@ -2835,11 +2889,13 @@
         document.getElementById('summary-title').textContent=ev.name+(ev.closed?' [CLOTURE]':'');
         var responses=ev.responses||{}, players=ev.invitedUids||[], playerNames={};
         (ev.invitedUids||[]).forEach(function(uid,i){playerNames[uid]=(ev.invitedUsernames||[])[i]||uid;});
+        var charChoices=ev.characterChoices||{};
         var dates=ev.dates||[], fd=ev.finalDates||[];
+        var sysTagMJ=ev.rpgSystem?'<span class="char-badge" style="margin-left:.5rem">'+ev.rpgSystem+'</span>':'';
         var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
         var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
         var descStr2=ev.description?'<p style="font-size:.95rem;color:var(--muted);margin:.3rem 0 .8rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
-        var html=colorBar+imgHtml+descStr2+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
+        var html=colorBar+imgHtml+descStr2+'<div style="margin-bottom:.6rem">'+sysTagMJ+'</div>'+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
         if(ev.closed&&fd.length){
           html+='<div style="margin-bottom:1rem"><strong style="color:var(--success)">Dates definitives :</strong><div style="margin-top:.4rem">';
           fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});
@@ -2857,7 +2913,8 @@
           if(!players.length){html+='<tr><td colspan="'+(dates.length+1)+'" class="text-muted">Aucun joueur invite.</td></tr>';}
           else {
             players.forEach(function(uid){
-              html+='<tr><td>'+(playerNames[uid]||uid)+'</td>';
+              var charTag=(charChoices[uid]&&charChoices[uid].name)?'<span class="char-badge" style="margin-left:.3rem">'+charChoices[uid].name+'</span>':'';
+              html+='<tr><td>'+(playerNames[uid]||uid)+charTag+'</td>';
               dates.forEach(function(s){
                 var key=s.date+'_'+s.start, r=((responses[uid]||{})[key])||'none';
                 var em={yes:'<span class="s-yes">'+E_YES+'</span>',no:'<span class="s-no">'+E_NO+'</span>',maybe:'<span class="s-maybe">'+E_MAYBE+'</span>',none:'<span class="s-none">-</span>'};
@@ -2927,7 +2984,19 @@
         var colorBar='<div style="height:3px;background:'+(ev.color||'var(--accent2)')+';border-radius:3px;margin-bottom:1rem"></div>';
         var imgHtml=ev.imgUrl?'<img src="'+ev.imgUrl+'" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.8rem" onerror="this.style.display=none"/>':'';
         var descStr=ev.description?'<p style="font-size:.95rem;color:var(--muted);margin:.3rem 0 .8rem;font-style:italic;line-height:1.5">'+ev.description+'</p>':'';
-        var html=colorBar+imgHtml+descStr+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+'</p>';
+        // RPG system badge
+        var sysHtml = ev.rpgSystem ? '<span class="char-badge" style="margin-left:.4rem">'+ev.rpgSystem+'</span>' : '';
+        var html=colorBar+imgHtml+descStr+'<p class="text-muted" style="margin-bottom:.5rem">MJ : '+(ev.creatorUsername||'')+sysHtml+'</p>';
+        // Character selector (JR only, not closed)
+        if (!effectiveIsMJ() && !ev.closed) {
+          var myCharId = ((ev.characterChoices||{})[currentUser.uid]||{}).id || '';
+          html += buildCharacterSelect(id, myCharId);
+        }
+        // Show chosen character if already selected
+        var myCharChoice = (ev.characterChoices||{})[currentUser.uid];
+        if (myCharChoice && myCharChoice.name) {
+          html += '<p style="font-size:.82rem;color:var(--accent);margin-bottom:.7rem">&#127985; Vous jouez : <strong>'+myCharChoice.name+'</strong>'+( myCharChoice.system ? ' ('+myCharChoice.system+')' : '')+'</p>';
+        }
         if(ev.closed){
           html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture. Aucune modification possible.</div>';
           if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});html+='</div></div>';}
@@ -3168,7 +3237,7 @@
           card.innerHTML=evCardOpen(ev)+colorBar+imgHtml2+
             '<div class="card-header"><div>'+
               '<div class="card-title">'+ev.name+closed+vBadge+'</div>'+
-              '<div class="card-meta">MJ : '+(ev.creatorUsername||'')+'</div>'+
+              '<div class="card-meta">MJ : '+(ev.creatorUsername||'')+(ev.rpgSystem?' &middot; <span class="char-badge">'+ev.rpgSystem+'</span>':'')+' &middot; '+(ev.isPrivate?'&#128274;':'&#127760;')+'</div>'+
             '</div>'+
             '<div class="card-actions">'+replyBtn+' '+
             '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+safeName+'\')">'+'Quitter</button>'+
@@ -3280,6 +3349,76 @@
       // ============================================================
       // PROFIL
       // ============================================================
+
+      // ============================================================
+      // CHARACTER MANAGEMENT
+      // ============================================================
+      window.addCharacter = async function() {
+        var name = document.getElementById('char-name-input').value.trim();
+        var system = document.getElementById('char-system-input').value.trim();
+        if (!name) return toast('Entrez un nom de personnage.', 'error');
+        var char = { id: genCode(8), name: name, system: system || '', createdAt: Date.now() };
+        var chars = userProfile.characters || [];
+        chars.push(char);
+        await updateDoc(doc(db,'users',currentUser.uid), { characters: chars });
+        userProfile.characters = chars;
+        document.getElementById('char-name-input').value = '';
+        document.getElementById('char-system-input').value = '';
+        renderCharacters();
+        toast('Personnage ajouté !');
+      };
+
+      window.removeCharacter = async function(charId) {
+        var chars = (userProfile.characters || []).filter(function(c){ return c.id !== charId; });
+        await updateDoc(doc(db,'users',currentUser.uid), { characters: chars });
+        userProfile.characters = chars;
+        renderCharacters();
+        toast('Personnage supprimé.');
+      };
+
+      function renderCharacters() {
+        var el = document.getElementById('char-list');
+        if (!el) return;
+        var chars = userProfile.characters || [];
+        if (!chars.length) {
+          el.innerHTML = '<p style="font-size:.82rem;color:var(--muted);font-style:italic">Aucun personnage. Ajoutez-en un ci-dessous.</p>';
+          return;
+        }
+        el.innerHTML = chars.map(function(c) {
+          return '<div class="char-item">'+
+            '<div class="char-name">'+c.name+(c.system ? ' <span class="char-badge">'+c.system+'</span>' : '')+'</div>'+
+            '<button class="btn btn-ghost btn-sm" onclick="removeCharacter(\''+c.id+'\')"'+' style="color:var(--danger);padding:.2rem .4rem" title="Supprimer">&#10005;</button>'+
+          '</div>';
+        }).join('');
+      }
+
+      // Build a <select> element with user's characters for joining an event
+      function buildCharacterSelect(eventId, currentCharId) {
+        var chars = userProfile.characters || [];
+        if (!chars.length) return '';
+        var opts = '<option value="">-- Sans personnage spécifique --</option>' +
+          chars.map(function(c){
+            var sel = (currentCharId === c.id) ? ' selected' : '';
+            return '<option value="'+c.id+'"'+sel+'>'+c.name+(c.system?' ('+c.system+')':'')+'</option>';
+          }).join('');
+        return '<div class="char-select-field">'+
+          '<label>&#127985; Personnage que vous souhaitez jouer</label>'+
+          '<select id="char-select-'+eventId+'" onchange="saveCharacterChoice(\''+eventId+'\')">' +opts+'</select>'+
+        '</div>';
+      }
+
+      window.saveCharacterChoice = async function(eventId) {
+        var sel = document.getElementById('char-select-'+eventId);
+        if (!sel) return;
+        var charId = sel.value;
+        var chars = userProfile.characters || [];
+        var char = chars.find(function(c){ return c.id === charId; }) || null;
+        var upd = {};
+        upd['characterChoices.'+currentUser.uid] = char ? { id: char.id, name: char.name, system: char.system } : null;
+        await updateDoc(doc(db,'events',eventId), upd);
+        toast(char ? 'Personnage sélectionné : '+char.name : 'Choix effacé.');
+      };
+
       window.saveProfile=async function(){
         var username=document.getElementById('profile-username').value.trim();
         var role=document.getElementById('profile-role').value;
