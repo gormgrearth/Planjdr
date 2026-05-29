@@ -2573,6 +2573,60 @@
                 <label>Nom d'utilisateur</label
                 ><input type="text" id="profile-username" maxlength="24" />
               </div>
+              <div class="field">
+                <label>Fuseau horaire</label>
+                <select id="profile-timezone">
+                  <optgroup label="Europe">
+                    <option value="Europe/Paris">Europe/Paris (FR, BE, CH, LU)</option>
+                    <option value="Europe/London">Europe/London (UK, IE)</option>
+                    <option value="Europe/Brussels">Europe/Brussels</option>
+                    <option value="Europe/Zurich">Europe/Zurich</option>
+                    <option value="Europe/Berlin">Europe/Berlin (DE, AT)</option>
+                    <option value="Europe/Madrid">Europe/Madrid (ES)</option>
+                    <option value="Europe/Rome">Europe/Rome (IT)</option>
+                    <option value="Europe/Amsterdam">Europe/Amsterdam (NL)</option>
+                    <option value="Europe/Stockholm">Europe/Stockholm (SE, NO, DK)</option>
+                    <option value="Europe/Helsinki">Europe/Helsinki (FI)</option>
+                    <option value="Europe/Warsaw">Europe/Warsaw (PL)</option>
+                    <option value="Europe/Bucharest">Europe/Bucharest (RO)</option>
+                    <option value="Europe/Athens">Europe/Athens (GR)</option>
+                    <option value="Europe/Istanbul">Europe/Istanbul (TR)</option>
+                    <option value="Europe/Moscow">Europe/Moscow (RU)</option>
+                  </optgroup>
+                  <optgroup label="Am&#233;riques">
+                    <option value="America/New_York">America/New_York (EST)</option>
+                    <option value="America/Chicago">America/Chicago (CST)</option>
+                    <option value="America/Denver">America/Denver (MST)</option>
+                    <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                    <option value="America/Toronto">America/Toronto (CA Est)</option>
+                    <option value="America/Vancouver">America/Vancouver (CA Ouest)</option>
+                    <option value="America/Montreal">America/Montreal (CA)</option>
+                    <option value="America/Sao_Paulo">America/Sao_Paulo (BR)</option>
+                    <option value="America/Mexico_City">America/Mexico_City (MX)</option>
+                    <option value="America/Argentina/Buenos_Aires">America/Buenos_Aires (AR)</option>
+                  </optgroup>
+                  <optgroup label="Asie / Oc&#233;anie">
+                    <option value="Asia/Tokyo">Asia/Tokyo (JP)</option>
+                    <option value="Asia/Shanghai">Asia/Shanghai (CN)</option>
+                    <option value="Asia/Seoul">Asia/Seoul (KR)</option>
+                    <option value="Asia/Singapore">Asia/Singapore (SG)</option>
+                    <option value="Asia/Dubai">Asia/Dubai (AE)</option>
+                    <option value="Asia/Kolkata">Asia/Kolkata (IN)</option>
+                    <option value="Australia/Sydney">Australia/Sydney (AU Est)</option>
+                    <option value="Pacific/Auckland">Pacific/Auckland (NZ)</option>
+                  </optgroup>
+                  <optgroup label="Afrique">
+                    <option value="Africa/Casablanca">Africa/Casablanca (MA)</option>
+                    <option value="Africa/Abidjan">Africa/Abidjan (UTC+0)</option>
+                    <option value="Africa/Lagos">Africa/Lagos (NG, WAT)</option>
+                    <option value="Africa/Nairobi">Africa/Nairobi (KE, EAT)</option>
+                  </optgroup>
+                  <optgroup label="UTC">
+                    <option value="UTC">UTC</option>
+                  </optgroup>
+                </select>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem" id="tz-preview"></div>
+              </div>
               <!-- Role géré via le bouton Mode MJ/Joueur dans le header -->
               <input type="hidden" id="profile-role" value="JR"/>
               <div class="flex gap-sm mt-sm">
@@ -2693,14 +2747,41 @@
           <div class="player-chips" id="ev-player-chips"></div>
           <hr class="divider" />
           <div class="field">
-            <label>Image de fond (URL)</label>
-            <input
-              type="text"
-              id="ev-img-url"
-              placeholder="https://..."
-              oninput="previewEvImg()"
-            />
-            <img id="ev-img-preview" class="img-preview" alt="Apercu" />
+            <label>Image de fond</label>
+            <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
+              <button type="button" class="btn btn-sm" id="img-tab-url"
+                onclick="switchImgTab('url')"
+                style="flex:1;border-bottom:2px solid var(--accent)">
+                &#127758; URL
+              </button>
+              <button type="button" class="btn btn-sm" id="img-tab-file"
+                onclick="switchImgTab('file')"
+                style="flex:1;border-bottom:2px solid transparent">
+                &#128190; Fichier local
+              </button>
+            </div>
+            <div id="img-panel-url">
+              <input type="text" id="ev-img-url" placeholder="https://..." oninput="previewEvImg()"/>
+            </div>
+            <div id="img-panel-file" style="display:none">
+              <div id="img-drop-zone" onclick="document.getElementById('ev-img-file').click()"
+                style="border:2px dashed var(--border);border-radius:8px;padding:1.2rem;text-align:center;cursor:pointer;color:var(--muted);font-size:.85rem;transition:border-color .2s"
+                ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+                ondragleave="this.style.borderColor='var(--border)'"
+                ondrop="handleImgDrop(event)">
+                &#128247; Cliquez ou d&eacute;posez une image (JPG, PNG, WEBP &mdash; max 5 Mo)
+              </div>
+              <input type="file" id="ev-img-file" accept="image/jpeg,image/png,image/webp,image/gif"
+                style="display:none" onchange="handleImgFile(this.files[0])"/>
+              <div id="img-upload-progress" style="display:none;margin-top:.5rem">
+                <div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden">
+                  <div id="img-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width .2s"></div>
+                </div>
+                <div id="img-progress-label" style="font-size:.75rem;color:var(--muted);margin-top:.3rem">Upload en cours...</div>
+              </div>
+            </div>
+            <img id="ev-img-preview" class="img-preview" alt="Apercu" style="margin-top:.5rem"/>
+            <div id="ev-img-storage-path" style="display:none"></div>
           </div>
           <div class="field" id="ev-opacity-field" style="display: none">
             <label
@@ -2828,6 +2909,7 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, onSnapshot, addDoc, serverTimestamp, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
       // !! REMPLACEZ PAR VOTRE CONFIG FIREBASE !!
       const firebaseConfig = {
@@ -2840,6 +2922,7 @@
         appId: "1:961354615451:web:641a4b4757a8cd196b543e"
       };
       var app  = initializeApp(firebaseConfig);
+      var storage = getStorage(app);
       var auth = getAuth(app);
       var db   = getFirestore(app);
 
@@ -2885,7 +2968,14 @@
       function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
       function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
       function genCode(len) { var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s=''; for(var i=0;i<(len||6);i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
-      function fmtDate(d) { return new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
+      function getUserTZ() { return (userProfile && userProfile.timezone) || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'; }
+      function fmtDate(d) {
+        return new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short',timeZone:getUserTZ()});
+      }
+      function fmtDateTime(d, time) {
+        var dt = new Date(d+'T'+(time||'12:00'));
+        return dt.toLocaleString('fr-FR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:getUserTZ()});
+      }
       function isPast(dateStr) { var d=new Date(dateStr+'T12:00'); d.setHours(0,0,0,0); return d < TODAY; }
       function slotsHtml(dates, finalDates) {
         if (!dates||!dates.length) return '';
@@ -3064,6 +3154,29 @@
         badge.textContent = isMJ ? 'MJ' : 'JR';
         badge.className = 'role-badge'+(isMJ?' mj':'');
         document.getElementById('profile-username').value = userProfile.username;
+        // Restore timezone selector
+        var tzSel=document.getElementById('profile-timezone');
+        var userTZ=userProfile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Paris';
+        if(tzSel){
+          tzSel.value=userTZ;
+          // If not in list, default to Europe/Paris
+          if(!tzSel.value) tzSel.value='Europe/Paris';
+          // Update preview
+          var tzPrev=document.getElementById('tz-preview');
+          if(tzPrev){
+            var nowStr=new Date().toLocaleTimeString('fr-FR',{timeZone:userTZ,hour:'2-digit',minute:'2-digit'});
+            tzPrev.textContent='Heure actuelle dans ce fuseau : '+nowStr;
+          }
+          // Live preview on change
+          tzSel.onchange=function(){
+            var sel=tzSel.value;
+            var tzPrev=document.getElementById('tz-preview');
+            if(tzPrev){
+              var nowStr=new Date().toLocaleTimeString('fr-FR',{timeZone:sel,hour:'2-digit',minute:'2-digit'});
+              tzPrev.textContent='Heure actuelle dans ce fuseau : '+nowStr;
+            }
+          };
+        }
         document.getElementById('profile-role').value = userProfile.role;
 
         // Role switch button: visible for ALL users
@@ -3466,6 +3579,9 @@
         editingEventId=null; evDateSlots=[]; evPlayers=[]; evSelectedDates=[];
         document.getElementById('ev-name').value='';
         document.getElementById('ev-rpgsystem').value='';
+        currentUploadedUrl=''; currentStoragePath='';
+        document.getElementById('ev-img-storage-path').textContent='';
+        switchImgTab('url');
         // Populate RPG systems datalist from user's characters
         var dl=document.getElementById('rpg-systems-list');
         if(dl){ var systems=[...new Set((userProfile.characters||[]).map(function(c){return c.system;}).filter(Boolean))]; dl.innerHTML=systems.map(function(s){return '<option value="'+s+'">';}).join(''); }
@@ -3504,6 +3620,9 @@
         evPlayers=(ev.invitedUids||[]).map(function(uid,i){return{uid:uid,username:(ev.invitedUsernames||[])[i]||uid};});
         document.getElementById('ev-name').value=ev.name||'';
         document.getElementById('ev-rpgsystem').value=ev.rpgSystem||'';
+        currentUploadedUrl=''; currentStoragePath=ev.storagePath||'';
+        document.getElementById('ev-img-storage-path').textContent=ev.storagePath||'';
+        switchImgTab('url'); // Default to URL tab on edit
         var dl2=document.getElementById('rpg-systems-list');
         if(dl2){ var sys2=[...new Set((userProfile.characters||[]).map(function(c){return c.system;}).filter(Boolean))]; dl2.innerHTML=sys2.map(function(s){return '<option value="'+s+'">';}).join(''); }
         document.getElementById('ev-desc').value=ev.description||'';
@@ -3618,7 +3737,8 @@
       window.removePlayer=function(i){evPlayers.splice(i,1);renderPlayerChips();};
 
       window.previewEvImg=function(){
-        var url = document.getElementById('ev-img-url').value.trim();
+        var url = currentUploadedUrl || document.getElementById('ev-img-url').value.trim();
+        var storagePath = currentStoragePath || '';
         var prev = document.getElementById('ev-img-preview');
         var opField = document.getElementById('ev-opacity-field');
         if (url) { prev.src=url; prev.style.display=''; opField.style.display=''; }
@@ -3636,7 +3756,7 @@
         var privacyEl=document.querySelector('input[name="ev-privacy"]:checked');
         var privacyMode=privacyEl?privacyEl.value:'public';
         var isPrivate=privacyMode!=='public';
-        var data={name:name,rpgSystem:document.getElementById('ev-rpgsystem').value.trim(),description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate,privacyMode:privacyMode};
+        var data={name:name,rpgSystem:document.getElementById('ev-rpgsystem').value.trim(),description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate,privacyMode:privacyMode,storagePath:storagePath};
         try {
           if(editingEventId){await updateDoc(doc(db,'events',editingEventId),data);toast('Evenement mis a jour.');}
           else{
@@ -4216,16 +4336,97 @@
         }
       };
 
+
+      // ============================================================
+      // IMAGE UPLOAD — Firebase Storage
+      // ============================================================
+      var currentUploadedUrl = ''; // URL from Storage after upload
+      var currentStoragePath = ''; // path for deletion on event edit
+
+      window.switchImgTab = function(tab) {
+        var isUrl = tab === 'url';
+        document.getElementById('img-panel-url').style.display  = isUrl ? '' : 'none';
+        document.getElementById('img-panel-file').style.display = isUrl ? 'none' : '';
+        document.getElementById('img-tab-url').style.borderBottomColor  = isUrl ? 'var(--accent)' : 'transparent';
+        document.getElementById('img-tab-file').style.borderBottomColor = isUrl ? 'transparent' : 'var(--accent)';
+        if (isUrl) { currentUploadedUrl = ''; currentStoragePath = ''; }
+      };
+
+      window.handleImgDrop = function(e) {
+        e.preventDefault();
+        document.getElementById('img-drop-zone').style.borderColor = 'var(--border)';
+        var file = e.dataTransfer.files[0];
+        if (file) handleImgFile(file);
+      };
+
+      window.handleImgFile = async function(file) {
+        if (!file) return;
+        var maxMB = 5;
+        if (file.size > maxMB * 1024 * 1024) {
+          return toast('Image trop lourde (max ' + maxMB + ' Mo).', 'error');
+        }
+        var allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+        if (!allowed.includes(file.type)) {
+          return toast('Format non supporté. Utilisez JPG, PNG, WEBP ou GIF.', 'error');
+        }
+        // Show progress
+        var prog = document.getElementById('img-upload-progress');
+        var bar  = document.getElementById('img-progress-bar');
+        var lbl  = document.getElementById('img-progress-label');
+        prog.style.display = '';
+        bar.style.width = '0%';
+        lbl.textContent = 'Upload en cours...';
+        // Upload to Firebase Storage: events/{uid}/{timestamp}_{filename}
+        var ext = file.name.split('.').pop();
+        var path = 'events/' + currentUser.uid + '/' + Date.now() + '.' + ext;
+        var storageRef = ref(storage, path);
+        var uploadTask = uploadBytesResumable(storageRef, file);
+        uploadTask.on('state_changed',
+          function(snapshot) {
+            var pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+            bar.style.width = pct + '%';
+            lbl.textContent = 'Upload : ' + pct + '%';
+          },
+          function(err) {
+            prog.style.display = 'none';
+            toast('Erreur upload : ' + err.message, 'error');
+            console.error('Upload error:', err);
+          },
+          async function() {
+            var url = await getDownloadURL(uploadTask.snapshot.ref);
+            currentUploadedUrl = url;
+            currentStoragePath = path;
+            document.getElementById('ev-img-storage-path').textContent = path;
+            // Preview
+            var prev = document.getElementById('ev-img-preview');
+            prev.src = url; prev.style.display = '';
+            document.getElementById('ev-opacity-field').style.display = '';
+            bar.style.width = '100%';
+            lbl.textContent = 'Upload terminé ✔';
+            setTimeout(function(){ prog.style.display = 'none'; }, 1500);
+            toast('Image uploadée avec succès !');
+          }
+        );
+      };
+
+      // Delete old Storage image when replacing on edit
+      async function deleteStorageImg(path) {
+        if (!path || !path.startsWith('events/')) return;
+        try { await deleteObject(ref(storage, path)); } catch(e) { /* already deleted */ }
+      }
+
       window.saveProfile=async function(){
         var username=document.getElementById('profile-username').value.trim();
         var role=document.getElementById('profile-role').value;
+        var tz=document.getElementById('profile-timezone').value||'Europe/Paris';
         if(!username) return toast('Nom requis.','error');
-        await updateDoc(doc(db,'users',currentUser.uid),{username:username,role:role});
-        userProfile.username=username; userProfile.role=role;
+        await updateDoc(doc(db,'users',currentUser.uid),{username:username,role:role,timezone:tz});
+        userProfile.username=username; userProfile.role=role; userProfile.timezone=tz;
         document.getElementById('header-username').textContent=username;
         var badge=document.getElementById('header-role-badge');
         badge.textContent=role; badge.className='role-badge'+(role==='MJ'?' mj':'');
-        toast('Profil mis a jour.'); initMainApp();
+        toast('Profil mis à jour.');
+        initMainApp();
       };
 
       // CONFIRM / DELETE
@@ -4234,7 +4435,7 @@
         document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Supprimer "'+name+'" ? Action irreversible.</p>';
         document.getElementById('confirm-ok-btn').textContent='Supprimer';
         document.getElementById('confirm-ok-btn').className='btn btn-danger';
-        document.getElementById('confirm-ok-btn').onclick=async function(){await deleteDoc(doc(db,'events',id));toast('Supprime.');closeModal('modal-confirm');renderCalendar();};
+        document.getElementById('confirm-ok-btn').onclick=async function(){ var snap=await getDoc(doc(db,'events',id)); if(snap.exists()&&snap.data().storagePath) await deleteStorageImg(snap.data().storagePath); await deleteDoc(doc(db,'events',id));toast('Supprimé.');closeModal('modal-confirm');renderCalendar();};
         openModal('modal-confirm');
       };
       window.confirmLeaveEvent=function(id,name){
