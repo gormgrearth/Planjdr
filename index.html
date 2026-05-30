@@ -2939,7 +2939,7 @@
       function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
       function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
       function genCode(len) { var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s=''; for(var i=0;i<(len||6);i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
-      function getUserTZ() { return (userProfile && userProfile.timezone) || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'; }
+      function getUserTZ() { return (userProfile && (userProfile._previewTimezone || userProfile.timezone)) || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'; }
       function fmtDate(d) {
         return new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short',timeZone:getUserTZ()});
       }
@@ -3006,9 +3006,10 @@
       }
 
       // Format a slot's time range, converting from creator TZ to viewer TZ
+      var SITE_DEFAULT_TZ = 'Europe/Paris';
       function fmtSlotTime(slot, creatorTZ) {
         var viewerTZ = getUserTZ();
-        var srcTZ = creatorTZ || viewerTZ; // if no creatorTZ stored, no conversion needed
+        var srcTZ = creatorTZ || SITE_DEFAULT_TZ; // if no creatorTZ stored, assume site default
         if (srcTZ === viewerTZ) {
           var raw = slot.start + (slot.end ? '–' + slot.end : '');
           return raw + ' <span style="font-size:.68em;color:var(--muted);font-style:italic">' + viewerTZ.split('/').pop().replace(/_/g,' ') + '</span>';
@@ -3223,7 +3224,7 @@
             var nowStr=new Date().toLocaleTimeString('fr-FR',{timeZone:userTZ,hour:'2-digit',minute:'2-digit'});
             tzPrev.textContent='Heure actuelle dans ce fuseau : '+nowStr;
           }
-          // Live preview on change
+          // Live preview on change + instant re-render of all event times
           tzSel.onchange=function(){
             var sel=tzSel.value;
             var tzPrev=document.getElementById('tz-preview');
@@ -3231,6 +3232,10 @@
               var nowStr=new Date().toLocaleTimeString('fr-FR',{timeZone:sel,hour:'2-digit',minute:'2-digit'});
               tzPrev.textContent='Heure actuelle dans ce fuseau : '+nowStr;
             }
+            // Update in-memory timezone immediately so getUserTZ() returns the new value
+            // (not saved yet — user still needs to click Enregistrer)
+            userProfile._previewTimezone = sel;
+            refreshEventsDisplay();
           };
         }
         document.getElementById('profile-role').value = userProfile.role;
@@ -4430,18 +4435,30 @@
       // IMAGE UPLOAD — Firebase Storage
       // ============================================================
 
+      // Re-render all event panels with the current timezone (call after TZ change)
+      function refreshEventsDisplay() {
+        // Unsubscribe all existing listeners and re-subscribe (clean re-render)
+        unsubs.forEach(function(u){ try { u(); } catch(e){} });
+        unsubs = [];
+        var isMJ = effectiveIsMJ();
+        if (isMJ) { loadMJEvents(); loadJoinRequests(); }
+        else { loadJoinedEvents(); loadPublicEvents(); loadMyJoinRequests(); }
+        renderCalendar();
+      }
+
       window.saveProfile=async function(){
         var username=document.getElementById('profile-username').value.trim();
         var role=document.getElementById('profile-role').value;
         var tz=document.getElementById('profile-timezone').value||'Europe/Paris';
         if(!username) return toast('Nom requis.','error');
         await updateDoc(doc(db,'users',currentUser.uid),{username:username,role:role,timezone:tz});
-        userProfile.username=username; userProfile.role=role; userProfile.timezone=tz;
+        userProfile.username=username; userProfile.role=role; userProfile.timezone=tz; delete userProfile._previewTimezone;
         document.getElementById('header-username').textContent=username;
         var badge=document.getElementById('header-role-badge');
         badge.textContent=role; badge.className='role-badge'+(role==='MJ'?' mj':'');
         toast('Profil mis à jour.');
-        initMainApp();
+        // Re-render all event lists with the new timezone (no full re-init needed)
+        refreshEventsDisplay();
       };
 
       // CONFIRM / DELETE
