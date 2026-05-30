@@ -2747,41 +2747,14 @@
           <div class="player-chips" id="ev-player-chips"></div>
           <hr class="divider" />
           <div class="field">
-            <label>Image de fond</label>
-            <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
-              <button type="button" class="btn btn-sm" id="img-tab-url"
-                onclick="switchImgTab('url')"
-                style="flex:1;border-bottom:2px solid var(--accent)">
-                &#127758; URL
-              </button>
-              <button type="button" class="btn btn-sm" id="img-tab-file"
-                onclick="switchImgTab('file')"
-                style="flex:1;border-bottom:2px solid transparent">
-                &#128190; Fichier local
-              </button>
-            </div>
-            <div id="img-panel-url">
-              <input type="text" id="ev-img-url" placeholder="https://..." oninput="previewEvImg()"/>
-            </div>
-            <div id="img-panel-file" style="display:none">
-              <div id="img-drop-zone" onclick="document.getElementById('ev-img-file').click()"
-                style="border:2px dashed var(--border);border-radius:8px;padding:1.2rem;text-align:center;cursor:pointer;color:var(--muted);font-size:.85rem;transition:border-color .2s"
-                ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-                ondragleave="this.style.borderColor='var(--border)'"
-                ondrop="handleImgDrop(event)">
-                &#128247; Cliquez ou d&eacute;posez une image (JPG, PNG, WEBP &mdash; max 5 Mo)
-              </div>
-              <input type="file" id="ev-img-file" accept="image/jpeg,image/png,image/webp,image/gif"
-                style="display:none" onchange="handleImgFile(this.files[0])"/>
-              <div id="img-upload-progress" style="display:none;margin-top:.5rem">
-                <div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden">
-                  <div id="img-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width .2s"></div>
-                </div>
-                <div id="img-progress-label" style="font-size:.75rem;color:var(--muted);margin-top:.3rem">Upload en cours...</div>
-              </div>
-            </div>
-            <img id="ev-img-preview" class="img-preview" alt="Apercu" style="margin-top:.5rem"/>
-            <div id="ev-img-storage-path" style="display:none"></div>
+            <label>Image de fond (URL)</label>
+            <input
+              type="text"
+              id="ev-img-url"
+              placeholder="https://..."
+              oninput="previewEvImg()"
+            />
+            <img id="ev-img-preview" class="img-preview" alt="Apercu" />
           </div>
           <div class="field" id="ev-opacity-field" style="display: none">
             <label
@@ -2909,7 +2882,6 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, onSnapshot, addDoc, serverTimestamp, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-      import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
       // !! REMPLACEZ PAR VOTRE CONFIG FIREBASE !!
       const firebaseConfig = {
@@ -2922,7 +2894,6 @@
         appId: "1:961354615451:web:641a4b4757a8cd196b543e"
       };
       var app  = initializeApp(firebaseConfig);
-      var storage = getStorage(app);
       var auth = getAuth(app);
       var db   = getFirestore(app);
 
@@ -2976,18 +2947,83 @@
         var dt = new Date(d+'T'+(time||'12:00'));
         return dt.toLocaleString('fr-FR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:getUserTZ()});
       }
+
+      // Convert a time string (HH:MM) from one timezone to another, on a given date (YYYY-MM-DD)
+      // Returns {time:'HH:MM', dateOffset: -1|0|+1} (dateOffset if day changes due to conversion)
+      function convertTime(dateStr, timeStr, fromTZ, toTZ) {
+        if (!fromTZ || !toTZ || fromTZ === toTZ) return { time: timeStr, dateOffset: 0 };
+        try {
+          // Build a Date in fromTZ
+          var dt = new Date(dateStr + 'T' + timeStr + ':00');
+          // Get the UTC ms by interpreting the date+time as being in fromTZ
+          var fromStr = dt.toLocaleString('sv-SE', { timeZone: fromTZ }); // 'sv-SE' gives ISO-like format
+          var fromDt  = new Date(fromStr);
+          var utcMs   = dt.getTime() - (fromDt.getTime() - dt.getTime()); // adjust for TZ offset
+          // Better approach: use Intl to get offset difference
+          var base = dateStr + 'T' + timeStr + ':00';
+          // Parse the local time in fromTZ
+          var parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: fromTZ, year:'numeric', month:'2-digit', day:'2-digit',
+            hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false
+          }).formatToParts(new Date(base));
+          // Build UTC equivalent
+          var p = {};
+          parts.forEach(function(x){ p[x.type] = x.value; });
+          var utcDate = new Date(Date.UTC(
+            parseInt(p.year), parseInt(p.month)-1, parseInt(p.day),
+            parseInt(p.hour), parseInt(p.minute), parseInt(p.second||0)
+          ));
+          // Offset between base string parsed naively and what fromTZ says
+          var naiveDt = new Date(base);
+          var offset = utcDate.getTime() - naiveDt.getTime(); // ms to add to get real UTC
+          var realUtc = new Date(naiveDt.getTime() + offset);
+          // Now format in toTZ
+          var converted = realUtc.toLocaleString('fr-FR', {
+            timeZone: toTZ, hour:'2-digit', minute:'2-digit', day:'numeric', month:'numeric'
+          });
+          var tParts = new Intl.DateTimeFormat('en-US', {
+            timeZone: toTZ, hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit',
+            year:'numeric', hour12: false
+          }).formatToParts(realUtc);
+          var tp = {};
+          tParts.forEach(function(x){ tp[x.type] = x.value; });
+          var newHour = tp.hour === '24' ? '00' : tp.hour;
+          var newTime = newHour + ':' + tp.minute;
+          // Date offset: compare day
+          var origDay = parseInt(dateStr.split('-')[2]);
+          var newDay  = parseInt(tp.day);
+          var dateOffset = newDay > origDay ? 1 : (newDay < origDay ? -1 : 0);
+          return { time: newTime, dateOffset: dateOffset };
+        } catch(e) {
+          return { time: timeStr, dateOffset: 0 };
+        }
+      }
+
+      // Format a slot's time range, converting from creator TZ to viewer TZ
+      function fmtSlotTime(slot, creatorTZ) {
+        var viewerTZ = getUserTZ();
+        var srcTZ = creatorTZ || viewerTZ; // if no creatorTZ stored, no conversion needed
+        if (srcTZ === viewerTZ) return slot.start + (slot.end ? '–' + slot.end : '');
+        var startC = convertTime(slot.date, slot.start, srcTZ, viewerTZ);
+        var endC   = slot.end ? convertTime(slot.date, slot.end, srcTZ, viewerTZ) : null;
+        var label  = startC.time + (endC ? '–' + endC.time : '');
+        // Add day-shift indicator if time crosses midnight
+        if (startC.dateOffset !== 0) label += ' <span title="Jour différent" style="color:var(--muted);font-size:.7em">(' + (startC.dateOffset > 0 ? '+1j' : '-1j') + ')</span>';
+        // Add TZ note
+        label += ' <span style="font-size:.68em;color:var(--muted);font-style:italic">' + viewerTZ.split('/').pop().replace('_',' ') + '</span>';
+        return label;
+      }
       function isPast(dateStr) { var d=new Date(dateStr+'T12:00'); d.setHours(0,0,0,0); return d < TODAY; }
-      function slotsHtml(dates, finalDates) {
+      function slotsHtml(dates, finalDates, creatorTZ) {
         if (!dates||!dates.length) return '';
         var fd = finalDates||[];
         return dates.map(function(s) {
           var cls = 'date-slot';
           if (isPast(s.date)) cls += ' past-slot';
           if (fd.indexOf(s.date+'_'+s.start) !== -1) cls += ' final-slot';
-          return '<div class="'+cls+'">'+fmtDate(s.date)+' '+s.start+'-'+s.end+'</div>';
+          return '<div class="'+cls+'">'+fmtDate(s.date)+' '+fmtSlotTime(s, creatorTZ)+'</div>';
         }).join('');
       }
-      // Build card wrapper with optional event image background
       function evCardOpen(ev) {
         var url = ev.imgUrl||'';
         var opacity = ev.imgOpacity||70;
@@ -3117,7 +3153,13 @@
           var snap = await getDoc(doc(db,'users',user.uid));
           if (!snap.exists()) { signOut(auth); return; }
           userProfile = snap.data();
-          if (!userProfile.friendCode) { var fc=genCode(8); await updateDoc(doc(db,'users',user.uid),{friendCode:fc}); userProfile.friendCode=fc; }
+          if (!userProfile.friendCode) {
+            var fc=genCode(8);
+            await updateDoc(doc(db,'users',user.uid),{friendCode:fc});
+            userProfile.friendCode=fc;
+            // Register in friendCodes collection
+            try{ await setDoc(doc(db,'friendCodes',fc),{uid:user.uid,username:userProfile.username,used:false,createdAt:serverTimestamp()}); }catch(e){}
+          }
           initMainApp();
         } else {
           currentUser=null; userProfile=null;
@@ -3229,7 +3271,7 @@
           var map = {calendar:'Calendrier',events:'evenements',join:'Rejoindre',friends:'Amis',profile:'Profil'};
           if (t.textContent.includes(map[id])) t.classList.add('active');
         });
-        if (id==='friends') renderFriendCode();
+        if (id==='friends') { renderFriendCode(); checkAndRegenCodeIfUsed(); }
       }
 
       // ============================================================
@@ -3402,7 +3444,7 @@
           card.innerHTML = evCardOpen(ev)+colorBar+imgHtml+
             '<div class="card-header"><div><div class="card-title">'+ev.name+closed+'</div></div><div class="card-actions">'+actBtn+'</div></div>'+
             descHtml+
-            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
+            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[],ev.creatorTimezone)+'</div>'+evCardClose(ev);
           el.appendChild(card);
         });
       }
@@ -3429,7 +3471,7 @@
             '<div style="height:3px;background:'+color+';border-radius:2px;margin-bottom:.6rem"></div>'+
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem">'+
             '<div><strong style="color:var(--text)">'+ev.name+'</strong>'+closed+
-            '<div style="font-size:.82rem;color:var(--muted);margin-top:.2rem">MJ : '+ev.creatorUsername+'  |  '+entry.slot.start+' - '+entry.slot.end+'</div></div>'+
+            '<div style="font-size:.82rem;color:var(--muted);margin-top:.2rem">MJ : '+ev.creatorUsername+'  |  '+fmtSlotTime(entry.slot, entry.ev.creatorTimezone)+' ('+entry.slot.start+'-'+entry.slot.end+')'+'</div></div>'+
             '<div style="display:flex;gap:.4rem">'+
             (isMJ
               ? '<button class="btn btn-outline btn-sm" onclick="openMJSummary(\''+ev.id+'\');closeModal(\'modal-day-picker\')">Resume</button>'+
@@ -3566,7 +3608,7 @@
             ' <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent(\''+ev.id+'\',\''+safeName+'\')">'+'Supprimer</button>'+
             '</div></div>'+
             descHtml3+
-            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+
+            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[],ev.creatorTimezone)+'</div>'+
             '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">'+(ev.invitedUsernames||[]).map(function(u){return '<div class="player-chip">'+u+'</div>';}).join('')+'</div>'+evCardClose(ev);
           el.appendChild(card);
         });
@@ -3579,9 +3621,7 @@
         editingEventId=null; evDateSlots=[]; evPlayers=[]; evSelectedDates=[];
         document.getElementById('ev-name').value='';
         document.getElementById('ev-rpgsystem').value='';
-        currentUploadedUrl=''; currentStoragePath='';
-        document.getElementById('ev-img-storage-path').textContent='';
-        switchImgTab('url');
+
         // Populate RPG systems datalist from user's characters
         var dl=document.getElementById('rpg-systems-list');
         if(dl){ var systems=[...new Set((userProfile.characters||[]).map(function(c){return c.system;}).filter(Boolean))]; dl.innerHTML=systems.map(function(s){return '<option value="'+s+'">';}).join(''); }
@@ -3620,9 +3660,7 @@
         evPlayers=(ev.invitedUids||[]).map(function(uid,i){return{uid:uid,username:(ev.invitedUsernames||[])[i]||uid};});
         document.getElementById('ev-name').value=ev.name||'';
         document.getElementById('ev-rpgsystem').value=ev.rpgSystem||'';
-        currentUploadedUrl=''; currentStoragePath=ev.storagePath||'';
-        document.getElementById('ev-img-storage-path').textContent=ev.storagePath||'';
-        switchImgTab('url'); // Default to URL tab on edit
+
         var dl2=document.getElementById('rpg-systems-list');
         if(dl2){ var sys2=[...new Set((userProfile.characters||[]).map(function(c){return c.system;}).filter(Boolean))]; dl2.innerHTML=sys2.map(function(s){return '<option value="'+s+'">';}).join(''); }
         document.getElementById('ev-desc').value=ev.description||'';
@@ -3737,8 +3775,7 @@
       window.removePlayer=function(i){evPlayers.splice(i,1);renderPlayerChips();};
 
       window.previewEvImg=function(){
-        var url = currentUploadedUrl || document.getElementById('ev-img-url').value.trim();
-        var storagePath = currentStoragePath || '';
+        var url = document.getElementById('ev-img-url').value.trim();
         var prev = document.getElementById('ev-img-preview');
         var opField = document.getElementById('ev-opacity-field');
         if (url) { prev.src=url; prev.style.display=''; opField.style.display=''; }
@@ -3756,7 +3793,7 @@
         var privacyEl=document.querySelector('input[name="ev-privacy"]:checked');
         var privacyMode=privacyEl?privacyEl.value:'public';
         var isPrivate=privacyMode!=='public';
-        var data={name:name,rpgSystem:document.getElementById('ev-rpgsystem').value.trim(),description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate,privacyMode:privacyMode,storagePath:storagePath};
+        var data={name:name,rpgSystem:document.getElementById('ev-rpgsystem').value.trim(),description:document.getElementById('ev-desc').value.trim(),dates:evDateSlots,color:evSelectedColor,imgUrl:imgUrl,imgOpacity:imgOpacity,invitedUids:evPlayers.map(function(p){return p.uid;}),invitedUsernames:evPlayers.map(function(p){return p.username;}),createdBy:currentUser.uid,creatorUsername:userProfile.username,isPrivate:isPrivate,privacyMode:privacyMode,creatorTimezone:getUserTZ()};
         try {
           if(editingEventId){await updateDoc(doc(db,'events',editingEventId),data);toast('Evenement mis a jour.');}
           else{
@@ -3792,7 +3829,7 @@
         var html=colorBar+imgHtml+descStr2+'<div style="margin-bottom:.6rem">'+sysTagMJ+'</div>'+'<div class="code-badge" style="margin-bottom:1rem">Code : <strong>'+(ev.code||'')+'</strong> <span class="copy-btn" onclick="copyCode(\''+(ev.code||'')+'\')">copier</span></div>';
         if(ev.closed&&fd.length){
           html+='<div style="margin-bottom:1rem"><strong style="color:var(--success)">Dates definitives :</strong><div style="margin-top:.4rem">';
-          fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});
+          fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' à '+fmtSlotTime({date:p[0],start:p[1],end:p[1]},ev.creatorTimezone||ev.timezone)+'</div>';});
           html+='</div></div>';
         }
         if(!dates.length){html+='<p class="text-muted">Aucune date.</p>';}
@@ -3801,7 +3838,7 @@
           dates.forEach(function(s){
             var past=isPast(s.date)?'<br><small style="color:var(--muted)">(passee)</small>':'';
             var fin=fd.indexOf(s.date+'_'+s.start)!==-1?' '+E_STAR:'';
-            html+='<th>'+fmtDate(s.date)+'<br><small>'+s.start+'</small>'+fin+past+'</th>';
+            html+='<th>'+fmtDate(s.date)+'<br><small>'+fmtSlotTime(s, ev.creatorTimezone)+'</small>'+fin+past+'</th>';
           });
           html+='</tr></thead><tbody>';
           if(!players.length){html+='<tr><td colspan="'+(dates.length+1)+'" class="text-muted">Aucun joueur invite.</td></tr>';}
@@ -3847,7 +3884,7 @@
           players.forEach(function(uid){var r=((responses[uid]||{})[key])||'none';if(r==='yes')yes++;else if(r==='no')no++;else if(r==='maybe')maybe++;});
           html+='<label style="display:flex;align-items:center;gap:.7rem;padding:.6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:.4rem;cursor:pointer;color:var(--text)">'+
             '<input type="checkbox" value="'+key+'" style="width:16px;height:16px;accent-color:var(--accent)">'+
-            '<strong>'+fmtDate(s.date)+' '+s.start+'</strong> '+
+            '<strong>'+fmtDate(s.date)+' '+fmtSlotTime(s,ev.creatorTimezone)+'</strong> '+
             '<span class="s-yes">'+E_YES+' '+yes+'</span> <span class="s-maybe">'+E_MAYBE+' '+maybe+'</span> <span class="s-no">'+E_NO+' '+no+'</span></label>';
         });
         document.getElementById('confirm-title').textContent='Cloturer "'+ev.name+'"';
@@ -3894,7 +3931,7 @@
         }
         if(ev.closed){
           html+='<div style="background:rgba(82,196,120,.07);border:1px solid var(--success);border-radius:6px;padding:.7rem 1rem;margin-bottom:1rem;color:var(--success)">Cet evenement est cloture. Aucune modification possible.</div>';
-          if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' a '+p[1]+'</div>';});html+='</div></div>';}
+          if(fd.length){html+='<div style="margin-bottom:1rem"><strong>Dates confirmees :</strong><div style="margin-top:.4rem">';fd.forEach(function(key){var p=key.split('_');html+='<div class="final-date-row">'+E_STAR+' '+fmtDate(p[0])+' à '+fmtSlotTime({date:p[0],start:p[1],end:p[1]},ev.creatorTimezone||ev.timezone)+'</div>';});html+='</div></div>';}
         }
         html+='<p class="text-muted" style="margin-bottom:1rem">Votre disponibilite :</p>';
         dates.forEach(function(s){
@@ -4088,7 +4125,7 @@
               '<div class="card-title" style="font-size:.9rem">'+ev.name+'</div>'+
               '<div class="card-meta">MJ : '+(ev.creatorUsername||'')+(slots?' &middot; '+slots+' date'+(slots>1?'s':''):'')+'</div>'+
             '</div><div style="flex-shrink:0">'+joinBtn+'</div></div>'+desc+
-            '<div class="date-slots" style="margin-top:.4rem">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>';
+            '<div class="date-slots" style="margin-top:.4rem">'+slotsHtml(ev.dates||[],ev.finalDates||[],ev.creatorTimezone)+'</div>';
           el.appendChild(card);
         });
       }
@@ -4138,7 +4175,7 @@
             '<button class="btn btn-danger btn-sm" onclick="confirmLeaveEvent(\''+ev.id+'\',\''+safeName+'\')">'+'Quitter</button>'+
             '</div></div>'+
             descHtml2+
-            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[])+'</div>'+evCardClose(ev);
+            '<div class="date-slots">'+slotsHtml(ev.dates||[],ev.finalDates||[],ev.creatorTimezone)+'</div>'+evCardClose(ev);
           el.appendChild(card);
         });
       }
@@ -4152,40 +4189,72 @@
         document.getElementById('my-friend-code').textContent=userProfile.friendCode||'...';
       }
       window.copyMyFriendCode=function(){
-        navigator.clipboard.writeText(userProfile.friendCode||'').then(function(){toast('Code ami copie !');}).catch(function(){toast('Copie impossible.','error');});
+        navigator.clipboard.writeText(userProfile.friendCode||'').then(function(){toast('Code copié !');}).catch(function(){toast('Copie impossible.','error');});
       };
-      window.refreshFriendCode=async function(){
+      async function generateNewFriendCode(silent){
+        var oldFc=userProfile.friendCode;
         var fc=genCode(8);
+        // Invalidate old code in registry
+        if(oldFc){ try{ await setDoc(doc(db,'friendCodes',oldFc),{uid:currentUser.uid,used:true,revoked:true},{merge:true}); }catch(e){} }
+        // Register new code
+        try{ await setDoc(doc(db,'friendCodes',fc),{uid:currentUser.uid,username:userProfile.username,used:false,createdAt:serverTimestamp()}); }catch(e){}
         await updateDoc(doc(db,'users',currentUser.uid),{friendCode:fc});
-        userProfile.friendCode=fc; renderFriendCode(); toast('Nouveau code genere !');
-      };
+        userProfile.friendCode=fc; renderFriendCode();
+        if(!silent) toast('Nouveau code généré !');
+        return fc;
+      }
+      window.refreshFriendCode=async function(){ await generateNewFriendCode(false); };
+      async function checkAndRegenCodeIfUsed(){
+        if(!userProfile.friendCode) return;
+        try{
+          var codeSnap=await getDoc(doc(db,'friendCodes',userProfile.friendCode));
+          if(codeSnap.exists()&&codeSnap.data().used){
+            await generateNewFriendCode(true);
+            toast('Votre code ami a été utilisé — un nouveau a été généré automatiquement.');
+          } else if(!codeSnap.exists()){
+            // Legacy code not in registry — register it now
+            try{ await setDoc(doc(db,'friendCodes',userProfile.friendCode),{uid:currentUser.uid,username:userProfile.username,used:false,createdAt:serverTimestamp()}); }catch(e){}
+          }
+        }catch(e){ console.warn('checkAndRegenCodeIfUsed:',e); }
+      }
+
 
       window.addFriendByCode=async function(){
         var code=document.getElementById('friend-code-input').value.trim().toUpperCase();
         if(!code) return toast('Entrez un code.','error');
         try{
-          var q=query(collection(db,'users'),where('friendCode','==',code));
-          var snap=await getDocs(q);
-          if(snap.empty) return toast('Code ami introuvable.','error');
-          var otherDoc=snap.docs[0]; var otherId=otherDoc.id;
-          if(otherId===currentUser.uid) return toast("C'est votre propre code !",'error');
-          if((userProfile.friends||[]).indexOf(otherId)!==-1) return toast('Deja dans votre liste d\'amis.');
-          // Add to own friends list
+          // Step 1: check friendCodes registry (enforces single-use)
+          var codeRef=doc(db,'friendCodes',code);
+          var codeSnap=await getDoc(codeRef);
+          var otherId=null, otherUsername='';
+          if(codeSnap.exists()){
+            var cd=codeSnap.data();
+            if(cd.used) return toast('Ce code a déjà été utilisé. Demandez un nouveau code à votre ami.','error');
+            otherId=cd.uid; otherUsername=cd.username||'';
+          } else {
+            // Fallback: search users.friendCode (legacy codes without registry entry)
+            var q=query(collection(db,'users'),where('friendCode','==',code));
+            var snap=await getDocs(q);
+            if(snap.empty) return toast('Code introuvable ou déjà utilisé.','error');
+            otherId=snap.docs[0].id; otherUsername=snap.docs[0].data().username||'';
+          }
+          if(otherId===currentUser.uid) return toast('C\'est votre propre code !','error');
+          if((userProfile.friends||[]).indexOf(otherId)!==-1) return toast('Déjà dans votre liste d\'amis.');
+          // Step 2: mark code as used (atomically invalidates it)
+          await setDoc(codeRef,{uid:otherId,username:otherUsername,used:true,
+            usedBy:currentUser.uid,usedByUsername:userProfile.username,
+            usedAt:serverTimestamp()},{merge:true});
+          // Step 3: add friend to own list
           await updateDoc(doc(db,'users',currentUser.uid),{friends:arrayUnion(otherId)});
           userProfile.friends=(userProfile.friends||[]).concat(otherId);
-          // Create a pending request doc so the other user can accept
+          // Step 4: notify owner — they will auto-regen code on next load
           await setDoc(doc(db,'friendRequests',currentUser.uid+'_'+otherId),{
             from:currentUser.uid, fromUsername:userProfile.username,
-            to:otherId, createdAt:serverTimestamp()
+            to:otherId, createdAt:serverTimestamp(), codeUsed:code
           });
-          // Regenerate code AFTER successful add (single-use)
           document.getElementById('friend-code-input').value='';
-          toast('Ami ajouté : '+otherDoc.data().username+' !');
-          var newFc=genCode(8);
-          await updateDoc(doc(db,'users',currentUser.uid),{friendCode:newFc});
-          userProfile.friendCode=newFc; renderFriendCode();
+          toast('Ami ajouté : '+otherUsername+' !');
           loadFriends();
-          // Also try to add reciprocally (may fail if rules block it, that's ok)
           try { await updateDoc(doc(db,'users',otherId),{friends:arrayUnion(currentUser.uid)}); } catch(e){}
         }catch(e){toast('Erreur : '+e.message,'error');console.error(e);}
       };
@@ -4337,83 +4406,89 @@
       };
 
 
+
+      // ============================================================
+      // CHARACTER MANAGEMENT
+      // ============================================================
+      window.addCharacter = async function() {
+        var name = document.getElementById('char-name-input').value.trim();
+        var system = document.getElementById('char-system-input').value.trim();
+        if (!name) return toast('Entrez un nom de personnage.', 'error');
+        var char = { id: genCode(8), name: name, system: system || '', createdAt: Date.now() };
+        var chars = userProfile.characters || [];
+        chars.push(char);
+        await updateDoc(doc(db,'users',currentUser.uid), { characters: chars });
+        userProfile.characters = chars;
+        document.getElementById('char-name-input').value = '';
+        document.getElementById('char-system-input').value = '';
+        renderCharacters();
+        toast('Personnage ajouté !');
+      };
+
+      window.removeCharacter = async function(charId) {
+        var chars = (userProfile.characters || []).filter(function(c){ return c.id !== charId; });
+        await updateDoc(doc(db,'users',currentUser.uid), { characters: chars });
+        userProfile.characters = chars;
+        renderCharacters();
+        toast('Personnage supprimé.');
+      };
+
+      function renderCharacters() {
+        var el = document.getElementById('char-list');
+        if (!el) return;
+        var chars = userProfile.characters || [];
+        if (!chars.length) {
+          el.innerHTML = '<p style="font-size:.82rem;color:var(--muted);font-style:italic">Aucun personnage. Ajoutez-en un ci-dessous.</p>';
+          return;
+        }
+        el.innerHTML = chars.map(function(c) {
+          return '<div class="char-item">'+
+            '<div class="char-name">'+c.name+(c.system ? ' <span class="char-badge">'+c.system+'</span>' : '')+'</div>'+
+            '<button class="btn btn-ghost btn-sm" onclick="removeCharacter(\''+c.id+'\')"'+' style="color:var(--danger);padding:.2rem .4rem" title="Supprimer">&#10005;</button>'+
+          '</div>';
+        }).join('');
+      }
+
+      // Build a <select> element with user's characters for joining an event
+      function buildCharacterSelect(eventId, currentCharId) {
+        var chars = userProfile.characters || [];
+        if (!chars.length) return '';
+        var opts = '<option value="">-- Sans personnage spécifique --</option>' +
+          chars.map(function(c){
+            var sel = (currentCharId === c.id) ? ' selected' : '';
+            return '<option value="'+c.id+'"'+sel+'>'+c.name+(c.system?' ('+c.system+')':'')+'</option>';
+          }).join('');
+        return '<div class="char-select-field">'+
+          '<label>&#127985; Personnage que vous souhaitez jouer</label>'+
+          '<select id="char-select-'+eventId+'" onchange="saveCharacterChoice(\''+eventId+'\')">' +opts+'</select>'+
+        '</div>';
+      }
+
+      window.saveCharacterChoice = async function(eventId) {
+        var sel = document.getElementById('char-select-'+eventId);
+        if (!sel) return;
+        var charId = sel.value;
+        var chars = userProfile.characters || [];
+        var char = chars.find(function(c){ return c.id === charId; }) || null;
+        try {
+          // Read-merge-write to avoid dot-path permission issues
+          var evSnap = await getDoc(doc(db,'events',eventId));
+          if (!evSnap.exists()) return;
+          var choices = evSnap.data().characterChoices || {};
+          if (char) choices[currentUser.uid] = { id:char.id, name:char.name, system:char.system||'' };
+          else delete choices[currentUser.uid];
+          await updateDoc(doc(db,'events',eventId), { characterChoices: choices });
+          toast(char ? 'Personnage : '+char.name : 'Choix effacé.');
+        } catch(e) {
+          toast('Erreur sauvegarde personnage : vérifiez les règles Firestore.','error');
+          console.error('saveCharacterChoice:',e);
+        }
+      };
+
+
       // ============================================================
       // IMAGE UPLOAD — Firebase Storage
       // ============================================================
-      var currentUploadedUrl = ''; // URL from Storage after upload
-      var currentStoragePath = ''; // path for deletion on event edit
-
-      window.switchImgTab = function(tab) {
-        var isUrl = tab === 'url';
-        document.getElementById('img-panel-url').style.display  = isUrl ? '' : 'none';
-        document.getElementById('img-panel-file').style.display = isUrl ? 'none' : '';
-        document.getElementById('img-tab-url').style.borderBottomColor  = isUrl ? 'var(--accent)' : 'transparent';
-        document.getElementById('img-tab-file').style.borderBottomColor = isUrl ? 'transparent' : 'var(--accent)';
-        if (isUrl) { currentUploadedUrl = ''; currentStoragePath = ''; }
-      };
-
-      window.handleImgDrop = function(e) {
-        e.preventDefault();
-        document.getElementById('img-drop-zone').style.borderColor = 'var(--border)';
-        var file = e.dataTransfer.files[0];
-        if (file) handleImgFile(file);
-      };
-
-      window.handleImgFile = async function(file) {
-        if (!file) return;
-        var maxMB = 5;
-        if (file.size > maxMB * 1024 * 1024) {
-          return toast('Image trop lourde (max ' + maxMB + ' Mo).', 'error');
-        }
-        var allowed = ['image/jpeg','image/png','image/webp','image/gif'];
-        if (!allowed.includes(file.type)) {
-          return toast('Format non supporté. Utilisez JPG, PNG, WEBP ou GIF.', 'error');
-        }
-        // Show progress
-        var prog = document.getElementById('img-upload-progress');
-        var bar  = document.getElementById('img-progress-bar');
-        var lbl  = document.getElementById('img-progress-label');
-        prog.style.display = '';
-        bar.style.width = '0%';
-        lbl.textContent = 'Upload en cours...';
-        // Upload to Firebase Storage: events/{uid}/{timestamp}_{filename}
-        var ext = file.name.split('.').pop();
-        var path = 'events/' + currentUser.uid + '/' + Date.now() + '.' + ext;
-        var storageRef = ref(storage, path);
-        var uploadTask = uploadBytesResumable(storageRef, file);
-        uploadTask.on('state_changed',
-          function(snapshot) {
-            var pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
-            bar.style.width = pct + '%';
-            lbl.textContent = 'Upload : ' + pct + '%';
-          },
-          function(err) {
-            prog.style.display = 'none';
-            toast('Erreur upload : ' + err.message, 'error');
-            console.error('Upload error:', err);
-          },
-          async function() {
-            var url = await getDownloadURL(uploadTask.snapshot.ref);
-            currentUploadedUrl = url;
-            currentStoragePath = path;
-            document.getElementById('ev-img-storage-path').textContent = path;
-            // Preview
-            var prev = document.getElementById('ev-img-preview');
-            prev.src = url; prev.style.display = '';
-            document.getElementById('ev-opacity-field').style.display = '';
-            bar.style.width = '100%';
-            lbl.textContent = 'Upload terminé ✔';
-            setTimeout(function(){ prog.style.display = 'none'; }, 1500);
-            toast('Image uploadée avec succès !');
-          }
-        );
-      };
-
-      // Delete old Storage image when replacing on edit
-      async function deleteStorageImg(path) {
-        if (!path || !path.startsWith('events/')) return;
-        try { await deleteObject(ref(storage, path)); } catch(e) { /* already deleted */ }
-      }
 
       window.saveProfile=async function(){
         var username=document.getElementById('profile-username').value.trim();
@@ -4435,7 +4510,7 @@
         document.getElementById('confirm-msg').innerHTML='<p class="text-muted">Supprimer "'+name+'" ? Action irreversible.</p>';
         document.getElementById('confirm-ok-btn').textContent='Supprimer';
         document.getElementById('confirm-ok-btn').className='btn btn-danger';
-        document.getElementById('confirm-ok-btn').onclick=async function(){ var snap=await getDoc(doc(db,'events',id)); if(snap.exists()&&snap.data().storagePath) await deleteStorageImg(snap.data().storagePath); await deleteDoc(doc(db,'events',id));toast('Supprimé.');closeModal('modal-confirm');renderCalendar();};
+        document.getElementById('confirm-ok-btn').onclick=async function(){await deleteDoc(doc(db,'events',id));toast('Supprime.');closeModal('modal-confirm');renderCalendar()};
         openModal('modal-confirm');
       };
       window.confirmLeaveEvent=function(id,name){
